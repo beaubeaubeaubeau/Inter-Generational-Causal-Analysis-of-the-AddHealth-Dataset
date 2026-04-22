@@ -19,7 +19,7 @@ Weights, PSUs, and formulas are documented in the 'Notes on design' footer.
 | BCENT10X | Bonacich Centrality P=.1 | continuous (mean) | 4397 | 113 | 0.8085 | 0.6334 | 0.0117 | [0.7855, 0.8314] |
 | REACH | N reachable alters: TFN | continuous (mean) | 4397 | 113 | 473.1927 | 431.2786 | 36.6737 | [401.3122, 545.0733] |
 | REACH3 | N reachable alters 3 steps: TFN | continuous (mean) | 4397 | 113 | 57.3236 | 46.9018 | 2.4509 | [52.5199, 62.1273] |
-| PRXPREST | Proximity Prestige | binary (prop) | 4020 | 113 | 0.1672 | NA | 0.0073 | [0.1533, 0.1820] |
+| PRXPREST | Proximity Prestige | continuous (mean) | 4020 | 113 | 0.1672 | 0.0836 | 0.0073 | [0.1528, 0.1815] |
 | HAVEBMF | R has a Best Male Friend | binary (prop) | 4397 | 113 | 0.5744 | NA | 0.0135 | [0.5478, 0.6006] |
 | HAVEBFF | R has a best Female friend | binary (prop) | 4397 | 113 | 0.6136 | NA | 0.0155 | [0.5828, 0.6435] |
 | BMFRECIP | Best Male Frnd Recip (any) | binary (prop) | 1963 | 113 | 0.5614 | NA | 0.0157 | [0.5304, 0.5919] |

@@ -92,6 +92,8 @@ Python's survey-aware ecosystem is thinner; `samplics` is the most complete, or 
 
 All files merge one-to-one on **`AID`** (label: "RESPONDENT IDENTIFIER"). Base = Wave I in-home; left-join Wave I network, Wave III PVT, Wave IV in-home, Wave V mixed-mode, Wave V/VI biomarker files as needed. After each merge, verify N against the source file.
 
+> **Variable-code lookup.** Every code used in the screening pipeline (exposures, outcomes, covariates, weights, design) is catalogued in [reference/variable_dictionary.md](variable_dictionary.md) with verbatim codebook labels, valid-N counts, caveats, and cross-references back to this synthesis. Start there when reading a chart caption or script that names a code you don't recognise.
+
 ---
 
 ## 3. Primary exposure: adolescent friendship / social connection
@@ -447,15 +449,42 @@ These are the actual usable Ns after AID overlap + exposure non-missing + outcom
 
 ---
 
-## 9. Pivot option — cardiometabolic / vascular outcomes
+## 9. Outcome battery: primary + multi-outcome extension
 
-If the primary cognition design becomes infeasible (e.g. stronger-than-expected network-file attrition after adding covariates), substitute a cardiometabolic outcome as a documented vascular-precursor pathway to late-life cognitive decline:
+The primary design targets W4 cognition (`W4_COG_COMP`, a z-score composite of `C4WD90_1` + `C4WD60_1` + `C4NUMSCR`; see §4.4). Task 15 extends the screen to **12 non-cognitive outcomes** so that signal can be checked for outcome specificity (is this a cognition-specific effect?) versus cross-outcome robustness (does adolescent connectedness track everything that happens to a person, or only some domains?).
 
-- **Wave IV biomarkers** (glucose, lipids, hsCRP, cardiovascular) — subset of N = 5,114
-- **Wave V biomarkers** — N = 1,839 (3,883 for medications); hsCRP, renal, lipids, glucose
-- **Wave VI biomarkers** — N = 2,010 biomarker subset; **hepatic injury (AST/ALT) is new in public-use at W6** (was restricted at W5)
+**Motivation.** Task 14 found that AHPVT (`AH_PVT`, W1 verbal IQ) absorbs most of the baseline network→cognition signal — peer centrality survives only the L0/L0+L1 specs, collapsing under the full L0+L1+AHPVT adjustment (β shrinks 50–70 %; see [outputs/14_screening_matrix.csv](../outputs/14_screening_matrix.csv) D4 column). That finding is specific to cognition and partly mechanistic: a network kid with a 1994 crystallized-ability head start is both more central and better-scoring at W4. The multi-outcome extension side-steps the AHPVT over-shadowing problem by asking whether the same exposures predict outcomes where verbal IQ should *not* be mechanistically on-path — cardiometabolic status, functional limitation, mental health, adult SES.
 
-The outcome is not cognition proper, but each captures a well-documented downstream dimension of adolescent social connection. Apply the same exposure/confounder specification from Section 8.
+### Outcome table
+
+14 rows: primary cognition + 12 task-15 outcomes + 1 negative control. Columns: code, verbatim label, wave, kind, weight used in screening, median N across 24 exposures, role, caveat.
+
+| Code | Label (verbatim) | Wave | Kind | Weight (screen) | N (median) | Role | Caveat |
+|---|---|:-:|---|---|:-:|---|---|
+| `W4_COG_COMP` | derived: z(`C4WD90_1`)+z(`C4WD60_1`)+z(`C4NUMSCR`) | W4 | continuous | `GSWGT4_2` | 3,409 | primary | AHPVT over-shadows network effects (D4 collapse); composite aids power vs. single-test variants |
+| `H4BMI` | "S27 BMI—W4" | W4 | continuous | `GSWGT4_2` | 3,234 | secondary screen | Right-skewed; trimming at 99th percentile advised pre-estimation |
+| `H4SBP` | "S27 SYSTOLIC BLOOD PRESSURE—W4" | W4 | continuous | `GSWGT4_2` | 3,197 | secondary screen | Anti-hypertensive use is unadjusted in task15; task16 should bring in `H4TO*` medication flags |
+| `H4DBP` | "S27 DIASTOLIC BLOOD PRESSURE—W4" | W4 | continuous | `GSWGT4_2` | 3,197 | secondary screen | Same medication caveat as `H4SBP` |
+| `H4WAIST` | "S27 MEASURED WAIST (CM)—W4" | W4 | continuous | `GSWGT4_2` | 3,250 | secondary screen | Collinear with `H4BMI` (r ≈ 0.9); handoff pair overlaps |
+| `H4BMICLS` | "S27 BMI CLASS—W4" | W4 | ordinal 1–6 | `GSWGT4_2` | 3,234 | secondary screen | CDC weight-class categorical; task15 treats as numeric for the screen, recast as ordinal logit in task16 |
+| `H5ID1` | "S5Q1 HOW IS GEN PHYSICAL HEALTH—W5" | W5 | 5-point Likert | `GSWGT4_2` | 2,438 | secondary screen | Self-rated health; 1=excellent → 5=poor (higher = worse) |
+| `H5ID4` | "S5Q4 LIMIT CLIMB SEV. FLIGHT STAIRS—W5" | W5 | 3-level | `GSWGT4_2` | 2,439 | secondary screen | 1=not at all → 3=a lot limited; floor-effect at younger ages |
+| `H5ID16` | "S5Q16 HOW OFTEN TROUBLE SLEEPING—W5" | W5 | 5-point Likert | `GSWGT4_2` | 2,437 | secondary screen | Higher = more trouble |
+| `H5MN1` | "S13Q1 LAST MO NO CNTRL IMPORT THINGS—W5" | W5 | 5-point Likert | `GSWGT4_2` | 2,387 | secondary screen | Perceived Stress Scale item (PSS-4 component); CASI-administered |
+| `H5MN2` | "S13Q2 LAST MO CONFID HANDLE PERS PBMS—W5" | W5 | 5-point Likert | `GSWGT4_2` | 2,380 | secondary screen | PSS-4 component, **reverse-scored direction** vs `H5MN1` |
+| `H5LM5` | "S3Q5 CURRENTLY WORK—W5" | W5 | 3-level | `GSWGT4_2` | 2,436 | secondary screen | Not binary: {1=yes, 2=no temp absent, 3=no not employed}. Task16 should recode before logistic estimation |
+| `H5EC1` | "S4Q1 INCOME PERS EARNINGS [W4–W5]—W5" | W5 | bracketed 1–13 | `GSWGT4_2` | 2,413 | secondary screen | **Bracketed dollars, not raw income** (1 = <$5k, 13 = $250k+). Treat as ordinal |
+| `HEIGHT_IN` | derived in inches from `H4SE2`/`H4SE3` | W4 | continuous | `GSWGT4_2` | 3,392 | negative control | D2 diagnostic. **Contaminated NC**: adolescent height is known to correlate with peer popularity, so D2 failure on centralities is not conclusive proof of confounding |
+
+> **Weight caveat.** `GSWGT4_2` is used uniformly across all 14 outcomes for screening — this is statistically incorrect for the W5 outcomes (where the design-correct weight is `GSW5` or `GSW145`/`GSW1345`), but preserves rank-order across outcomes for a *comparative* screen. Formal causal estimation in Task 16 should: (1) switch to `GSW5` + IPAW for W4→W5 attrition when the outcome is W5-observed, (2) retain `GSWGT4_2` for pure-W4 outcomes, and (3) explicitly model the ~824-row overlap between saturated-school network respondents and W5 cognitive-eligible (mode ∈ {I, T}) respondents before declaring a point estimate on longitudinal pathways.
+
+### Key task-15 findings
+
+- **Breadth of signal varies sharply by outcome group.** `H5EC1` (adult earnings) had the widest hit, with 12/24 exposures at p < 0.05; most cardiometabolic outcomes saw 2–6 hits; `H4DBP` had 0. The primary cognitive outcome was mid-pack at 5/24 (visual: [img/causal/15_per_outcome_pcount.png](../img/causal/15_per_outcome_pcount.png)).
+- **4 handoff pairs recommended to Task 16** for formal causal estimation: `IDGX2 → H4WAIST`, `IDGX2 → H4BMI`, `IDGX2 → H4BMICLS`, `ODGX2 → H5EC1` (visual: [img/causal/15_handoff_forest.png](../img/causal/15_handoff_forest.png); rationale and shortlist: [outputs/15_multi_outcome.md](../outputs/15_multi_outcome.md)).
+- **Direction coherence.** `IDGX2` (in-degree, i.e. popularity) is protective for cardiometabolic outcomes (β < 0 on BMI/waist) and positive for `H5EC1` earnings. `H4DBP` null is itself informative — vascular pressure is not the primary channel.
+
+See also the per-exposure z-standardized β heatmap at [img/causal/multi_outcome_beta_heatmap.png](../img/causal/multi_outcome_beta_heatmap.png).
 
 ---
 
@@ -474,9 +503,27 @@ The outcome is not cognition proper, but each captures a well-documented downstr
 | 5 | [05_weighted_descriptives.md](../outputs/05_weighted_descriptives.md) | Survey-weighted univariate summaries |
 | 6 | [06_attrition_summary.md](../outputs/06_attrition_summary.md) | Wave-by-wave appearance patterns; sex × race × parental-ed tertile stratification |
 | 7 | [07_analytic_n.csv](../outputs/07_analytic_n.csv) | Joint-complete analytic Ns for each design configuration |
+| 8 | [08_analytic_frame_n.md](../outputs/08_analytic_frame_n.md) | Canonical analytic frame (AID × key variables) post-overlap + after-reserve-strip Ns per exposure/outcome pair |
+| 10 | [10_regressions.md](../outputs/10_regressions.md), [10_regressions.csv](../outputs/10_regressions.csv) | First-pass survey-weighted regressions, 24 exposures × 3 adjustment sets on `W4_COG_COMP` |
+| 11 | [11_sensitivity.md](../outputs/11_sensitivity.md), [11_ahpvt_shift.csv](../outputs/11_ahpvt_shift.csv), [11_collinearity.csv](../outputs/11_collinearity.csv), [11_correlation.csv](../outputs/11_correlation.csv), [11_placebo_permutation.csv](../outputs/11_placebo_permutation.csv), [11_saturated_balance.csv](../outputs/11_saturated_balance.csv) | Sensitivity + stability audit: AHPVT shift, collinearity, permutation nulls, saturated-school balance |
+| 13 | [13_verification.md](../outputs/13_verification.md), plus 9 CSVs (`13_attrition_ipw.csv`, `13_benchmarks.csv`, `13_bh_fdr.csv`, `13_deff.csv`, `13_negctrl_exposure.csv`, `13_negctrl_outcome.csv`, `13_psu_counts.csv`, `13_reserve_code_sensitivity.csv`, `13_reserve_leakage.csv`) | Verification pack: benchmarking, FDR adjustment, design-effect audit, negative-control sweeps, reserve-code sensitivity |
+| 14 | [14_screening.md](../outputs/14_screening.md), [14_screening_matrix.csv](../outputs/14_screening_matrix.csv), [14_shortlist.csv](../outputs/14_shortlist.csv) | D1–D9 causal-screening battery on `W4_COG_COMP` for all 24 exposures; pass/fail matrix + ranked shortlist |
+| 15 | [15_multi_outcome.md](../outputs/15_multi_outcome.md), [15_multi_outcome_matrix.csv](../outputs/15_multi_outcome_matrix.csv) | Multi-outcome extension: D1 + D4 re-run across 12 non-cognitive outcomes; 4 handoff pairs shortlisted for Task 16 |
+
+Headline figures: [img/causal/screening_heatmap.png](../img/causal/screening_heatmap.png), [img/causal/adjustment_stability.png](../img/causal/adjustment_stability.png), [img/causal/multi_outcome_beta_heatmap.png](../img/causal/multi_outcome_beta_heatmap.png), [img/causal/15_per_outcome_pcount.png](../img/causal/15_per_outcome_pcount.png), [img/causal/15_handoff_forest.png](../img/causal/15_handoff_forest.png).
 
 See also: [feasibility_summary.md](feasibility_summary.md) for the empirical profiling summary that supersedes the v2 feasibility report and the older documentation report.
 
 ---
 
 *Sources: ICPSR 21600 v26 (2026-03-03). All variable labels quoted verbatim from the shipped SAS/XPT files. Analytic Ns and missingness rates from the feasibility-profiling outputs. Protocol descriptions from the Wave VI Interviewer-Administered Word Recall and Backward Digit Span User Guide (Aiello et al. 2025) and the Add Health Guidelines for Analyzing Add Health Data.*
+
+---
+
+## Changelog
+
+Reverse-chronological. Only entries that can be verified from the repo / git history or the current session.
+
+- **2026-04-21** — §9 rewritten from "Pivot option — cardiometabolic / vascular outcomes" to "Outcome battery: primary + multi-outcome extension" covering the 12 Task 15 outcomes + primary cognition + height NC (14-row outcome table with weight caveat callout). §10 deliverables index extended from task 7 through task 15. §2.5 now points readers to the new [variable_dictionary.md](variable_dictionary.md). This Changelog section added.
+- **2026-04-20** — Pitfall #7 (§7) corrected: `PRXPREST` was previously described as a binary 0/1 variable, which contradicted §3.1 line 117 showing the continuous range [0, 0.77]. Corrected to "continuous in public-use" with empirical range / mean / std and an explicit note that earlier binary descriptions were wrong.
+- **Earlier** — Initial merged synthesis from v2 feasibility report + documentation report + empirical feasibility summary. See `git log reference/addhealth_synthesis.md` for prior history.

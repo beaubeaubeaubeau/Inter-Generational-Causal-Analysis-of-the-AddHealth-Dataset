@@ -320,9 +320,12 @@ def main() -> None:
     # -- W1 exposures (network) --------------------------------------------
     w1_net_vars = ["IDGX2", "ODGX2", "BCENT10X", "REACH", "REACH3",
                    "PRXPREST", "HAVEBMF", "HAVEBFF", "BMFRECIP", "BFFRECIP"]
+    # PRXPREST is continuous in [0, 0.77]; its VALID_RANGES entry is (0, 1)
+    # which would otherwise match the binary heuristic.
     res_w1_net = summarize_block(
         "W1 exposures (network)", w1n[["AID", *w1_net_vars]],
-        w1w, "GSWGT1", w1_net_vars, labels
+        w1w, "GSWGT1", w1_net_vars, labels,
+        kinds={"PRXPREST": "continuous"},
     )
 
     # -- W1 friendship / belonging -----------------------------------------
