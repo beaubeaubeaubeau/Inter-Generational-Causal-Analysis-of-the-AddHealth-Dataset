@@ -416,7 +416,7 @@ These are the actual usable Ns after AID overlap + exposure non-missing + outcom
 4. **Wave V mode restriction** on cognitive tests: In-person + Telephone only. 95% of non-administration is the `995` / `9995` "question not asked" reserve code.
 5. **Reserve-code heterogeneity.** W1–W4 use 6/96/996 (refused), 7/97/997 (skip), 8/98/998 (DK), 9/99/999 (NA). W5 adds 95/995/9995 ("not asked") and Web/Mail modes have no DK option — DK arrives as silent NA.
 6. **`AH_PVT` ~15% missing.** Use `AH_RAW` (~4.3% missing) and re-standardize.
-7. **`PRXPREST` is binary 0/1 in public-use**, not continuous — treat as categorical.
+7. **`PRXPREST` is continuous in public-use.** Range 0.00045–0.774, mean 0.161, std 0.070, 3,920 unique values across N=4,020 non-null in `w1network.sas7bdat`. Treat as a continuous centrality measure (earlier notes in this doc that described it as binary 0/1 were incorrect and have been corrected; see also §2 variable table line for PRXPREST which shows the continuous range).
 8. **Attrition is strongly sex-patterned.** At W5, female retention 64–76% vs male 43–63% within race strata. `GSW5`/`GSW6` correct partially for observed-cause attrition; IPAW or bounding is advisable for longitudinal claims.
 9. **Race construction is hierarchical** in the default `RACE` variable — build from `H1GI6A–E` for flexible coding.
 10. **Age uses month + year only** (day 15 imputed). Use the most recent wave's birthdate for discrepancies.

@@ -61,6 +61,13 @@ VALID_RANGES: Dict[str, Tuple[float, float]] = {
     "C4WD60_2": (0, 15), "C4WD60_3": (0, 15),
     # W5 cognitive
     "C5WD90_1": (0, 15), "C5WD60_1": (0, 15),
+    # W4 cardiometabolic (in-home Section 27 measures)
+    "H4BMI": (10, 80), "H4SBP": (50, 250), "H4DBP": (30, 180),
+    "H4WAIST": (40, 200), "H4BMICLS": (1, 6),
+    # W5 non-cognitive outcomes
+    "H5MN1": (1, 5), "H5MN2": (1, 5),
+    "H5ID1": (1, 5), "H5ID4": (1, 3), "H5ID16": (0, 4),
+    "H5LM5": (1, 3), "H5EC1": (1, 13),
 }
 for L in range(3, 10):
     for suf in ("A", "B"):
@@ -79,6 +86,25 @@ def clean_var(s: pd.Series, name: str) -> pd.Series:
         lo, hi = VALID_RANGES[name]
         s = s.where((s >= lo) & (s <= hi))
     return s
+
+
+def load_outcome(aid: pd.Series, code: str) -> pd.Series:
+    """Return a cleaned numeric outcome series aligned to `aid`.
+
+    Looks up `code` in `w4inhome.parquet` (H4*) or `pwave5.parquet` (H5*).
+    Applies `clean_var` (strips reserve codes via VALID_RANGES where defined).
+    Returns a Series indexed like `aid` with NaN where the respondent has no
+    matching row.
+    """
+    if code.startswith("H4"):
+        src = pd.read_parquet(CACHE / "w4inhome.parquet", columns=["AID", code])
+    elif code.startswith("H5"):
+        src = pd.read_parquet(CACHE / "pwave5.parquet", columns=["AID", code])
+    else:
+        raise ValueError(f"Unrecognized outcome prefix: {code}")
+    src[code] = clean_var(src[code], code)
+    m = pd.DataFrame({"AID": aid.values}).merge(src, on="AID", how="left")
+    return pd.Series(m[code].values, index=aid.index, name=code)
 
 
 def weighted_mean_se(y, w, psu) -> Tuple[float, float, float, int, int]:
@@ -353,6 +379,50 @@ def derive_parent_ed(df: pd.DataFrame) -> pd.Series:
 FRIEND_SLOTS = ["A", "B", "C", "D", "E"]     # 5 friends per gender -> 10 max
 FRIEND_ITEMS_CONTACT = [6, 7, 8, 9, 10]      # past-7-day interaction items
 FRIEND_ITEM_DISCLOSURE = 9                    # "talked about a problem"
+
+
+def quintile_dummies(
+    s: pd.Series, n: int = 5,
+) -> Tuple[pd.DataFrame, pd.Series]:
+    """Cut `s` into `n` equal-count bins by rank; return (k-1 dummies, trend).
+
+    - Dummies reference Q1 (lowest): columns named `q2`, `q3`, ..., `qn`.
+    - Trend is the integer quintile index 1..n (NaN outside valid values).
+    """
+    s = pd.to_numeric(s, errors="coerce")
+    mask = s.notna()
+    q = pd.Series(np.nan, index=s.index, dtype=float)
+    if mask.sum() > 0:
+        ranks = s[mask].rank(method="first")
+        bins = pd.qcut(ranks, q=n, labels=False, duplicates="drop") + 1
+        q.loc[mask] = bins.values
+    dummies = pd.DataFrame(index=s.index)
+    for k in range(2, n + 1):
+        dummies[f"q{k}"] = (q == k).astype(float)
+        dummies.loc[q.isna(), f"q{k}"] = np.nan
+    return dummies, q
+
+
+def neg_control_outcome(aid: pd.Series) -> pd.Series:
+    """HEIGHT_IN (total inches) for each AID.
+
+    Reads W4 in-home H4GH5F (feet, valid 4-7) and H4GH5I (inches, valid 0-11),
+    combines into total inches. Returns a float Series aligned to the input.
+    Replicates the task13_verification.py construction.
+    """
+    w4 = _load_parquet("w4inhome")[["AID", "H4GH5F", "H4GH5I"]].copy()
+    feet = pd.to_numeric(w4["H4GH5F"], errors="coerce").where(
+        lambda s: s.between(4, 7)
+    )
+    inch = pd.to_numeric(w4["H4GH5I"], errors="coerce").where(
+        lambda s: s.between(0, 11)
+    )
+    w4["HEIGHT_IN"] = feet * 12 + inch
+    m = pd.DataFrame({"AID": aid}).merge(
+        w4[["AID", "HEIGHT_IN"]], on="AID", how="left"
+    )
+    m.index = aid.index
+    return m["HEIGHT_IN"]
 
 
 def derive_friendship_grid(df: pd.DataFrame) -> pd.DataFrame:
