@@ -467,8 +467,6 @@ def plot_ahpvt_with_without() -> None:
     ax.set_yticks(y)
     ax.set_yticklabels([f"{r.term} → {r.outcome}" for _, r in d.iterrows()])
     ax.set_xlabel("β (W4 cognition)")
-    ax.set_title("AH_PVT as bad control: β shift when AH_PVT is included\n"
-                 "(large shrinkage = candidate for mediation, not confounding)")
     ax.legend()
     fig.tight_layout()
     save(fig, "sensitivity/ahpvt_with_without.png")

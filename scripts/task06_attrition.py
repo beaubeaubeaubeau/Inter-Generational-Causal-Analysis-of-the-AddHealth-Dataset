@@ -294,10 +294,6 @@ def stacked_bar(pres: pd.DataFrame, out_path: Path) -> None:
     ax.set_xticks(x)
     ax.set_xticklabels([lab for lab, _ in wave_labels], rotation=35, ha="right")
     ax.set_ylabel("W1 AIDs appearing in file (public-use)")
-    ax.set_title(
-        "Public-use appearances per file, stacked by Wave I biological sex\n"
-        "(baseline cohort = 6,504 W1 in-home respondents)"
-    )
     ax.legend(title="Sex (W1)")
     ax.set_ylim(0, max(totals) * 1.12)
     fig.tight_layout()

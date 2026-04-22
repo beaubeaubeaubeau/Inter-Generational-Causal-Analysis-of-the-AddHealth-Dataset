@@ -2,7 +2,7 @@
 
 Chronological log of analytic steps, headline findings, and outstanding uncertainties. Intended as a narrative companion to [addhealth_synthesis.md](addhealth_synthesis.md) (the dataset-reference manual) and [variable_dictionary.md](variable_dictionary.md) (per-code lookup). Each phase below corresponds to one or more scripts in [../scripts/](../scripts/) and artefacts in [../outputs/](../outputs/) + [../img/](../img/).
 
-Terms, variable codes, and dataset-level conventions used here (waves, weights, mode restrictions, reserve codes) are defined in the synthesis and not re-explained; new readers should skim §§1–5 of [addhealth_synthesis.md](addhealth_synthesis.md) first.
+Terms, variable codes, and dataset-level conventions used here (waves, weights, mode restrictions, reserve codes) are defined in the synthesis and not re-explained; new readers should skim §§1–5 of [addhealth_synthesis.md](addhealth_synthesis.md) first. For plain-language definitions of causal-inference vocabulary (*back-door path*, *confounder vs. mediator*, *positivity*, *IPAW*, *front-door*, *collider*, *DAG*, *PSU*, *saturated school*, *negative control*, etc.), see the [synthesis Glossary](addhealth_synthesis.md#glossary) — this journal assumes the glossary's definitions.
 
 ---
 
@@ -44,7 +44,7 @@ Reserve-code handling (6/7/8/9, 96/97/98/99, 995/9995) is codified in `analysis_
 
 Wave-conditional retention is sharply sex- and race-patterned: at W5, female retention runs 64–76 % versus male 43–63 % within race strata, with higher attrition in Black male and Native American cells.
 
-![W1 → W2/W3/W4/W5 attrition stacked by sex × race](../outputs/06_attrition_stacked_bar.png)
+![Public-use W1 → W6 appearances per wave, stacked by W1 biological sex. Baseline is 6,504 W1 in-home respondents; female retention (pink) widens the sex gap at each wave.](../outputs/06_attrition_stacked_bar.png)
 
 Analytic frames were frozen in [outputs/cache/](../outputs/cache/) parquets (`w1inhome`, `w1network`, `w1friendship`, `w3pvt`, `w4inhome`, `pwave5`, and the combined `analytic_primary`) so downstream tasks don't re-read SAS files.
 
@@ -58,11 +58,11 @@ Analytic frames were frozen in [outputs/cache/](../outputs/cache/) parquets (`w1
 
 Ran weighted OLS for each of the 24 exposures against `W4_COG_COMP` under nested adjustment sets L0 → L0+L1 → L0+L1+AHPVT, with cluster-robust SEs on `CLUSTER2` (132 PSUs). Task 11 layered collinearity checks, leave-one-out permutation, saturated-school balance, AHPVT shift audits, placebo permutation, and reserve-code sensitivity; task 13 verified Benjamini–Hochberg FDR, attrition IPAW, negative-control exposures/outcomes, design-effect estimates, PSU counts.
 
-![Coefficient shift when AHPVT is added vs. removed from the primary spec](../img/sensitivity/ahpvt_with_without.png)
+![Each row is one (exposure → W4 cognition) model. Grey circle = β without `AH_PVT` in the adjustment set; red square = β with. Every network centrality shrinks 30–50 % when `AH_PVT` is added — the signature shift that either confounder or mediator interpretations would produce (see [synthesis §5.6 AHPVT callout](addhealth_synthesis.md#56-identification-assumptions-and-target-estimand)).](../img/sensitivity/ahpvt_with_without.png)
 
 **Main finding.** Adjusting for AHPVT attenuates every network-centrality → cognition association by 30–50 %. `ODGX2` (nominations sent) holds the largest stable effect post-adjustment; `IDGX2` (in-degree) attenuates heavily but retains significance; `BCENT10X` (Bonacich) has the largest raw β but attenuates the most. No exposure survives L0+L1+AHPVT with D4 rel-shift < 30 %.
 
-**Uncertainty logged.** Whether AHPVT is a confounder (verbal IQ predicts both social integration and adult cognition) or a mediator of the integration → cognition path. Conditioning on a mediator under-estimates the total effect; this ambiguity is unresolved at this phase and propagates to the screen in Phase 4.
+**Uncertainty logged — load-bearing.** Whether `AH_PVT` is a [confounder](addhealth_synthesis.md#confounder) (verbal IQ independently predicts both social integration and adult cognition — adjustment is *required*) or a [mediator](addhealth_synthesis.md#mediator) of the integration → cognition path (adjustment *under-estimates* the total effect). The two cases produce identical D4 drift, so D4 alone cannot distinguish them. This project's standing assumption is *confounder*; the [synthesis §5.6 AHPVT callout](addhealth_synthesis.md#56-identification-assumptions-and-target-estimand) flags this as the single largest threat to interpretation of any cognitive-outcome finding. Task 16's [front-door](addhealth_synthesis.md#front-door-criterion) / [IV](addhealth_synthesis.md#iv-instrumental-variable) decomposition is the planned resolution.
 
 ---
 
@@ -70,10 +70,10 @@ Ran weighted OLS for each of the 24 exposures against `W4_COG_COMP` under nested
 
 **Task:** 14. **Script:** [task14_causal_screening.py](../scripts/task14_causal_screening.py). **Outputs:** [outputs/14_screening.md](../outputs/14_screening.md), [outputs/14_screening_matrix.csv](../outputs/14_screening_matrix.csv), [outputs/14_shortlist.csv](../outputs/14_shortlist.csv).
 
-Nine-diagnostic screen over 24 W1 social exposures:
+Nine-diagnostic screen over 24 W1 social exposures. Formal pass/fail thresholds and plain-language intuition for each D-code live in [synthesis §6.5](addhealth_synthesis.md#65-causal-screening-diagnostic-battery-d1d9); the list below is a one-line refresher:
 
 - **D1** baseline significance (primary spec L0+L1+AHPVT)
-- **D2** height (`HEIGHT_IN`) negative-control outcome
+- **D2** height (`HEIGHT_IN`) negative-control outcome — **contaminated**, see [§9 note](addhealth_synthesis.md#9-outcome-battery-primary--multi-outcome-extension)
 - **D3** sibling dissociation (target vs. related exposure)
 - **D4** adjustment-set stability (L0 / L0+L1 / L0+L1+AHPVT)
 - **D5** outcome-component consistency (`C4WD90` / `C4WD60` / `C4NUMSCR`)
@@ -82,9 +82,9 @@ Nine-diagnostic screen over 24 W1 social exposures:
 - **D8** saturated-school selection penalty (informational)
 - **D9** hard-coded collider / double-adjustment red flags
 
-![D1–D9 pass/fail grid — 24 exposures × 9 diagnostics on W4_COG_COMP](../img/causal/screening_heatmap.png)
+![Screening heatmap: 24 exposures (rows) × 9 diagnostics (columns) on `W4_COG_COMP`. Green = pass, red = fail, grey = N/A. Right-margin tags are the composite category (Strong / Mixed / Weakened / Drop) and score. Nothing survives D4 adjustment stability under the primary spec — every centrality shifts > 30 % when AHPVT is added.](../img/causal/screening_heatmap.png)
 
-![D4 adjustment stability: β under L0, L0+L1, L0+L1+AHPVT](../img/causal/adjustment_stability.png)
+![D4 adjustment-set stability: each row is one exposure, showing β under L0 (blue), L0+L1 (orange), L0+L1+AHPVT (red) on `W4_COG_COMP`. Rows sorted by relative shift. The horizontal spread per row *is* the hidden-confounding-or-mediation signal; the largest shifts are on `BCENT10X` and the ego-network density measures.](../img/causal/adjustment_stability.png)
 
 ### Phase 4.5 — Adversarial review of the screen
 
@@ -107,11 +107,11 @@ Motivated by the observation that a cognition-only outcome over-weights the AHPV
 
 **Sample sizes.** W4 cardiometabolic: median N ≈ 3,200 for network-gated exposures, ≈ 4,600 for friendship-grid. W5 outcomes: median N ≈ 2,400 network-gated, ≈ 3,400 grid. All 288 (24 × 12) cells have sufficient data.
 
-![Per-outcome count of exposures with p < 0.05, grouped by outcome family](../img/causal/15_per_outcome_pcount.png)
+![Per-outcome count of exposures (of 24) hitting p < 0.05, coloured by outcome group. `H5EC1` adult earnings leads at 12/24; `H5ID1` self-rated health 11/24; `W4_COG_COMP` cognition is mid-pack at 5/24; `H4DBP` diastolic BP is null across the board. Dotted line marks the 24-exposure ceiling.](../img/causal/15_per_outcome_pcount.png)
 
-![Task 16 handoff: 4 exposure → outcome pairs with standardized β ± 1.96·SE](../img/causal/15_handoff_forest.png)
+![Task-16 handoff forest: four (exposure → outcome) pairs plotted on standardized β ± 1.96·SE (per 1-unit exposure, in SDs of outcome). Right-margin annotations give raw β, analytic N, and D4 relative shift. All four estimates clear zero by several SEs; all four pass D4 (rel-shift < 30 %).](../img/causal/15_handoff_forest.png)
 
-![Multi-outcome β heatmap — z-standardized within outcome, * marks p < 0.05](../img/causal/multi_outcome_beta_heatmap.png)
+![Multi-outcome β heatmap — 24 exposures (rows) × 12 non-cognitive outcomes (columns), z-standardized within each outcome so hot/cold is comparable across scales; `*` marks p < 0.05. The `IDGX2` row is uniformly blue across cardiometabolic outcomes (protective); the `H5EC1` column is uniformly warm for peer-network exposures; `H4DBP` is null.](../img/causal/multi_outcome_beta_heatmap.png)
 
 **Cross-outcome-robust exposures (top-3 by p for ≥ 3 outcomes):**
 

@@ -100,16 +100,19 @@ Everything below is organised by the variable's role in the analysis, not by wav
 
 **How to read the N column.** For exposures and outcomes this is the effective N in the task 14 / task 15 analytic frame (already network-gated or mode-gated, reserve codes stripped via [scripts/analysis_utils.py](../scripts/analysis_utils.py) `VALID_RANGES`). For raw codebook variables it's the shipped non-missing N.
 
-**Diagnostic codes** (used throughout; full definitions in [research_journal.md §Phase 4](research_journal.md#phase-4--preliminary-causal-screening-d1d9)):
-- **D1** baseline significance at the primary spec (L0+L1+AHPVT)
-- **D2** height negative-control outcome (contaminated — see [§7](#7-negative-control-outcome))
-- **D3** sibling-dissociation specificity check
-- **D4** adjustment-set stability (β drift across L0 / L0+L1 / L0+L1+AHPVT)
-- **D5** outcome-component consistency (across the 3 W4 cognitive tests)
-- **D6** dose-response monotonicity (continuous only)
-- **D7** positivity / overlap
-- **D8** saturated-school selection penalty (informational)
-- **D9** collider / double-adjustment red flags (hardcoded)
+> **Legend — D-codes used in the findings/caveats columns below.** Formal pass/fail thresholds + plain-language intuition for each diagnostic are in [addhealth_synthesis.md §6.5](addhealth_synthesis.md#65-causal-screening-diagnostic-battery-d1d9). Narrative context in [research_journal.md §Phase 4](research_journal.md#phase-4--preliminary-causal-screening-d1d9). One-line refresher below:
+>
+> - **D1** baseline significance (L0+L1+AHPVT, p < 0.05)
+> - **D2** height negative-control outcome — **contaminated** (see [§2.7](#27-negative-control-outcome)); D2 is reported but not load-bearing for the shortlist
+> - **D3** sibling-dissociation specificity check (same-sign, larger-magnitude target vs. sibling, gap > pooled SE)
+> - **D4** adjustment-set stability: relative β drift across L0 / L0+L1 / L0+L1+AHPVT < 30 % AND sign-stable
+> - **D5** outcome-component consistency across the 3 W4 cognitive tests (cognition only)
+> - **D6** dose-response monotonicity across exposure quintiles (continuous only)
+> - **D7** positivity / overlap: fitted p̂ ∈ (0.02, 0.98), eff_N ≥ 500
+> - **D8** saturated-school selection penalty (informational)
+> - **D9** hard-coded collider / double-adjustment red flags
+
+> ⚠ **AHPVT callout.** Every β that this dictionary annotates for a cognitive outcome comes from the L0+L1+AHPVT primary spec and therefore **conditions on** `AH_PVT` (W1 verbal IQ). If AHPVT is a confounder of the W1-social-integration → cognition path, this is correct; if it's a mediator, the reported β under-estimates the total effect. D4 cannot distinguish the two. See [synthesis §5.6](addhealth_synthesis.md#56-identification-assumptions-and-target-estimand) for the project's standing assumption and the Task-16 resolution plan.
 
 ---
 
@@ -216,7 +219,7 @@ Both items are D9 red-flagged because they are components of the `CESD_SUM` L1 c
 | Code | Label | Wave | N | Kind | Findings | Caveats |
 |---|---|:-:|---:|---|---|---|
 | `W4_COG_COMP` | `[derived]` | W4 | 3,238 (primary frame) | continuous (z-scored) | Used as `y` in every task 10–14 analysis and as the "cognitive" outcome in task 15 (mid-pack at 5/24 significant exposures). | Every exposure fails D4 adjustment stability, with AHPVT contributing most of the drift. See [research_journal.md §Phase 4 main finding](research_journal.md#phase-4--preliminary-causal-screening-d1d9). |
-| `C4WD90_1` | "S14 # WORDS ON LIST RECALLED 90 SEC-W4" | W4 | 5,101 | continuous (0–15) | Immediate-recall component. | Protocol in [addhealth_synthesis.md §4.4](addhealth_synthesis.md#44-wave-iv-cognitive-battery-datawaw4w4inhomesas7bdat). |
+| `C4WD90_1` | "S14 # WORDS ON LIST RECALLED 90 SEC-W4" | W4 | 5,101 | continuous (0–15) | Immediate-recall component. | Protocol in [addhealth_synthesis.md §4.4](addhealth_synthesis.md#4-primary-outcome-cognitive-performance). |
 | `C4WD60_1` | "S14 # WORDS ON LIST RECALLED 60 SEC-W4" | W4 | 5,097 | continuous (0–15) | Delayed-recall component. | |
 | `C4NUMSCR` | "TOTAL SCORE ON NUMBER RECALL TASK-W4" | W4 | 5,102 | continuous (0–7) | Backward-digit-span component. | |
 

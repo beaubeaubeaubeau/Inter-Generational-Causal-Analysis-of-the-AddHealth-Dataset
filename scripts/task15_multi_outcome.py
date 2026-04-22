@@ -190,7 +190,6 @@ def plot_heatmaps(mat: pd.DataFrame) -> None:
                     j + 0.5, i + 0.5, "*",
                     ha="center", va="center", color="black", fontsize=14, fontweight="bold",
                 )
-    ax.set_title("Multi-outcome β standardized per outcome (* p<0.05)")
     ax.set_xlabel("")
     ax.set_ylabel("")
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right")

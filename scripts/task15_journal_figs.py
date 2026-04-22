@@ -67,7 +67,6 @@ def per_outcome_pcount() -> None:
     ax.axvline(24, linestyle=":", color="#888", linewidth=0.8)
     ax.set_xlim(0, 26)
     ax.set_xlabel("# of 24 exposures with p < 0.05")
-    ax.set_title("Breadth of social-exposure signal across outcomes (D1 baseline)")
 
     # Legend for group colors.
     from matplotlib.patches import Patch
@@ -133,7 +132,6 @@ def handoff_forest() -> None:
     ax.set_yticks(range(len(df)))
     ax.set_yticklabels(df["label"], fontsize=10)
     ax.set_xlabel("Standardized beta  (per 1-unit exposure, in SDs of outcome)")
-    ax.set_title("Task 16 handoff: recommended (exposure -> outcome) pairs")
     # Extra right-side room for annotations.
     ax.set_xlim(min(df["lo"].min(), 0) * 1.2 - 0.01, max(df["hi"].max(), 0) * 1.2 + 0.01)
     plt.subplots_adjust(right=0.55)

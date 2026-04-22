@@ -578,7 +578,6 @@ def plot_figures(results: pd.DataFrame) -> None:
     ax.set_yticks(range(len(results)))
     ax.set_yticklabels([f"{r.exposure}  ({r.group})"
                         for _, r in results.iterrows()])
-    ax.set_title("Screening diagnostics: green=pass, red=fail, grey=NA")
     # Overlay pass-count badges.
     for i, (_, r) in enumerate(results.iterrows()):
         ax.text(len(labels) - 0.5 + 0.8, i,
@@ -648,7 +647,6 @@ def plot_figures(results: pd.DataFrame) -> None:
     ax.set_yticks(range(len(order)))
     ax.set_yticklabels(order["exposure"].values)
     ax.set_xlabel("beta on W4_COG_COMP across adjustment sets")
-    ax.set_title("D4 adjustment-set stability")
     ax.legend(loc="lower right", frameon=True)
     plot_style.save(fig, "causal/adjustment_stability.png")
 

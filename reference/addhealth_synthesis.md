@@ -381,6 +381,43 @@ Wave V prefix structure (`data/W5/pwave5.xpt`):
 
 18 adjective items under `H3BM*` (Section 20 of Wave III) are visible in public-use. Exact labels for the retained items: `H3BM8` "S20Q8 TRADITIONAL SEX ROLES BEST-W3", `H3BM9` "S20Q9 R DEFENDS BELIEFS-W3", `H3BM10` "S20Q10 R IS AFFECTIONATE-W3", …, `H3BM36` "S20Q36 R IS AGGRESSIVE-W3". Derived scale scores are not in public-use.
 
+### 5.6 Identification assumptions and target estimand
+
+This is the single most important section for anyone reading coefficient tables or handoff recommendations. What follows is the causal model the screen assumes, the estimand we are targeting, and where the assumption is load-bearing.
+
+> ⚠ **AHPVT is assumed to be a confounder, not a mediator.** Every β reported in this project (tasks 10–15) conditions on `AH_PVT` (W1 verbal IQ) as part of the primary spec L0+L1+AHPVT. This is correct if AHPVT causally predicts both adolescent social integration and adult outcomes independently; it is **wrong** if AHPVT is instead on the causal path from social integration to cognition, in which case the adjustment shrinks the total effect toward zero. Task 14's D4 diagnostic measures the β drift when AHPVT is added but **cannot distinguish these two cases**. Task 16 will do so via a front-door / IV decomposition. Until then, every "weak / weakened" finding on a cognitive outcome should be read as "*weak conditional on the confounder interpretation*."
+
+**Target estimand.** The **total effect** of a W1 social-exposure X on outcome Y measured at W4 (cognition, cardiometabolic) or W5 (SES, mental health, functional) — i.e. the contrast E[Y|do(X=x1)] − E[Y|do(X=x0)] averaged over the analytic-cell population. We are not targeting a direct-only or indirect-only effect in the screen.
+
+**Assumed causal structure** (in plain DAG terms, no graph rendered here):
+
+- **Common causes** C flow into both X and Y: demographics (`BIO_SEX`, `RACE`, `PARENT_ED`), W1 mental/health state (`CESD_SUM`, `H1GH1`), and — under the confounder interpretation — W1 verbal IQ (`AH_PVT`).
+- **Assumed adjacencies**: C → X, C → Y, X → Y. No assumed direct adolescent → adolescent reverse arrow (X is measured at W1, Y at W4 or W5).
+- **Assumed absent**: unmeasured confounders (school climate, family SES beyond parental education, genetic variants). **This is the most aggressive assumption** and is what the D2 negative-control outcome was meant to test; the height NC is contaminated (see [§9](#9-outcome-battery-primary--multi-outcome-extension)) so this assumption is currently weak.
+- **Mediators** deliberately *not* adjusted for: W5 social support (`H5SS*`), W4 biomarker state (CRP, glucose) when outcome is W5. Adjusting for these would block a portion of the target total effect.
+
+**Adjustment-set ladder.** L0 → L0+L1 → L0+L1+AHPVT is designed so the β drift across the three (D4) measures *how much* of the raw signal the covariate tier explains. It is not three competing models; it is one primary (L0+L1+AHPVT) with two diagnostic reductions.
+
+| Set | Closes back-doors through | Identification role |
+|---|---|---|
+| L0 | Demographics (sex, race, parental ed) | Minimum socially-acceptable adjustment; most β estimates will move substantially when L1 is added if W1 mental/health state is a confounder |
+| L0+L1 | + CES-D + self-rated health at W1 | Blocks confounding via W1 affective / somatic state |
+| L0+L1+AHPVT | + W1 verbal IQ | **Primary spec.** Closes the remaining IQ-driven back-door under the confounder interpretation |
+
+**Positivity / overlap** is required for every stratum of the adjustment set at every level of X. The screen checks this empirically via D7 (Q5-vs-Q1 logit for continuous X; binary balance for binary X; pass = p̂ ∈ (0.02, 0.98) and effective N ≥ 500). **Structural positivity violations** in public-use:
+
+- **Saturated-school gating** (W1 network exposures): ~32 % of W1 respondents are excluded because their school did not meet the ≥75 % roster-participation threshold. The target estimand for network exposures is therefore the ATE within saturated schools, not the ATE across all Grade-7–12 adolescents.
+- **Mode restriction** (W5 cognitive outcomes): only W5 respondents in modes {I, T} received the cognitive battery (~824 of 4,196 once intersected with network data). For any W5 cognitive outcome the target is the ATE within the mode-eligible subpopulation, and generalisability to the full W5 cohort requires an additional IPAW stage.
+- **W4 → W5 attrition.** Differential retention by sex × race (see [§2.1](#21-design) and the [research_journal.md §Phase 2](research_journal.md) chart). Formal W5-outcome estimation needs **inverse-probability-of-attrition weighting (IPAW)**: fit a logistic model for "appears in W5" on L0+L1+AHPVT, take the inverse fitted probability, multiply into `GSW5`. The screen uses `GSWGT4_2` across both W4 and W5 outcomes as a comparability shortcut, not an estimation-grade weight.
+
+**What the screen does NOT identify without additional assumptions:**
+
+- Direct-only or indirect-only effects (needs mediator formula + no-unmeasured-mediator-outcome confounding; task 16 territory).
+- Population ATE across non-saturated schools (positivity fails by design).
+- Any W6 outcome (the Add CAPS cognitive battery is restricted-use; no public-use outcome at W6 maps to the W1 exposure set).
+
+See the [Glossary](#glossary) for plain-language definitions of *back-door path*, *confounder vs. mediator*, *positivity*, *negative-control outcome*, and *IPAW*.
+
 ---
 
 ## 6. Analytic feasibility — joint-complete sample sizes
@@ -408,6 +445,28 @@ These are the actual usable Ns after AID overlap + exposure non-missing + outcom
 
 **Impossible in public-use:** W6 as a cognitive outcome; friend-level characteristics; custom networks beyond the 439 pre-computed.
 
+### 6.5 Causal-screening diagnostic battery (D1–D9)
+
+Every exposure in task 14 passes through nine diagnostics. Each D tests a specific identification assumption or data-quality condition; passing them together is necessary but not sufficient for a causal interpretation. Full implementation: [scripts/task14_causal_screening.py](../scripts/task14_causal_screening.py). Per-exposure pass/fail grid: [outputs/14_screening_matrix.csv](../outputs/14_screening_matrix.csv). Narrative walk-through: [research_journal.md §Phase 4](research_journal.md#phase-4--preliminary-causal-screening-d1d9).
+
+Terms used below (see [Glossary](#glossary) for plain-language intuition): *back-door path*, *confounder vs. mediator*, *negative-control outcome*, *positivity*, *collider*.
+
+| # | Name | What it checks | Formal pass criterion | Fail means |
+|:-:|---|---|---|---|
+| **D1** | Baseline significance | Is there any signal at the primary spec (L0+L1+AHPVT) before stability / specificity checks? | p < 0.05 on the exposure coefficient in a WLS fit with `GSWGT4_2` + cluster-robust SE on `CLUSTER2` | No detectable marginal association; later diagnostics are informational only |
+| **D2** | Negative-control outcome | Does the exposure predict an outcome it *shouldn't* (`HEIGHT_IN`)? If yes, unmeasured confounding is likely. | p ≥ 0.10 on exposure → adult height, under the primary adjustment set | NC-level confounding is detected — but see the contamination caveat in [§9](#9-outcome-battery-primary--multi-outcome-extension) |
+| **D3** | Sibling dissociation | Is the target effect larger than a "related but weaker" sibling exposure, and in the same sign? Same-school / same-grid contrast. | `sign(β_target) == sign(β_sibling)` **AND** `\|β_target\| > \|β_sibling\|` **AND** `\|β_target − β_sibling\| > sqrt(se_t² + se_s²)` | Target and sibling are indistinguishable → target probably isn't capturing exposure-specific signal |
+| **D4** | Adjustment-set stability | How much does β drift as the adjustment set expands L0 → L0+L1 → L0+L1+AHPVT? Large drift = hidden confounding OR hidden mediation. | Relative shift `(max − min) / \|β_primary\| < 0.30` **AND** sign stable across all three | β depends on which covariates you include — causal identification is not closed by the assumed DAG |
+| **D5** | Outcome-component consistency | Do the three W4 cognitive sub-tests (immediate/delayed word recall, digit span) line up in sign? Cognition only. | All three component β in the same direction as the composite, no opposite-sign dissent | Composite signal is driven by one sub-test; spurious or narrow construct |
+| **D6** | Dose-response monotonicity | For a continuous exposure, does the outcome move monotonically across exposure quintiles? | Spearman ρ across quintile means ≥ 0.6, no mid-range inversion | Non-monotonic response — linear-in-X spec is mis-specified |
+| **D7** | Positivity / overlap | Is there non-zero probability of every exposure level at every covariate stratum? Q5-vs-Q1 logit (continuous) or binary balance (binary). | Fitted p̂ ∈ (0.02, 0.98) AND effective N ≥ 500 after overlap trimming | No usable comparison group in parts of covariate space; estimate is extrapolation |
+| **D8** | Saturated-school selection penalty | Informational. How much of W1 is lost to the network-file saturation gate for this specific exposure? | Reports N(analytic) / N(W1) ratio; no pass/fail threshold | External-validity caveat — estimand is within-saturated-schools |
+| **D9** | Collider / double-adjustment red flags | Hard-coded list of known bad-combination exposures (e.g. using `H1FS13` as exposure while adjusting for `CESD_SUM`, which contains `H1FS13`). | Not on the red-flag list | Collider bias or mechanical double-counting; drop from shortlist |
+
+**Composite score.** Each exposure is scored 0–8 based on passes across D1–D9 (D8 is informational; red-flags discount the score). Categories: **Strong** (score ≥ 7), **Mixed** (5–6), **Weakened** (3–4), **Drop** (< 3 or D9 red flag). The task-16 handoff is drawn from Strong + Mixed, never from Drop.
+
+**Why the battery is not sufficient.** Passing D1–D9 does *not* prove a causal effect — it only rules out nine specific failure modes. Unmeasured confounders outside the L0+L1+AHPVT set (school climate, early-childhood cognition, family SES beyond parental education) are still possible. Task 16's job is to bound those via front-door decomposition, E-value-style sensitivity, and a cleaner NC battery.
+
 ---
 
 ## 7. Data-quality gotchas
@@ -418,8 +477,8 @@ These are the actual usable Ns after AID overlap + exposure non-missing + outcom
 4. **Wave V mode restriction** on cognitive tests: In-person + Telephone only. 95% of non-administration is the `995` / `9995` "question not asked" reserve code.
 5. **Reserve-code heterogeneity.** W1–W4 use 6/96/996 (refused), 7/97/997 (skip), 8/98/998 (DK), 9/99/999 (NA). W5 adds 95/995/9995 ("not asked") and Web/Mail modes have no DK option — DK arrives as silent NA.
 6. **`AH_PVT` ~15% missing.** Use `AH_RAW` (~4.3% missing) and re-standardize.
-7. **`PRXPREST` is continuous in public-use.** Range 0.00045–0.774, mean 0.161, std 0.070, 3,920 unique values across N=4,020 non-null in `w1network.sas7bdat`. Treat as a continuous centrality measure (earlier notes in this doc that described it as binary 0/1 were incorrect and have been corrected; see also §2 variable table line for PRXPREST which shows the continuous range).
-8. **Attrition is strongly sex-patterned.** At W5, female retention 64–76% vs male 43–63% within race strata. `GSW5`/`GSW6` correct partially for observed-cause attrition; IPAW or bounding is advisable for longitudinal claims.
+7. **`PRXPREST` is continuous in public-use.** Range 0.00045–0.774, mean 0.161, std 0.070, 3,920 unique values across N=4,020 non-null in `w1network.sas7bdat`. Treat as a continuous centrality measure.
+8. **Attrition is strongly sex-patterned.** At W5, female retention 64–76% vs male 43–63% within race strata. `GSW5`/`GSW6` correct partially for observed-cause attrition; [IPAW](#glossary) or bounding is advisable for longitudinal claims (see [§5.6](#56-identification-assumptions-and-target-estimand)).
 9. **Race construction is hierarchical** in the default `RACE` variable — build from `H1GI6A–E` for flexible coding.
 10. **Age uses month + year only** (day 15 imputed). Use the most recent wave's birthdate for discrepancies.
 
@@ -474,9 +533,16 @@ The primary design targets W4 cognition (`W4_COG_COMP`, a z-score composite of `
 | `H5MN2` | "S13Q2 LAST MO CONFID HANDLE PERS PBMS—W5" | W5 | 5-point Likert | `GSWGT4_2` | 2,380 | secondary screen | PSS-4 component, **reverse-scored direction** vs `H5MN1` |
 | `H5LM5` | "S3Q5 CURRENTLY WORK—W5" | W5 | 3-level | `GSWGT4_2` | 2,436 | secondary screen | Not binary: {1=yes, 2=no temp absent, 3=no not employed}. Task16 should recode before logistic estimation |
 | `H5EC1` | "S4Q1 INCOME PERS EARNINGS [W4–W5]—W5" | W5 | bracketed 1–13 | `GSWGT4_2` | 2,413 | secondary screen | **Bracketed dollars, not raw income** (1 = <$5k, 13 = $250k+). Treat as ordinal |
-| `HEIGHT_IN` | derived in inches from `H4SE2`/`H4SE3` | W4 | continuous | `GSWGT4_2` | 3,392 | negative control | D2 diagnostic. **Contaminated NC**: adolescent height is known to correlate with peer popularity, so D2 failure on centralities is not conclusive proof of confounding |
+| `HEIGHT_IN` | derived in inches from `H4SE2`/`H4SE3` | W4 | continuous | `GSWGT4_2` | 3,392 | negative control (contaminated) | D2 diagnostic. Adolescent height is known to correlate with peer popularity, so D2 failure on centralities is *not* conclusive proof of confounding |
 
-> **Weight caveat.** `GSWGT4_2` is used uniformly across all 14 outcomes for screening — this is statistically incorrect for the W5 outcomes (where the design-correct weight is `GSW5` or `GSW145`/`GSW1345`), but preserves rank-order across outcomes for a *comparative* screen. Formal causal estimation in Task 16 should: (1) switch to `GSW5` + IPAW for W4→W5 attrition when the outcome is W5-observed, (2) retain `GSWGT4_2` for pure-W4 outcomes, and (3) explicitly model the ~824-row overlap between saturated-school network respondents and W5 cognitive-eligible (mode ∈ {I, T}) respondents before declaring a point estimate on longitudinal pathways.
+> **How to read D2 results given the contaminated NC.** The task 14 D2 column is reported for transparency but is **not load-bearing** for the shortlist. We do not drop an exposure from the Strong / Mixed category on the basis of D2 alone; we *do* report D2 passes as weak corroboration of no NC-level confounding. A D2 fail on network-centrality exposures (`IDGX2`, `BCENT10X`) is treated as ambiguous — it could indicate unblocked confounding, **or** it could reflect the known height → peer-status pathway. Task 16 will introduce a cleaner NC battery (blood type, age at menarche, hand-dominance, residential stability pre-W1) to resolve this; until then any handoff recommendation should be caveated as "D2-unverified." See also [research_journal.md §Phase 4 critique](research_journal.md#phase-4--preliminary-causal-screening-d1d9).
+
+> **Weight caveat and IPAW for W5 outcomes.** `GSWGT4_2` is used uniformly across all 14 outcomes for screening — this is a comparability shortcut that preserves rank-order across outcomes for a *screen*, but is not an estimation-grade weight for W5 outcomes. Formal causal estimation in Task 16 should:
+>
+> 1. **Use `GSW5` for W5 outcomes, `GSWGT4_2` for pure-W4 outcomes.** Each wave's cross-sectional weight targets a specific population (W4-retained respondents vs. W5-retained respondents).
+> 2. **Layer IPAW on top of `GSW5`.** `GSW5` corrects for **observed** attrition patterns the Add Health team modeled (sex, race, region), but not for attrition that is differential on W1 covariates or exposure. [IPAW](#glossary) = fit a logistic model for "appears in W5 mode-eligible cell" on L0+L1+AHPVT + exposure, compute the inverse fitted probability, and multiply into `GSW5`. This targets the W5 cognition/SES/mental-health outcome's ATE in the broader population that W4 respondents were drawn from.
+> 3. **Re-check positivity under `GSW5` + IPAW.** Extreme IPAW weights (> 95th percentile) should be trimmed or stabilized; document stabilized effective N.
+> 4. **Bound, don't adjust**, when the full covariate set for a proper IPAW fit isn't observed (e.g. school saturation). Prefer Manski-style bounds to a speculative weight.
 
 ### Key task-15 findings
 
@@ -520,10 +586,90 @@ See also: [feasibility_summary.md](feasibility_summary.md) for the empirical pro
 
 ---
 
+## Glossary
+
+Plain-language definitions of the causal-inference and survey-statistics vocabulary used throughout the reference set. Each entry points to the section in this document where the concept first appears and explains *why* it matters for the project. Alphabetical.
+
+### Back-door path
+<a id="glossary-back-door-path"></a>
+An indirect route from the exposure X to the outcome Y through a common ancestor C (C → X and C → Y), rather than through the intended causal channel X → Y. Back-door paths create *spurious* associations that look like causation. **Why it matters**: every unblocked back-door path biases the causal estimate. The job of the adjustment set ([§5.6](#56-identification-assumptions-and-target-estimand)) is to "close" all back-door paths by conditioning on at least one variable on each path. First used in [§7 pitfall #1 context](#7-data-quality-gotchas); formalised in [§5.6](#56-identification-assumptions-and-target-estimand).
+
+### CASI (Computer-Assisted Self-Interview)
+Sensitive items (drug use, sexual behaviour, mental-health items under `H5MN*`) are delivered via respondent-controlled screen so an interviewer is not in the loop. Higher truth-telling but more item non-response. First used in [§5.4](#54-wave-v-adult-contemporaneous-covariates).
+
+### Cluster-robust standard error
+A standard error that accounts for within-PSU correlation by treating each cluster (school pair = `CLUSTER2`) as a unit for variance computation. **Why it matters**: nominal OLS SEs assume independent observations. Add Health is school-clustered, so nominal SEs are too small; cluster-robust SEs are wider and more honest. First used in [§2.1](#21-design).
+
+### Collider
+A variable jointly *caused* by two others (X → C ← Z). **Why it matters**: conditioning on a collider *opens* a spurious association between its causes, the opposite of what you want. Example: if peer centrality and depression both cause school belonging, adjusting for school belonging creates a spurious centrality–depression correlation. D9 in the diagnostic battery ([§6.5](#65-causal-screening-diagnostic-battery-d1d9)) flags known-collider exposure choices.
+
+### Confounder
+A common cause of both exposure and outcome — adjusting for it is *required* to identify the causal effect. **Why it matters**: contrast with mediator — the two look the same empirically (both shift β when added to the model) but call for opposite treatment. The [AHPVT callout](#56-identification-assumptions-and-target-estimand) is the project's load-bearing confounder-vs-mediator ambiguity. First used in [§5.6](#56-identification-assumptions-and-target-estimand).
+
+### DAG (Directed Acyclic Graph)
+A flowchart where nodes are variables and arrows run from causes to effects, with no cycles. **Why it matters**: drawing a DAG forces you to make causal assumptions explicit, and once it's drawn, graph-theoretic rules tell you which covariates to adjust for. This project does not render a full DAG but describes one textually in [§5.6](#56-identification-assumptions-and-target-estimand).
+
+### Design effect (DEFF)
+Ratio of the true variance under the complex design to the variance under simple random sampling of the same N. **Why it matters**: DEFF > 1 means your 3,500-observation sample behaves like a smaller SRS sample for inference purposes. Audited in [outputs/13_deff.csv](../outputs/13_deff.csv).
+
+### Dose-response monotonicity
+The expectation that as exposure increases, the outcome changes in a consistent direction — no plateaus, inversions, or threshold effects. **Why it matters**: D6 in the diagnostic battery. A non-monotonic dose-response can signal non-linearity, effect heterogeneity, or misspecification of the linear-in-X model.
+
+### Effective N (eff N)
+Sample size adjusted for design effect and, where relevant, weight dispersion: `eff_N = N / DEFF` or more generally `eff_N = (Σw)² / Σw²`. **Why it matters**: D7 positivity check requires eff_N ≥ 500 post-trimming, not raw N. See [§6.5](#65-causal-screening-diagnostic-battery-d1d9).
+
+### Front-door criterion
+A causal identification strategy that bounds the X → Y effect through a mediator M when back-door adjustment fails (because unmeasured confounders exist). Requires X → M → Y with no direct X → Y, M fully mediating, and no unmeasured M–Y confounders. **Why it matters**: Task 16's plan for distinguishing whether AHPVT is a confounder or mediator of the social-integration → cognition path.
+
+### Identification (identifying assumption, identification strategy)
+The set of causal assumptions under which a statistical estimand (e.g. a regression coefficient) equals the causal estimand of interest (e.g. E[Y|do(X)]). **Why it matters**: β̂ is always estimable; whether it equals the causal effect depends on whether the identifying assumptions hold. [§5.6](#56-identification-assumptions-and-target-estimand) lists this project's assumptions.
+
+### IPAW (Inverse-Probability-of-Attrition Weighting)
+A reweighting scheme that inflates the weight on respondents who *remained* in the study to compensate for attrition of similar respondents. Computed as `w_IPAW = 1 / Prob(remain | covariates)`. **Why it matters**: W4 → W5 attrition is sex-patterned; cross-sectional W5 weights `GSW5` only partially correct for it. Formal W5 estimation should apply IPAW on top of `GSW5`. See [§5.6](#56-identification-assumptions-and-target-estimand) and outstanding uncertainty #3 in [research_journal.md](research_journal.md).
+
+### IV (Instrumental Variable)
+A variable Z that affects the exposure X but not the outcome Y except through X, and shares no common cause with Y. Used to identify X → Y even under unmeasured confounding. **Why it matters**: a fallback identification strategy for Task 16 if front-door is not credible.
+
+### Mediator
+A variable on the causal path X → M → Y. **Why it matters**: adjusting for M blocks part of the total effect, *shrinking β toward zero*. This is the opposite of what adjusting for a confounder does (which should reveal the true β by removing bias). The two operations look identical in a regression table — only a DAG (or a front-door / IV decomposition) can tell them apart. See [AHPVT callout, §5.6](#56-identification-assumptions-and-target-estimand).
+
+### Mode (W5 survey mode)
+The channel through which the W5 interview was administered: W = Web, I = In-person, M = Mail, T = Telephone, S = Spanish CAPI. **Why it matters**: cognitive items were administered only in I + T, restricting the W5 cognitive analytic cell to ~624 of 4,196. See [§4.5](#45-wave-v-cognitive-battery-datawaw5pwave5xpt).
+
+### Negative-control outcome (NC)
+An outcome Y* that, under the assumed causal model, should **not** be affected by X. If X still predicts Y*, unmeasured confounding is implicated. **Why it matters**: D2 in the diagnostic battery uses `HEIGHT_IN`. The NC is contaminated (adolescent height correlates with peer popularity), so failures on network exposures are ambiguous. See [§9](#9-outcome-battery-primary--multi-outcome-extension).
+
+### Positivity (overlap)
+The assumption that every level of the exposure has non-zero probability of occurring at every level of the covariates. Formally: P(X = x | C = c) > 0 for all (x, c). **Why it matters**: without positivity, causal estimates in the violated region are extrapolations beyond the data, not causal effects. D7 in the diagnostic battery tests positivity empirically. Structural positivity violations (saturated-school gating, W5 mode restriction) are documented in [§5.6](#56-identification-assumptions-and-target-estimand).
+
+### Post-stratification weight
+A weight that re-scales the sample so that known marginal distributions (e.g. age × sex × race) match the population. **Why it matters**: `GSWGT4_2` is a post-stratified weight. Post-stratification corrects for differential sampling and non-response, not for unmeasured confounding.
+
+### PSU (Primary Sampling Unit)
+The first-stage unit in a multistage sample; for Add Health this is the high-school / feeder-middle-school pair (`CLUSTER2`, 132 PSUs). **Why it matters**: cluster-robust SEs, design effects, and `svyset` all reference the PSU. First used in [§2.2](#22-design-variables-in-public-use).
+
+### Reserve code
+Non-substantive codes on a variable indicating refusal, don't know, skip, or not-administered (W1–W4: 6/96/996 etc.; W5 adds 95/995/9995 for "not asked"). **Why it matters**: treating reserve codes as substantive values (e.g., summing them into a scale) silently corrupts every downstream statistic. `analysis_utils.clean_var` + `VALID_RANGES` strip them. See [§7 pitfall #5](#7-data-quality-gotchas).
+
+### Saturated school
+A school where ≥ 75 % of the student roster participated in the W1 In-School Questionnaire. **Why it matters**: network centralities (in-degree, etc.) require knowing who nominated the respondent, so they are only defined in saturated schools. ~32 % of W1 respondents are in non-saturated schools; their network variables are structurally missing. First used in [§3.1](#31-wave-i-public-use-network-file--pre-computed-sociometric-measures); positivity consequences in [§5.6](#56-identification-assumptions-and-target-estimand).
+
+### Sibling dissociation (D3)
+A specificity check: the *target* exposure should have a larger effect than a *sibling* exposure (a related variable expected to carry less of the causal signal), and both should move in the same direction. **Why it matters**: a target with a smaller or opposite-signed effect than its sibling is probably not capturing exposure-specific signal. Formalised in [§6.5](#65-causal-screening-diagnostic-battery-d1d9).
+
+### Stratum
+The second design dimension (after clustering) in a complex survey. **Why it matters**: stratum information is *not* in the public-use Add Health distribution. Per the Add Health user guide, omitting stratum "only minimally affects the standard errors," so this project sets stratum to empty in `svyset`. First used in [§2.2](#22-design-variables-in-public-use).
+
+### TFN (Total Friendship Nominations)
+The W1 In-School Questionnaire asked each student to nominate up to 5 male + 5 female friends from the school roster. Centralities tagged with "TFN" (e.g. `IDGX2` "In-Degree: TFN") are computed on this 10-nomination-cap network. See [§3.1](#31-wave-i-public-use-network-file--pre-computed-sociometric-measures).
+
+---
+
 ## Changelog
 
 Reverse-chronological. Only entries that can be verified from the repo / git history or the current session.
 
+- **2026-04-21** — Reviewer-feedback pass (causal-inference PhD student + math/CS undergrad): added §5.6 "Identification assumptions and target estimand" with starred AHPVT confounder-vs-mediator callout and the assumed-DAG / positivity / IPAW narrative; added §6.5 "Causal-screening diagnostic battery (D1–D9)" with formal pass/fail thresholds and plain-language intuition per diagnostic; expanded the §9 weight caveat into an explicit IPAW recipe and added a "how to read D2 under the contaminated NC" callout; added a plain-language [Glossary](#glossary) appendix with anchor links used throughout the reference set. Pitfall #7 (PRXPREST) trimmed — the stale "earlier notes were incorrect" apology is removed now that the root cause is fixed in [scripts/task05_weighted_descriptives.py](../scripts/task05_weighted_descriptives.py) and the regenerated [outputs/05_weighted_descriptives.md](../outputs/05_weighted_descriptives.md).
 - **2026-04-21** — §9 rewritten from "Pivot option — cardiometabolic / vascular outcomes" to "Outcome battery: primary + multi-outcome extension" covering the 12 Task 15 outcomes + primary cognition + height NC (14-row outcome table with weight caveat callout). §10 deliverables index extended from task 7 through task 15. §2.5 now points readers to the new [variable_dictionary.md](variable_dictionary.md). This Changelog section added.
 - **2026-04-20** — Pitfall #7 (§7) corrected: `PRXPREST` was previously described as a binary 0/1 variable, which contradicted §3.1 line 117 showing the continuous range [0, 0.77]. Corrected to "continuous in public-use" with empirical range / mean / std and an explicit note that earlier binary descriptions were wrong.
 - **Earlier** — Initial merged synthesis from v2 feasibility report + documentation report + empirical feasibility summary. See `git log reference/addhealth_synthesis.md` for prior history.
