@@ -116,7 +116,7 @@ Everything below is organised by the variable's role in the analysis, not by wav
 > - **D8** saturated-school selection penalty (informational)
 > - **D9** hard-coded collider / double-adjustment red flags
 
-> ⚠ **AHPVT callout.** Every β that this dictionary annotates for a cognitive outcome comes from the L0+L1+AHPVT primary spec and therefore **conditions on** `AH_PVT` (W1 verbal IQ). If AHPVT is a confounder of the W1-social-integration → cognition path, this is correct; if it's a mediator, the reported β under-estimates the total effect. D4 cannot distinguish the two. See [synthesis §5.6](addhealth_synthesis.md#56-identification-assumptions-and-target-estimand) for the project's standing assumption and the Task-16 resolution plan.
+> ⚠ **AHPVT callout.** `AH_PVT` (W1 verbal IQ) serves as the **W1 baseline cognitive measure**. Every β this dictionary annotates for a cognitive outcome comes from the L0+L1+AHPVT primary spec, which conditions on `AH_PVT` and therefore reports an **approximate change-from-baseline / trajectory** estimate ("where you ended up given where you started"), not a level-on-level association. Caveats: AHPVT is *vocabulary* (crystallized) while `W4_COG_COMP` is word-recall + digit-span (more fluid) — AHPVT is a *proxy* baseline, not an identical-construct pre-test. The strict mediator reading (years of pre-W1 social integration → AHPVT → adult cognition) is implausible-but-not-impossible and is downgraded to a Task-16 sensitivity check (front-door decomposition). See [synthesis §5.6 trajectory callout](addhealth_synthesis.md#56-identification-assumptions-and-target-estimand) for the full caveats.
 
 ---
 

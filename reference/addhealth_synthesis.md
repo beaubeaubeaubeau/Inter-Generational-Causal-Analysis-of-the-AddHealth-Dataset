@@ -373,38 +373,43 @@ Wave V prefix structure (`data/W5/pwave5.xpt`):
 
 This is the single most important section for anyone reading coefficient tables or handoff recommendations. What follows is the causal model the screen assumes, the estimand we are targeting, and where the assumption is load-bearing.
 
-> ⚠ **AHPVT is assumed to be a confounder, not a mediator.** Every β reported in this project (tasks 10–15) conditions on `AH_PVT` (W1 verbal IQ) as part of the primary spec L0+L1+AHPVT. This is correct if AHPVT causally predicts both adolescent social integration and adult outcomes independently; it is **wrong** if AHPVT is instead on the causal path from social integration to cognition, in which case the adjustment shrinks the total effect toward zero. Task 14's D4 diagnostic measures the β drift when AHPVT is added but **cannot distinguish these two cases**. Task 16 will do so via a front-door / IV decomposition. Until then, every "weak / weakened" finding on a cognitive outcome should be read as "*weak conditional on the confounder interpretation*."
+> ⚠ **AHPVT serves as the W1 baseline cognitive measure; cognition-outcome estimands are trajectory-adjusted, not level-on-level.** Adjusting for `AH_PVT` (W1 verbal IQ) in a regression of `W4_COG_COMP` on adolescent social integration converts a level-on-level association into an approximate change-from-baseline contrast — i.e. "where you ended up cognitively, *given where you started*." Under the project's research question (cognitive **trajectory** from adolescence into mid-life), this is the right adjustment. The earlier confounder-vs-mediator framing is downgraded: only the strict mediation reading (years-of-pre-W1 social integration → AHPVT → adult cognition) would invalidate it, and that reading requires social experiences before age 12–19 to have causally moved verbal IQ measurably — implausible-but-not-impossible. The trajectory interpretation also rests on three explicit caveats:
+>
+> 1. **Construct mismatch.** AHPVT measures crystallized vocabulary; `W4_COG_COMP` measures fluid memory (word recall) + working memory (digit span). The two are correlated (literature: r ≈ 0.5–0.7) but not identical. AHPVT is a *proxy* baseline for general cognitive ability, not an identical-construct pre-test. Treat the trajectory β as "trajectory under a vocabulary-anchored baseline."
+> 2. **Vocabulary-as-baseline assumes general-g loading.** The interpretation rests on AHPVT being a stable-trait measure of general cognitive ability (g-loaded) rather than a domain-specific verbal skill. If AHPVT picks up specifically verbal experience that is itself shaped by social integration, the proxy leaks.
+> 3. **Task 16 front-door** is now a *sensitivity* check, not a load-bearing alternative model. It quantifies how much the trajectory β changes if you assume the strict mediator reading; the *primary* report is the trajectory-adjusted β.
 
-**Target estimand.** The **total effect** of a W1 social-exposure X on outcome Y measured at W4 (cognition, cardiometabolic) or W5 (SES, mental health, functional) — i.e. the contrast E[Y|do(X=x1)] − E[Y|do(X=x0)] averaged over the analytic-cell population. We are not targeting a direct-only or indirect-only effect in the screen.
+**Target estimand.** The **total effect of W1 social integration on the W4 / W5 outcome's deviation from its baseline-cognition prediction** — i.e. for cognitive outcomes, the trajectory contrast E[Y(x₁) − Y(x₀) | baseline = AHPVT]; for non-cognitive outcomes, the population total effect E[Y(x₁) − Y(x₀)] in the analytic cell. Throughout the project the estimand is **partial / conditional on baseline**, not a population ATE on cognition level.
 
-**Assumed causal structure** (in plain DAG terms, no graph rendered here):
+**Assumed causal structure** (the [DAG library](dag_library.md) renders this graphically per outcome family; the textual sketch is here):
 
-- **Common causes** C flow into both X and Y: demographics (`BIO_SEX`, `RACE`, `PARENT_ED`), W1 mental/health state (`CESD_SUM`, `H1GH1`), and — under the confounder interpretation — W1 verbal IQ (`AH_PVT`).
-- **Assumed adjacencies**: C → X, C → Y, X → Y. No assumed direct adolescent → adolescent reverse arrow (X is measured at W1, Y at W4 or W5).
-- **Assumed absent**: unmeasured confounders (school climate, family SES beyond parental education, genetic variants). **This is the most aggressive assumption** and is what the D2 negative-control outcome was meant to test; the height NC is contaminated (see [§9](#9-outcome-battery-primary--multi-outcome-extension)) so this assumption is currently weak.
-- **Mediators** deliberately *not* adjusted for: W5 social support (`H5SS*`), W4 biomarker state (CRP, glucose) when outcome is W5. Adjusting for these would block a portion of the target total effect.
+- **Common causes** C flow into both X and Y: demographics (`BIO_SEX`, `RACE`, `PARENT_ED`), W1 mental/health state (`CESD_SUM`, `H1GH1`), and W1 baseline cognition (`AH_PVT`).
+- **Assumed adjacencies**: C → X, C → Y, X → Y. No reverse adolescent → adolescent arrow (X is measured at W1, Y at W4 or W5).
+- **Assumed absent (unmeasured)**: school climate / context, prenatal & perinatal factors, adolescent diet & physical fitness, family genetic variants. The clean NC battery (Task 16) is what makes this assumption testable; the contaminated `HEIGHT_IN` NC is reported but not load-bearing (see [§9](#9-outcome-battery-primary--multi-outcome-extension)).
+- **Deliberately unadjusted (downstream of X)**: W5 social support (`H5SS*`), W4 biomarker state (CRP, glucose) when outcome is W5. Adjusting for these would block part of the target effect.
 
-**Adjustment-set ladder.** L0 → L0+L1 → L0+L1+AHPVT is designed so the β drift across the three (D4) measures *how much* of the raw signal the covariate tier explains. It is not three competing models; it is one primary (L0+L1+AHPVT) with two diagnostic reductions.
+**Adjustment-set ladder.** L0 → L0+L1 → L0+L1+AHPVT is designed so the β drift across the three (D4) measures *how much* of the raw signal each tier explains. It is one primary (L0+L1+AHPVT) with two diagnostic reductions.
 
 | Set | Closes back-doors through | Identification role |
 |---|---|---|
-| L0 | Demographics (sex, race, parental ed) | Minimum socially-acceptable adjustment; most β estimates will move substantially when L1 is added if W1 mental/health state is a confounder |
+| L0 | Demographics (sex, race, parental ed) | Minimum acceptable adjustment; most β estimates move substantially when L1 is added if W1 affective state is a confounder |
 | L0+L1 | + CES-D + self-rated health at W1 | Blocks confounding via W1 affective / somatic state |
-| L0+L1+AHPVT | + W1 verbal IQ | **Primary spec.** Closes the remaining IQ-driven back-door under the confounder interpretation |
+| L0+L1+AHPVT | + W1 verbal IQ as baseline cognition | **Primary spec.** Identifies the trajectory-adjusted effect on cognitive outcomes; for non-cognitive outcomes acts as a general-ability confounder |
 
-**Positivity / overlap** is required for every stratum of the adjustment set at every level of X. The screen checks this empirically via D7 (Q5-vs-Q1 logit for continuous X; binary balance for binary X; pass = p̂ ∈ (0.02, 0.98) and effective N ≥ 500). **Structural positivity violations** in public-use:
+**Positivity / overlap.** Required for every stratum of the adjustment set at every level of X. D7 in the diagnostic battery checks this empirically (pass = p̂ ∈ (0.02, 0.98) and eff_N ≥ 500). The screen also has two **structural positivity violations** that are settled by restricting the estimand, *not* by re-weighting:
 
-- **Saturated-school gating** (W1 network exposures): ~32 % of W1 respondents are excluded because their school did not meet the ≥75 % roster-participation threshold. The target estimand for network exposures is therefore the ATE within saturated schools, not the ATE across all Grade-7–12 adolescents.
-- **Mode restriction** (W5 cognitive outcomes): only W5 respondents in modes {I, T} received the cognitive battery (~824 of 4,196 once intersected with network data). For any W5 cognitive outcome the target is the ATE within the mode-eligible subpopulation, and generalisability to the full W5 cohort requires an additional IPAW stage.
-- **W4 → W5 attrition.** Differential retention by sex × race (see [§2.1](#21-design) and the [research_journal.md §Phase 2](research_journal.md) chart). Formal W5-outcome estimation needs **inverse-probability-of-attrition weighting (IPAW)**: fit a logistic model for "appears in W5" on L0+L1+AHPVT, take the inverse fitted probability, multiply into `GSW5`. The screen uses `GSWGT4_2` across both W4 and W5 outcomes as a comparability shortcut, not an estimation-grade weight.
+- **Saturated-school gating** (16 of 24 exposures, all the network-derived ones): centralities (`IDGX2`, `BCENT10X`, etc.) are *structurally undefined* outside saturated schools — there are no peer-roster nominations to compute on. This is positivity = 0, not low overlap. **Decision: do not extrapolate.** The reported estimand for every network exposure is **"ATE within saturated schools"** — full stop. We do not weight up to a counterfactual "if all schools were saturated" estimand, because the saturation-propensity model would be fitting on a structural zero. To make the external-validity gap visible, Task 16 will produce a **saturation-balance table** comparing weighted L0+L1+AHPVT means in saturated vs. non-saturated schools so a reader can judge transportability. Network-exposure plot captions and brief paragraphs must say "within saturated schools" explicitly.
+- **Non-network exposures** (8 of 24: `FRIEND_*`, `SCHOOL_BELONG`, `H1FS13`, `H1FS14`, `H1DA7`, `H1PR4`) — sourced from the W1 in-home interview, sample-wide. No saturation restriction; positivity holds.
+- **Mode restriction** (W5 cognitive outcomes): only W5 respondents in modes {I, T} received the cognitive battery (~824 of 4,196 once intersected with network data). The estimand is the ATE within the mode-eligible subpopulation; generalisability needs IPAW.
+- **W4 → W5 attrition.** Differential retention by sex × race. Formal W5-outcome estimation needs **inverse-probability-of-attrition weighting (IPAW)** layered on `GSW5`. Screen uses `GSWGT4_2` uniformly as a comparability shortcut; not estimation-grade.
 
 **What the screen does NOT identify without additional assumptions:**
 
-- Direct-only or indirect-only effects (needs mediator formula + no-unmeasured-mediator-outcome confounding; task 16 territory).
-- Population ATE across non-saturated schools (positivity fails by design).
-- Any W6 outcome (the Add CAPS cognitive battery is restricted-use; no public-use outcome at W6 maps to the W1 exposure set).
+- Population ATE across non-saturated schools for any network exposure (positivity = 0 by design; the saturation-balance table characterises but does not estimate).
+- Direct-only or indirect-only effects through W5 social support (mediator-formula territory; not currently planned).
+- Any W6 outcome (Add CAPS cognitive battery is restricted-use; no public-use W6 outcome maps cleanly to the W1 exposure set).
 
-See the [Glossary](#glossary) for plain-language definitions of *back-door path*, *confounder vs. mediator*, *positivity*, *negative-control outcome*, and *IPAW*.
+See the [Glossary](#glossary) for *back-door path*, *positivity*, *negative-control outcome*, *IPAW*; the [DAG library](dag_library.md) for the per-outcome causal graphs; the [experiments register](experiments_register.md) for the experiment ↔ DAG ↔ method ↔ output mapping.
 
 ---
 
