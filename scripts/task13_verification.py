@@ -27,7 +27,7 @@ from analysis_utils import (  # noqa: E402
     VALID_RANGES,
 )
 
-ROOT = Path("/Users/jb/Desktop/Inter-Generational-Causal-Analysis-of-the-AddHealth-Dataset")
+ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "outputs"
 CACHE = OUT / "cache"
 

@@ -26,9 +26,7 @@ import numpy as np
 import pandas as pd
 import pyreadstat
 
-ROOT = Path(
-    "/Users/jb/Desktop/Inter-Generational-Causal-Analysis-of-the-AddHealth-Dataset"
-)
+ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 OUT = ROOT / "outputs"
 CACHE_AIDS = OUT / "cache" / "aids"

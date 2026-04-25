@@ -20,7 +20,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
-ROOT = Path("/Users/jb/Desktop/Inter-Generational-Causal-Analysis-of-the-AddHealth-Dataset")
+ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 CACHE = ROOT / "outputs" / "cache"
 
@@ -312,8 +312,8 @@ def derive_school_belonging(df: pd.DataFrame) -> pd.Series:
     """
     cols = ["H1ED19", "H1ED20", "H1ED22", "H1ED23", "H1ED24"]
     vals = pd.DataFrame({c: 6 - clean_var(df[c], c) for c in cols})  # reverse
-    vals["H1ED21_rev"] = clean_var(df["H1ED21"], "H1ED21")  # higher prejudice = stays
-    # Flip prejudice so it adds in the same direction (less prejudice -> more belonging)
+    # H1ED21 reversed: higher raw = more prejudice -> invert so all items point with belonging.
+    vals["H1ED21_rev"] = clean_var(df["H1ED21"], "H1ED21")
     vals["H1ED21_rev"] = 6 - vals["H1ED21_rev"]
     return vals.sum(axis=1, min_count=6)
 

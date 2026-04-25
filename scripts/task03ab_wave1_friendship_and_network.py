@@ -25,9 +25,7 @@ from pathlib import Path
 import pandas as pd
 import pyreadstat
 
-ROOT = Path(
-    "/Users/jb/Desktop/Inter-Generational-Causal-Analysis-of-the-AddHealth-Dataset"
-)
+ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data" / "W1"
 OUT = ROOT / "outputs"
 CACHE = OUT / "cache"

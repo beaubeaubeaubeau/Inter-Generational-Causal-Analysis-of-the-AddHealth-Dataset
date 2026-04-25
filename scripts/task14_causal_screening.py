@@ -49,6 +49,19 @@ IMG.mkdir(parents=True, exist_ok=True)
 W4 = pd.read_parquet(CACHE / "analytic_w4.parquet")
 W1_FULL = pd.read_parquet(CACHE / "analytic_w1_full.parquet")
 
+# D8 saturated-school selection fraction. Computed once at import: the share of
+# W1 in-home respondents whose school was NOT in the network-saturated frame
+# (so their network metrics are missing). Driven entirely by data: a respondent
+# is in the network frame iff they have a finite IDGX2 in w1network.parquet.
+_w1net_for_d8 = pd.read_parquet(CACHE / "w1network.parquet", columns=["AID", "IDGX2"])
+_w1home_for_d8 = pd.read_parquet(CACHE / "w1inhome.parquet", columns=["AID"])
+_n_inhome = len(_w1home_for_d8)
+_n_network = int(pd.to_numeric(_w1net_for_d8["IDGX2"], errors="coerce").notna().sum())
+SATURATED_LOSS_FRAC: float = (
+    1.0 - _n_network / _n_inhome if _n_inhome > 0 else float("nan")
+)
+del _w1net_for_d8, _w1home_for_d8, _n_inhome, _n_network
+
 # Attach H1PR4 from raw W1 in-home (not in cache frame).
 _w1raw = pd.read_parquet(CACHE / "w1inhome.parquet")[["AID", "H1PR4"]]
 _w1raw["H1PR4"] = pd.to_numeric(_w1raw["H1PR4"], errors="coerce").where(
@@ -414,7 +427,7 @@ def d7_overlap(df: pd.DataFrame, col: str, kind: str) -> dict:
 
 
 def d8_saturation(requires_sat: bool) -> dict:
-    frac = 0.324 if requires_sat else 0.0
+    frac = SATURATED_LOSS_FRAC if requires_sat else 0.0
     return {"saturated_loss_frac": frac, "flag": bool(requires_sat and frac > 0.25)}
 
 

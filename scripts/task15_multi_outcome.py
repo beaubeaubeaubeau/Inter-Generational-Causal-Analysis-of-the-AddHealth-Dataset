@@ -35,6 +35,7 @@ from analysis_utils import (  # noqa: E402
     ROOT, CACHE, clean_var, weighted_ols, load_outcome,
 )
 import plot_style  # noqa: E402
+from plot_style import GROUP_COLORS  # noqa: E402,F401  (canonical palette)
 import task14_causal_screening as t14  # noqa: E402
 
 OUT = ROOT / "outputs"
@@ -203,7 +204,6 @@ def plot_heatmaps(mat: pd.DataFrame) -> None:
         ax=ax, cbar_kws={"label": "−log10(p), clipped at 5"},
         linewidths=0.4, linecolor="white",
     )
-    ax.set_title("Multi-outcome significance (−log10 p) per (exposure, outcome) pair")
     ax.set_xlabel("")
     ax.set_ylabel("")
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right")

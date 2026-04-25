@@ -73,20 +73,7 @@ Always set design type **with replacement**. Finite population correction is not
 
 ### 2.4 Sample setup
 
-```stata
-* Stata (public-use, Wave V outcome, cross-sectional)
-svyset CLUSTER2 [pweight=GSW5], strata() vce(linearized) singleunit(missing)
-svy, subpop(analysis_sample): regress outcome exposure i.covariates
-```
-
-```r
-# R (public-use)
-library(survey); library(haven)
-design <- svydesign(ids=~CLUSTER2, weights=~GSW5, data=df, nest=FALSE)
-design_sub <- subset(design, analysis_sample == 1)   # never pre-filter rows
-```
-
-Python's survey-aware ecosystem is thinner; `samplics` is the most complete, or approximate with `statsmodels` GEE + cluster-robust SEs.
+This project is Python-only. Survey-weighted WLS with cluster-robust SEs on `CLUSTER2` is implemented in [scripts/analysis_utils.py](../scripts/analysis_utils.py) (`_fit`) using `statsmodels`' `WLS` + `.get_robustcov_results(cov_type="cluster", groups=cluster)`. Subpopulation analysis is done by **keeping the full design frame and passing a subpop mask**, not by pre-filtering rows (pre-filtering biases cluster-level variance estimation). The `samplics` library is a more complete survey-analysis option but is not a dependency of this project.
 
 ### 2.5 Merging
 
@@ -242,6 +229,7 @@ All scored outcomes are under the `C4` (constructed score) prefix — **not** `H
 
 Diagnostic variants (`C4WD90_2`, `C4WD90_3`, `C4WD60_2`, `C4WD60_3` — "# WORDS NOT ON LIST NAMED" / "# WORDS REPEATED") are available for error analyses. The same 15-word list is used at W4/W5/W6 — allows longitudinal comparison but introduces potential learning effects.
 
+<a id="wave-v-cognitive-battery"></a>
 ### 4.5 Wave V cognitive battery (`data/W5/pwave5.xpt`)
 
 **Section 19 of the Wave V instrument.** Two pre-computed word-recall scores + 14 per-trial backward-digit-span pass/fail items.
@@ -458,7 +446,7 @@ Terms used below (see [Glossary](#glossary) for plain-language intuition): *back
 | **D3** | Sibling dissociation | Is the target effect larger than a "related but weaker" sibling exposure, and in the same sign? Same-school / same-grid contrast. | `sign(β_target) == sign(β_sibling)` **AND** `\|β_target\| > \|β_sibling\|` **AND** `\|β_target − β_sibling\| > sqrt(se_t² + se_s²)` | Target and sibling are indistinguishable → target probably isn't capturing exposure-specific signal |
 | **D4** | Adjustment-set stability | How much does β drift as the adjustment set expands L0 → L0+L1 → L0+L1+AHPVT? Large drift = hidden confounding OR hidden mediation. | Relative shift `(max − min) / \|β_primary\| < 0.30` **AND** sign stable across all three | β depends on which covariates you include — causal identification is not closed by the assumed DAG |
 | **D5** | Outcome-component consistency | Do the three W4 cognitive sub-tests (immediate/delayed word recall, digit span) line up in sign? Cognition only. | All three component β in the same direction as the composite, no opposite-sign dissent | Composite signal is driven by one sub-test; spurious or narrow construct |
-| **D6** | Dose-response monotonicity | For a continuous exposure, does the outcome move monotonically across exposure quintiles? | Spearman ρ across quintile means ≥ 0.6, no mid-range inversion | Non-monotonic response — linear-in-X spec is mis-specified |
+| **D6** | Dose-response monotonicity | For a continuous exposure, does the outcome move monotonically across exposure quintiles? | `|Spearman ρ| > 0.7` across quintile means **AND** `monotone_sign` holds (no mid-range inversion); the signed Spearman's absolute value captures monotonicity in either direction | Non-monotonic response — linear-in-X spec is mis-specified |
 | **D7** | Positivity / overlap | Is there non-zero probability of every exposure level at every covariate stratum? Q5-vs-Q1 logit (continuous) or binary balance (binary). | Fitted p̂ ∈ (0.02, 0.98) AND effective N ≥ 500 after overlap trimming | No usable comparison group in parts of covariate space; estimate is extrapolation |
 | **D8** | Saturated-school selection penalty | Informational. How much of W1 is lost to the network-file saturation gate for this specific exposure? | Reports N(analytic) / N(W1) ratio; no pass/fail threshold | External-validity caveat — estimand is within-saturated-schools |
 | **D9** | Collider / double-adjustment red flags | Hard-coded list of known bad-combination exposures (e.g. using `H1FS13` as exposure while adjusting for `CESD_SUM`, which contains `H1FS13`). | Not on the red-flag list | Collider bias or mechanical double-counting; drop from shortlist |
@@ -570,11 +558,14 @@ See also the per-exposure z-standardized β heatmap at [img/causal/multi_outcome
 | 6 | [06_attrition_summary.md](../outputs/06_attrition_summary.md) | Wave-by-wave appearance patterns; sex × race × parental-ed tertile stratification |
 | 7 | [07_analytic_n.csv](../outputs/07_analytic_n.csv) | Joint-complete analytic Ns for each design configuration |
 | 8 | [08_analytic_frame_n.md](../outputs/08_analytic_frame_n.md) | Canonical analytic frame (AID × key variables) post-overlap + after-reserve-strip Ns per exposure/outcome pair |
+| 9 | [img/distributions/](../img/distributions/) (treatments, outcomes, covariates, conditional subdirs) | Univariate + conditional distribution plots for the 24 exposures, 13 outcomes, and L0/L1/AHPVT covariates. Generator: [scripts/task09_distribution_plots.py](../scripts/task09_distribution_plots.py) |
 | 10 | [10_regressions.md](../outputs/10_regressions.md), [10_regressions.csv](../outputs/10_regressions.csv) | First-pass survey-weighted regressions, 24 exposures × 3 adjustment sets on `W4_COG_COMP` |
 | 11 | [11_sensitivity.md](../outputs/11_sensitivity.md), [11_ahpvt_shift.csv](../outputs/11_ahpvt_shift.csv), [11_collinearity.csv](../outputs/11_collinearity.csv), [11_correlation.csv](../outputs/11_correlation.csv), [11_placebo_permutation.csv](../outputs/11_placebo_permutation.csv), [11_saturated_balance.csv](../outputs/11_saturated_balance.csv) | Sensitivity + stability audit: AHPVT shift, collinearity, permutation nulls, saturated-school balance |
+| 12 | [img/regressions/](../img/regressions/) (coefficient_forest, composite_vs_components, heterogeneity_interactions, partial_residual_IDGX2, placebo_panel, quintile_dose_response, weighted_vs_unweighted) + [img/sensitivity/](../img/sensitivity/) (ahpvt_with_without). | Regression-diagnostic figures backing tasks 10–11: coefficient forests, partial-residual plots, dose-response, AHPVT shift. Generator: [scripts/task12_regression_plots.py](../scripts/task12_regression_plots.py) |
 | 13 | [13_verification.md](../outputs/13_verification.md), plus 9 CSVs (`13_attrition_ipw.csv`, `13_benchmarks.csv`, `13_bh_fdr.csv`, `13_deff.csv`, `13_negctrl_exposure.csv`, `13_negctrl_outcome.csv`, `13_psu_counts.csv`, `13_reserve_code_sensitivity.csv`, `13_reserve_leakage.csv`) | Verification pack: benchmarking, FDR adjustment, design-effect audit, negative-control sweeps, reserve-code sensitivity |
 | 14 | [14_screening.md](../outputs/14_screening.md), [14_screening_matrix.csv](../outputs/14_screening_matrix.csv), [14_shortlist.csv](../outputs/14_shortlist.csv) | D1–D9 causal-screening battery on `W4_COG_COMP` for all 24 exposures; pass/fail matrix + ranked shortlist |
 | 15 | [15_multi_outcome.md](../outputs/15_multi_outcome.md), [15_multi_outcome_matrix.csv](../outputs/15_multi_outcome_matrix.csv) | Multi-outcome extension: D1 + D4 re-run across 12 non-cognitive outcomes; 4 handoff pairs shortlisted for Task 16 |
+| 15 (figs) | [img/causal/15_per_outcome_pcount.png](../img/causal/15_per_outcome_pcount.png), [img/causal/15_handoff_forest.png](../img/causal/15_handoff_forest.png) | Journal-embedded figures for Phase 5: per-outcome significant-exposure counts and the four-pair Task-16 handoff forest. Generator: [scripts/task15_journal_figs.py](../scripts/task15_journal_figs.py) |
 
 Headline figures: [img/causal/screening_heatmap.png](../img/causal/screening_heatmap.png), [img/causal/adjustment_stability.png](../img/causal/adjustment_stability.png), [img/causal/multi_outcome_beta_heatmap.png](../img/causal/multi_outcome_beta_heatmap.png), [img/causal/15_per_outcome_pcount.png](../img/causal/15_per_outcome_pcount.png), [img/causal/15_handoff_forest.png](../img/causal/15_handoff_forest.png).
 
@@ -634,7 +625,7 @@ A variable Z that affects the exposure X but not the outcome Y except through X,
 A variable on the causal path X → M → Y. **Why it matters**: adjusting for M blocks part of the total effect, *shrinking β toward zero*. This is the opposite of what adjusting for a confounder does (which should reveal the true β by removing bias). The two operations look identical in a regression table — only a DAG (or a front-door / IV decomposition) can tell them apart. See [AHPVT callout, §5.6](#56-identification-assumptions-and-target-estimand).
 
 ### Mode (W5 survey mode)
-The channel through which the W5 interview was administered: W = Web, I = In-person, M = Mail, T = Telephone, S = Spanish CAPI. **Why it matters**: cognitive items were administered only in I + T, restricting the W5 cognitive analytic cell to ~624 of 4,196. See [§4.5](#45-wave-v-cognitive-battery-datawaw5pwave5xpt).
+The channel through which the W5 interview was administered: W = Web, I = In-person, M = Mail, T = Telephone, S = Spanish CAPI. **Why it matters**: cognitive items were administered only in I + T, restricting the W5 cognitive analytic cell to ~624 of 4,196. See [§4.5](#wave-v-cognitive-battery).
 
 ### Negative-control outcome (NC)
 An outcome Y* that, under the assumed causal model, should **not** be affected by X. If X still predicts Y*, unmeasured confounding is implicated. **Why it matters**: D2 in the diagnostic battery uses `HEIGHT_IN`. The NC is contaminated (adolescent height correlates with peer popularity), so failures on network exposures are ambiguous. See [§9](#9-outcome-battery-primary--multi-outcome-extension).

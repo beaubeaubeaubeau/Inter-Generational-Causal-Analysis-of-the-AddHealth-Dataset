@@ -76,7 +76,7 @@ Nine-diagnostic screen over 24 W1 social exposures. Formal pass/fail thresholds 
 - **D2** height (`HEIGHT_IN`) negative-control outcome — **contaminated**, see [§9 note](addhealth_synthesis.md#9-outcome-battery-primary--multi-outcome-extension)
 - **D3** sibling dissociation (target vs. related exposure)
 - **D4** adjustment-set stability (L0 / L0+L1 / L0+L1+AHPVT)
-- **D5** outcome-component consistency (`C4WD90` / `C4WD60` / `C4NUMSCR`)
+- **D5** outcome-component consistency (`C4WD90_1` / `C4WD60_1` / `C4NUMSCR`)
 - **D6** dose-response monotonicity (continuous only)
 - **D7** positivity / overlap (Q5-vs-Q1 logit)
 - **D8** saturated-school selection penalty (informational)

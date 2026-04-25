@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import pyreadstat
 
-ROOT = Path("/Users/jb/Desktop/Inter-Generational-Causal-Analysis-of-the-AddHealth-Dataset")
+ROOT = Path(__file__).resolve().parent.parent
 W4_IN = ROOT / "data" / "W4" / "w4inhome.sas7bdat"
 OUT = ROOT / "outputs"
 OUT.mkdir(exist_ok=True)

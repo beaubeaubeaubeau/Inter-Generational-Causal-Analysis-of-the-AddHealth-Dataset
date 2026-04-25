@@ -23,6 +23,7 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 
 import plot_style
+from plot_style import GROUP_COLORS
 from analysis_utils import ROOT
 
 plot_style.setup()
@@ -30,15 +31,6 @@ plot_style.setup()
 OUT = ROOT / "outputs"
 IMG = ROOT / "img" / "causal"
 IMG.mkdir(parents=True, exist_ok=True)
-
-
-GROUP_COLORS = {
-    "cognitive":        "#4c72b0",
-    "cardiometabolic":  "#c44e52",
-    "mental_health":    "#8172b2",
-    "functional":       "#55a868",
-    "ses":              "#dd8452",
-}
 
 
 def per_outcome_pcount() -> None:

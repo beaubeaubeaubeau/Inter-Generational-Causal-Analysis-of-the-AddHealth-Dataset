@@ -27,6 +27,7 @@ Conventions: labels in quotes are quoted verbatim from the shipped SAS/XPT files
 | `C4NUMSCR` | W4 | "TOTAL SCORE ON NUMBER RECALL TASK-W4" | Backward digit span: longest digit string (2–8 digits) the respondent repeated in reverse order. Range 0–7. |
 | `C4WD60_1` | W4 | "S14 # WORDS ON LIST RECALLED 60 SEC-W4" | Delayed word recall: # of 15 words recalled in 60 s after a 1–2 min distractor. |
 | `C4WD90_1` | W4 | "S14 # WORDS ON LIST RECALLED 90 SEC-W4" | Immediate word recall: # of 15 read-aloud nouns recalled in 90 s. |
+| `C5WD90_1` | W5 | "S14 # WORDS ON LIST RECALLED 90 SEC-W5" | W5 immediate word recall: # of 15 read-aloud nouns recalled in 90 s; W5 analogue of `C4WD90_1`, mode-restricted to in-person + telephone interviews. |
 | `CESD_SUM` | `[derived]` | `[derived]` | W1 depressive-symptoms scale: sum of 19 CES-D Likert items (0–57), items {4, 8, 11, 15} reverse-scored. |
 | `CLUSTER2` | W1–W6 | "SAMPLE CLUSTER" | School-pair primary sampling unit (132 PSUs). Used as the clustering variable for cluster-robust standard errors. |
 | `ERDEN` | W1 | "Density: Ego Receive Net" | Among people who nominated the respondent as a friend, how connected are those nominators to each other (0 = disjoint, 1 = clique). |
@@ -51,9 +52,11 @@ Conventions: labels in quotes are quoted verbatim from the shipped SAS/XPT files
 | `H1ED22` | W1 | "S5Q22 HAPPY AT YOUR SCHOOL-W1" | Likert 1–5 with "you are happy to be at your school". |
 | `H1ED23` | W1 | "S5Q23 TEACHERS TREAT STUDENTS FAIRLY-W1" | Likert 1–5 with "teachers at your school treat students fairly". |
 | `H1ED24` | W1 | "S5Q24 FEEL SAFE IN YOUR SCHOOL-W1" | Likert 1–5 with "you feel safe in your school". |
+| `H1FS1` | W1 | "S10Q1 BOTHERED BY THINGS-W1" | CES-D item 1: "How often during the past week were you bothered by things that usually don't bother you?" 0 = never/rarely → 3 = most/all of the time. Component of `CESD_SUM`. |
 | `H1FS13` | W1 | "S10Q13 FELT LONELY-W1" | CES-D loneliness item: "How often during the past week did you feel lonely?" 0 = never/rarely → 3 = most/all of the time. |
 | `H1FS14` | W1 | "S10Q14 PEOPLE UNFRIENDLY TO YOU-W1" | CES-D unfriendliness item: "People were unfriendly to you." Scale 0–3 as above. |
 | `H1GH1` | W1 | "S1Q1 GENL HLTH-W1" | W1 self-rated health, 1 = excellent → 5 = poor. |
+| `H1GH28` | W1 | "S1Q28 GENL HLTH WEIGHT-W1" `[label not yet verified]` | W1 self-reported body-weight perception/measure (codebook label not yet verified — TODO confirm against the W1 codebook). Cited in [research_journal.md outstanding uncertainty #7](research_journal.md#outstanding-uncertainties) as a candidate L1 covariate to add for the `H4BMI` per-outcome adjustment set in Task 16. |
 | `H1GI4` | W1 | "S1Q4 ARE YOU OF HISPANIC ORIGIN-W1" | Hispanic-ethnicity indicator. |
 | `H1GI6A` | W1 | "S1Q6A RACE-WHITE-W1" | Race flag: respondent identified as White. |
 | `H1GI6B` | W1 | "S1Q6B RACE-AFRICAN AMERICAN-W1" | Race flag: respondent identified as Black/African American. |
@@ -91,6 +94,7 @@ Conventions: labels in quotes are quoted verbatim from the shipped SAS/XPT files
 | `REACH3` | W1 | "N reachable alters 3 steps: TFN" | Classmates reachable within ≤ 3 friendship hops. More local than `REACH`. |
 | `SCHOOL_BELONG` | `[derived]` | `[derived]` | Sum of 6 W1 Section-5 Likert items (`H1ED19`–`H1ED24`, with `H1ED21` reverse-scored). Higher = stronger sense of belonging at school. |
 | `W4_COG_COMP` | `[derived]` | `[derived]` | Primary cognitive outcome: mean of individually z-scored `C4WD90_1` + `C4WD60_1` + `C4NUMSCR`. |
+| `W5_COG_COMP` | `[derived]` | `[derived]` | W5 cognitive composite: mean of individually z-scored `C5WD90_1` + `C5WD60_1` + derived backward-digit-span; mode-restricted (I + T only) and held in reserve for longitudinal sensitivity analyses. |
 
 ---
 
@@ -290,6 +294,7 @@ Adds CES-D sum and self-rated health to L0.
 |---|---|:-:|---:|---|---|
 | `CESD_SUM` | `[derived]` | W1 | ~6,300 | continuous (0–57) | Sum of 19 CES-D items with {4, 8, 11, 15} reverse-scored. Derivation: [analysis_utils.py:255](../scripts/analysis_utils.py#L255). `H1FS13` / `H1FS14` are components — using them as exposure triggers D9 double-adjustment. |
 | `H1GH1` | "S1Q1 GENL HLTH-W1" (self-rated health) | W1 | 6,490 | likert 1–5 | Used as-is. |
+| `H1GH28` | "S1Q28 GENL HLTH WEIGHT-W1" `[label not yet verified]` | W1 | TBD | likert / ordinal (TBD) | **Not currently in any adjustment set.** Queued as a per-outcome L1 covariate for the `H4BMI` / `H4WAIST` Task-16 estimation; see [research_journal.md outstanding uncertainty #7](research_journal.md#outstanding-uncertainties). TODO: verify codebook label, range, and reserve codes against the W1 codebook before first use. |
 
 #### 2.6.3 L0+L1+AHPVT — baseline cognition
 

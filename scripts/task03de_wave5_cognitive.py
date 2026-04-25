@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 import pyreadstat
 
-ROOT = Path("/Users/jb/Desktop/Inter-Generational-Causal-Analysis-of-the-AddHealth-Dataset")
+ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data" / "W5" / "pwave5.xpt"
 OUT = ROOT / "outputs" / "03de_wave5_cognitive_and_mode.md"
 

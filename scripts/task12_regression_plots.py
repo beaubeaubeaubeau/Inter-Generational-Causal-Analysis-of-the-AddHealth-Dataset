@@ -34,7 +34,7 @@ def load_analytic_w4() -> pd.DataFrame:
 def load_analytic_w1_full() -> pd.DataFrame:
     return pd.read_parquet(ROOT / "outputs" / "cache" / "analytic_w1_full.parquet")
 
-ROOT = Path("/Users/jb/Desktop/Inter-Generational-Causal-Analysis-of-the-AddHealth-Dataset")
+ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "outputs"
 IMG_REG = ROOT / "img" / "regressions"
 IMG_SENS = ROOT / "img" / "sensitivity"

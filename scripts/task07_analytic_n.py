@@ -9,7 +9,7 @@ import pandas as pd
 import pyreadstat
 from pathlib import Path
 
-ROOT = Path("/Users/jb/Desktop/Inter-Generational-Causal-Analysis-of-the-AddHealth-Dataset")
+ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 OUT = ROOT / "outputs"
 

@@ -7,8 +7,22 @@ import seaborn as sns
 import numpy as np
 import pandas as pd
 
-ROOT = Path("/Users/jb/Desktop/Inter-Generational-Causal-Analysis-of-the-AddHealth-Dataset")
+ROOT = Path(__file__).resolve().parent.parent
 IMG = ROOT / "img"
+
+
+# Canonical per-outcome-group palette. Single source of truth for any chart
+# that wants to colour by `outcome_group` (cognitive / cardiometabolic /
+# mental_health / functional / ses). Imported by task15_journal_figs and
+# task15_multi_outcome so future per-group colouring stays coherent across
+# the report.
+GROUP_COLORS = {
+    "cognitive":        "#4c72b0",
+    "cardiometabolic":  "#c44e52",
+    "mental_health":    "#8172b2",
+    "functional":       "#55a868",
+    "ses":              "#dd8452",
+}
 
 
 def setup() -> None:
