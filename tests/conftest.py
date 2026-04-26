@@ -24,6 +24,15 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 
+def pytest_configure(config):
+    """Register custom markers used by the smoke test."""
+    config.addinivalue_line(
+        "markers",
+        "slow: long-running smoke / integration tests "
+        "(deselect with -m 'not slow')",
+    )
+
+
 @pytest.fixture
 def synthetic_w1_df() -> pd.DataFrame:
     """Hand-constructed 50-row W1-shaped frame.
@@ -106,7 +115,21 @@ def synthetic_w1_df() -> pd.DataFrame:
 
 @pytest.fixture
 def synthetic_w4_df() -> pd.DataFrame:
-    """Hand-constructed 50-row W4-shaped frame for cognitive-composite tests."""
+    """Hand-constructed 50-row W4-shaped frame for cognitive-composite tests.
+
+    Columns:
+      - C4WD90_1 / C4WD60_1: word recall (0-15)
+      - C4NUMSCR: backward digit span score (0-7)
+      - H4GH5F / H4GH5I: feet/inches for HEIGHT_IN aggregation
+    Pinned rows:
+      - row 0: all components valid
+      - row 1: all components NaN (used to assert NaN propagation)
+      - row 2: only one of {C4WD90_1, C4WD60_1, C4NUMSCR} non-NaN — composite
+        is mean-with-skipna=False so should propagate NaN.
+      - row 3: H4GH5F=5, H4GH5I=6 -> HEIGHT_IN = 66
+      - row 4: H4GH5F=6, H4GH5I=NaN -> HEIGHT_IN = NaN (inches missing)
+      - row 5: both H4GH5F and H4GH5I NaN -> HEIGHT_IN = NaN
+    """
     rng = np.random.default_rng(20260425)
     n = 50
     df = pd.DataFrame({"AID": [f"A{i:04d}" for i in range(n)]})
@@ -115,6 +138,43 @@ def synthetic_w4_df() -> pd.DataFrame:
     df["C4NUMSCR"] = rng.integers(0, 8, size=n).astype(float)
     df["H4GH5F"] = rng.integers(4, 8, size=n).astype(float)
     df["H4GH5I"] = rng.integers(0, 12, size=n).astype(float)
+    # Row 1 all-NaN cog
+    for c in ["C4WD90_1", "C4WD60_1", "C4NUMSCR"]:
+        df.at[1, c] = np.nan
+    # Row 2 one-component-only
+    df.at[2, "C4WD90_1"] = 10.0
+    df.at[2, "C4WD60_1"] = np.nan
+    df.at[2, "C4NUMSCR"] = np.nan
+    # Row 3: H4GH5F=5, H4GH5I=6 -> 66
+    df.at[3, "H4GH5F"] = 5.0
+    df.at[3, "H4GH5I"] = 6.0
+    # Row 4: feet ok, inches NaN
+    df.at[4, "H4GH5F"] = 6.0
+    df.at[4, "H4GH5I"] = np.nan
+    # Row 5: both NaN
+    df.at[5, "H4GH5F"] = np.nan
+    df.at[5, "H4GH5I"] = np.nan
+    return df
+
+
+@pytest.fixture
+def synthetic_w5_df() -> pd.DataFrame:
+    """Hand-constructed 30-row W5-shaped frame for BDS / W5 cognitive tests.
+
+    Columns:
+      - H5MH3A..H5MH9B: BDS items (per-trial 0/1 valid)
+      - C5WD90_1, C5WD60_1: W5 word recall (0-15)
+      - MODE: W5 administration mode (I/T eligible for cognitive)
+    """
+    rng = np.random.default_rng(20260425)
+    n = 30
+    df = pd.DataFrame({"AID": [f"A{i:04d}" for i in range(n)]})
+    for L in range(3, 10):
+        for s in "AB":
+            df[f"H5MH{L}{s}"] = rng.integers(0, 2, size=n).astype(float)
+    df["C5WD90_1"] = rng.integers(0, 16, size=n).astype(float)
+    df["C5WD60_1"] = rng.integers(0, 16, size=n).astype(float)
+    df["MODE"] = ["I"] * 15 + ["T"] * 10 + ["W"] * 5
     return df
 
 
