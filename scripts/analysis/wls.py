@@ -1,8 +1,11 @@
 """Weighted ordinary least squares with cluster-robust variance + helpers.
 
 ``weighted_ols`` fits ``statsmodels.WLS`` with cluster-robust covariance on
-``CLUSTER2`` (use_t=True) and overrides t-stats / CIs against ``df = H - 1``
-(common cluster-robust convention) instead of statsmodels' default ``n - k``.
+``CLUSTER2`` (``use_correction=True``, ``use_t=True``). t-stats / CIs use
+statsmodels' default ``df = n - k`` (decision 2026-04-26: trust the
+package's built-in small-sample correction rather than mixing two
+correction philosophies). Survey weights are normalised to mean 1 so that
+``use_correction=True`` operates on the right ``σ̂²`` scale.
 
 ``quintile_dummies`` cuts a continuous series into ``n`` rank-equal bins and
 returns ``(k-1 dummies, integer trend)``.
@@ -22,8 +25,10 @@ def weighted_ols(
     """Weighted OLS with cluster-robust variance on `psu`.
 
     Returns a dict with beta (pd.Series), se, t, p, ci_lo, ci_hi,
-    n, n_psu, r2_weighted, df_resid. Uses statsmodels OLS fit with weights
-    and cov_type='cluster', use_t=True, df adjustment = (n_psu - 1).
+    n, n_psu, df_resid, rsquared, model. Uses statsmodels' WLS fit with
+    weights, ``cov_type='cluster'``, ``use_correction=True``, and
+    ``use_t=True``. t-stats / CIs come from statsmodels' default
+    ``df = n - k`` (no manual H-1 override).
 
     X must include a constant column.
     """
@@ -58,27 +63,28 @@ def weighted_ols(
         cov_kwds={"groups": psu, "use_correction": True},
         use_t=True,
     )
-    # statsmodels uses df = n - k by default. For cluster-robust inference
-    # we override t-stats against df = H - 1 (common convention).
-    import scipy.stats as stats
-    df_cluster = H - 1
-    t_stats = res.params / res.bse
-    p_vals = 2 * (1 - stats.t.cdf(np.abs(t_stats), df=df_cluster))
-    crit = stats.t.ppf(0.975, df=df_cluster)
-    ci_lo = res.params - crit * res.bse
-    ci_hi = res.params + crit * res.bse
+    # Use statsmodels' built-in t-stats/p-values/CIs (df = n - k). The
+    # use_correction=True kwarg already applies the cluster small-sample
+    # factor; we don't double-correct with a manual H-1 override.
+    ci = res.conf_int(alpha=0.05)
+    if isinstance(ci, pd.DataFrame):
+        ci_lo = ci.iloc[:, 0].to_numpy()
+        ci_hi = ci.iloc[:, 1].to_numpy()
+    else:
+        ci_lo = np.asarray(ci)[:, 0]
+        ci_hi = np.asarray(ci)[:, 1]
 
     names = column_names if column_names is not None else [f"x{i}" for i in range(X.shape[1])]
     return {
         "beta": pd.Series(res.params, index=names),
         "se": pd.Series(res.bse, index=names),
-        "t": pd.Series(t_stats, index=names),
-        "p": pd.Series(p_vals, index=names),
+        "t": pd.Series(res.tvalues, index=names),
+        "p": pd.Series(res.pvalues, index=names),
         "ci_lo": pd.Series(ci_lo, index=names),
         "ci_hi": pd.Series(ci_hi, index=names),
         "n": int(n),
         "n_psu": int(H),
-        "df_resid": int(df_cluster),
+        "df_resid": int(res.df_resid),
         "rsquared": float(res.rsquared),
         "model": res,
     }

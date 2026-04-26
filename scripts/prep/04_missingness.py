@@ -289,24 +289,15 @@ def _head_h1mf_h1ff(inhome_labels: dict[str, str]
 
 
 def cesd_sum(df: pd.DataFrame) -> pd.Series:
-    """CES-D total (0..57 range with 19 items on 0-3 Likert). Reverse-score
-    items 4, 8, 11, 15. Treats reserve codes (6/7/8) on these 0-3 scales as
-    missing for the sum.
+    """Delegate to the canonical ``analysis.derivation.derive_cesd_sum``.
 
-    Per standard Add Health coding, H1FS* items use 0=never/rarely, 1=some,
-    2=often, 3=most of the time, and reserves 6 (refused) / 8 (DK). We treat
-    any value > 3 as missing for the sum."""
-    items = []
-    for var in CESD_ITEMS:
-        s = df[var].copy()
-        s = s.where(s <= 3)  # NaN out reserve codes / invalid
-        if var in CESD_REVERSE:
-            s = 3 - s
-        items.append(s)
-    mat = pd.concat(items, axis=1)
-    # Sum only rows with ALL 19 items non-missing (standard practice).
-    total = mat.sum(axis=1, min_count=19)
-    return total
+    Previously inlined here as a near-copy with strict ``min_count=19``
+    semantics; consolidated 2026-04-26 so prep04 and the analysis package
+    share a single source of truth (which now uses ``min_valid=15`` plus
+    19/n_valid scaling — see derive_cesd_sum docstring).
+    """
+    from analysis.derivation import derive_cesd_sum
+    return derive_cesd_sum(df)
 
 
 def wave5_digit_score(df: pd.DataFrame) -> pd.Series:

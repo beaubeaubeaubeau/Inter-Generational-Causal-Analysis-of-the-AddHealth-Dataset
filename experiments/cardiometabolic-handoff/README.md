@@ -21,7 +21,7 @@ measurement scale.
 | EXP-16-HAND-IDGX2-BMICLS | `IDGX2` | `H4BMICLS`  | Ordered logit |
 
 Each handoff also pairs with an E-value sensitivity bound (per
-[TODO.md A7](../../TODO.md)) to characterise the unmeasured-confounder
+[TODO.md §A7](../../TODO.md)) to characterise the unmeasured-confounder
 strength required to explain the result away.
 
 ## Notes

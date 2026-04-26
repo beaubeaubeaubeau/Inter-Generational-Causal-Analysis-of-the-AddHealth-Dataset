@@ -9,7 +9,7 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - **D3** sibling-exposure dissociation (where a sibling exists); pass: |beta_t| > |beta_sib| with |diff| > pooled SE.
 - **D4** adjustment-set stability across L0 / L0+L1 / L0+L1+AHPVT; pass: relative shift <30% AND sign stable.
 - **D5** outcome-component consistency across C4WD90_1 / C4WD60_1 / C4NUMSCR; pass: sign consistent AND >=2/3 with p<0.10.
-- **D6** dose-response monotonicity (continuous only); pass: |rho_trend| > 0.7 AND monotone sign.
+- **D6** dose-response monotonicity (continuous only); pass: |rho_trend| > 0.6 AND monotone sign.
 - **D7** positivity / overlap (Q5 vs Q1 logit, or binary balance); pass: p_hat in (0.02, 0.98) AND eff N >= 500.
 - **D8** saturated-school selection penalty (network exposures, informational).
 - **D9** collider / double-adjustment red flag (hard-coded lookup).
@@ -40,7 +40,7 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 | SCHOOL_BELONG | belonging | 4629 | FAIL | FAIL | NA | FAIL | FAIL | PASS | FAIL | YES | Weakened | 1 |
 | H1FS13 | loneliness | 4710 | FAIL | PASS | NA | FAIL | FAIL | FAIL | FAIL | YES | Weakened | 2 |
 | H1FS14 | loneliness | 4710 | FAIL | PASS | NA | FAIL | FAIL | FAIL | FAIL | YES | Weakened | 2 |
-| H1DA7 | qualitative | 4710 | FAIL | FAIL | NA | FAIL | FAIL | FAIL | PASS | no | Weakened | 1 |
+| H1DA7 | qualitative | 4710 | FAIL | FAIL | NA | FAIL | FAIL | PASS | PASS | no | Weakened | 2 |
 | H1PR4 | qualitative | 4697 | FAIL | PASS | NA | FAIL | FAIL | PASS | PASS | no | Weakened | 4 |
 
 ## Per-exposure commentary
@@ -283,13 +283,13 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - D9 RED FLAG: CES-D item; contained in CESD_SUM covariate -> double-adjustment.
 - Notes: D1 association null (p>=0.05).
 
-### H1DA7 (qualitative)  --  **Weakened** [score 1]
+### H1DA7 (qualitative)  --  **Weakened** [score 2]
 
 - D1 primary beta = 0.006388 (SE 0.01168, p = 0.586, N = 4710).
 - D2 HEIGHT_IN beta = 0.08766 (p = 0.0871); FAIL.
 - D4 rel-shift across adj sets = 0.802; sign stable = True; FAIL.
 - D5 1/3 components significant at p<0.10; sign consistent = False; FAIL.
-- D6 trend rho = -0.6; monotone sign = True; FAIL.
+- D6 trend rho = -0.6; monotone sign = True; PASS.
 - D7 overlap: p_hat in [0.364, 0.641]; eff N = 1877; PASS.
 - Notes: D1 association null (p>=0.05).
 

@@ -19,13 +19,13 @@ One folder per experiment under this directory. Each folder is self-contained: a
 
 | Experiment | Status | Exposure → Outcome | Method | Notes |
 |---|---|---|---|---|
-| [cardiometabolic-handoff](cardiometabolic-handoff/) | planned | `IDGX2` → `H4WAIST`; `IDGX2` → `H4BMI`; `IDGX2` → `H4BMICLS` | WLS + cluster-SE on `CLUSTER2` for `H4WAIST` and `H4BMI`; ordered logit for `H4BMICLS` | Per-outcome DAG `DAG-CardioMet` (planned); E-value sensitivity bound per [TODO.md A7](../TODO.md) |
+| [cardiometabolic-handoff](cardiometabolic-handoff/) | planned | `IDGX2` → `H4WAIST`; `IDGX2` → `H4BMI`; `IDGX2` → `H4BMICLS` | WLS + cluster-SE on `CLUSTER2` for `H4WAIST` and `H4BMI`; ordered logit for `H4BMICLS` | Per-outcome DAG `DAG-CardioMet` (planned); E-value sensitivity bound per [TODO.md §A7](../TODO.md) |
 
 ## Hypothesis: SES (formal estimation)
 
 | Experiment | Status | Exposure → Outcome | Method | Notes |
 |---|---|---|---|---|
-| [ses-handoff](ses-handoff/) | planned | `ODGX2` → `H5EC1` (W4-W5 personal earnings, bracketed 1-13) | Interval regression on bracket midpoints + IPAW (W4 → W5 attrition, via planned EXP-16-IPAW-W5), with `GSW5` × IPAW substituted for the screening's `GSWGT4_2` | Per-outcome DAG `DAG-SES` (planned); E-value sensitivity bound per [TODO.md A7](../TODO.md) |
+| [ses-handoff](ses-handoff/) | planned | `ODGX2` → `H5EC1` (W4-W5 personal earnings, bracketed 1-13) | Interval regression on bracket midpoints + IPAW (W4 → W5 attrition, via the IPAW utility, [TODO §A3](TODO.md#a-research-pipeline--task-16-and-beyond)), with `GSW5` × IPAW substituted for the screening's `GSWGT4_2` | Per-outcome DAG `DAG-SES` (planned); E-value sensitivity bound per [TODO.md §A7](../TODO.md) |
 
 ## Cross-cutting / methodological
 

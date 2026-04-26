@@ -92,10 +92,13 @@ SURVEY_EXPOSURES = {
     "FRIEND_CONTACT_SUM":    ("FRIEND_CONTACT_SUM",    "friendship_grid", "continuous"),
     "FRIEND_DISCLOSURE_ANY": ("FRIEND_DISCLOSURE_ANY", "friendship_grid", "binary"),
     "SCHOOL_BELONG":         ("SCHOOL_BELONG",         "belonging",       "continuous"),
-    "H1FS13":                ("H1FS13",                "loneliness",      "continuous"),
-    "H1FS14":                ("H1FS14",                "loneliness",      "continuous"),
-    "H1DA7":                 ("H1DA7",                 "qualitative",     "continuous"),
-    "H1PR4":                 ("H1PR4",                 "qualitative",     "continuous"),
+    # H1FS13/14, H1DA7, H1PR4 are 4-5 level Likert ordinals (verified vs
+    # variable_dictionary §2.3.6/7). Tagged `ordinal` rather than `continuous`
+    # so the kind taxonomy is consistent across code and docs.
+    "H1FS13":                ("H1FS13",                "loneliness",      "ordinal"),
+    "H1FS14":                ("H1FS14",                "loneliness",      "ordinal"),
+    "H1DA7":                 ("H1DA7",                 "qualitative",     "ordinal"),
+    "H1PR4":                 ("H1PR4",                 "qualitative",     "ordinal"),
 }
 
 # Exposure -> (frame_key, column, group, kind, requires_saturation)

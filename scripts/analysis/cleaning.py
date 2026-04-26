@@ -37,9 +37,13 @@ VALID_RANGES: Dict[str, Tuple[float, float]] = {
     "H1GI6A": (0, 1), "H1GI6B": (0, 1), "H1GI6C": (0, 1),
     "H1GI6D": (0, 1), "H1GI6E": (0, 1),
     "H1GH1": (1, 5),
-    # Parent ed: 1=<8th grade, ..., 11=never went to school; 12=did not go/not finish HS; skip reserves
-    "H1RM1": (1, 11), "H1RF1": (1, 11),
-    "PA12": (1, 11),
+    # Parent ed: only codes 1-9 are substantive (1=8th-or-less, 2=>8 not HS,
+    # 3=trade-instead-of-HS, 4=HS grad, 5=trade-after-HS, 6=some college,
+    # 7=college grad, 8=professional-training-beyond-college, 9=never-went-to-
+    # school). Codes 10/11/12 are "other / don't know / NA" — strip to NaN
+    # so that `derive_parent_ed` does not silently lump unknowns with code 8.
+    "H1RM1": (1, 9), "H1RF1": (1, 9),
+    "PA12": (1, 9),
     # Household income (thousands, top-coded); treat 0-500 as valid
     "PA55": (0, 500),
     # CES-D items

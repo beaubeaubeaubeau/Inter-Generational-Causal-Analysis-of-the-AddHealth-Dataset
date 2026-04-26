@@ -71,7 +71,7 @@ Mean of baseline covariates in respondents with vs. without W1 network data. Lar
 | H1GH1      |                    2.073 |                     2.161 |                  4396 |                   2100 |
 | H1GI4      |                    0.091 |                     0.164 |                  4385 |                   2096 |
 | H1GI6B     |                    0.269 |                     0.208 |                  4389 |                   2096 |
-| PA12       |                    5.693 |                     5.339 |                  3833 |                   1780 |
+| PA12       |                    5.689 |                     5.339 |                  3830 |                   1780 |
 | PA55       |                   45.862 |                    45.715 |                  3360 |                   1557 |
 
 ## 6. W5 mode-selection probit

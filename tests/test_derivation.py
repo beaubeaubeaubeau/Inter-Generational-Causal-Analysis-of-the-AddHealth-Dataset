@@ -33,15 +33,15 @@ from analysis.derivation import (
 
 def test_derive_cesd_sum_reverse_scoring(synthetic_w1_df):
     """Items {4, 8, 11, 15} reverse-coded; row 0 has all 0 -> after reverse
-    those four = 3, others = 0 -> sum = 12.
+    those four = 3, others = 0 -> raw sum = 12, scaled = 12 * 19/19 = 12.
     """
     out = derive_cesd_sum(synthetic_w1_df)
     assert out.iloc[0] == 12.0
-    # Row 2 all-missing -> NaN (min_count=19)
+    # Row 2 all-missing -> NaN (n_valid = 0 < min_valid=15)
     assert pd.isna(out.iloc[2])
-    # Row 1 has reserve codes 96 / 99 in items 1, 2 — those get scrubbed,
-    # leaving fewer than 19 valid items -> NaN
-    assert pd.isna(out.iloc[1])
+    # Row 1 has reserve codes 96 / 99 stripped from items 1, 2 — leaves 17
+    # valid items >= min_valid=15. Scaled sum should be a real number, not NaN.
+    assert not pd.isna(out.iloc[1])
 
 
 def test_derive_cesd_constants_match_spec():
@@ -50,23 +50,33 @@ def test_derive_cesd_constants_match_spec():
 
 
 def test_derive_cesd_sum_strips_reserves_before_summing():
-    """A respondent with mostly-valid items + one reserve code should fall
-    below min_count=19 and return NaN; a fully valid respondent's sum
-    should NOT include any reserve-code values.
+    """A respondent with mostly-valid items + a few reserve codes should
+    yield a *scaled* sum (raw_sum * 19 / n_valid) so long as n_valid >=
+    min_valid=15; below 15 valid items -> NaN.
     """
     base = {f"H1FS{i}": 1.0 for i in range(1, 20)}
     # All valid (1) — items 4/8/11/15 reverse to (3-1)=2, others stay 1
     df = pd.DataFrame([base])
     out = derive_cesd_sum(df)
-    expected = 4 * (3 - 1) + 15 * 1  # 8 + 15 = 23
+    expected = 4 * (3 - 1) + 15 * 1  # 8 + 15 = 23 (n_valid=19, scale=1)
     assert out.iloc[0] == float(expected)
 
-    # Same record but item 5 set to reserve code 7 -> dropped -> 18 valid -> NaN
+    # Item 5 set to reserve code 7 -> dropped -> 18 valid >= 15 -> scaled sum.
+    # Raw sum drops by 1 (item 5 was 1), so 22 over 18 valid scales to 22*19/18.
     rec = dict(base)
     rec["H1FS5"] = 7.0
     df2 = pd.DataFrame([rec])
     out2 = derive_cesd_sum(df2)
-    assert pd.isna(out2.iloc[0])
+    assert not pd.isna(out2.iloc[0])
+    assert out2.iloc[0] == pytest.approx(22.0 * 19.0 / 18.0)
+
+    # Drop 5 items -> n_valid=14 < min_valid=15 -> NaN.
+    rec = dict(base)
+    for i in [3, 5, 7, 9, 13]:
+        rec[f"H1FS{i}"] = 7.0
+    df3 = pd.DataFrame([rec])
+    out3 = derive_cesd_sum(df3)
+    assert pd.isna(out3.iloc[0])
 
 
 # ---------------------------------------------------------------------------
@@ -281,15 +291,25 @@ def test_derive_parent_ed_both_missing_yields_nan():
 
 def test_derive_parent_ed_recoded_ordinal_mapping():
     """Verify each input code maps to the documented ordinal:
-        9 -> 0; 1,2,3 -> 1; 4 -> 2; 5 -> 3; 6 -> 4; 7 -> 5; 8/10/11 -> 6.
+        9 -> 0; 1,2,3 -> 1; 4 -> 2; 5 -> 3; 6 -> 4; 7 -> 5; 8 -> 6.
+    Codes 10/11/12 are stripped to NaN at the clean_var stage (per the
+    2026-04-26 fix to VALID_RANGES); when both parents have a NaN code,
+    the row's parent_ed is NaN — NOT silently mapped to ordinal 6.
     """
     inputs = pd.DataFrame({
         "H1RM1": [9.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 11.0],
-        "H1RF1": [9.0] * 10,  # always lower
+        "H1RF1": [9.0] * 10,  # always lower (or NaN-after-NaN for the last row)
     })
     out = derive_parent_ed(inputs)
-    expected = [0, 1, 1, 1, 2, 3, 4, 5, 6, 6]
+    # First 9 rows: mom code maps as documented; dad=9 -> 0; max picks mom.
+    # 10th row: mom=11 strips to NaN; dad=9 -> 0; max picks 0 (the dad).
+    expected = [0, 1, 1, 1, 2, 3, 4, 5, 6, 0]
     assert out.tolist() == [float(x) for x in expected]
+
+    # Both parents with NaN-after-stripping -> NaN.
+    only_unknown = pd.DataFrame({"H1RM1": [11.0], "H1RF1": [10.0]})
+    out2 = derive_parent_ed(only_unknown)
+    assert pd.isna(out2.iloc[0]), "codes 10/11 must NOT silently map to ordinal 6"
 
 
 # ---------------------------------------------------------------------------
@@ -298,10 +318,12 @@ def test_derive_parent_ed_recoded_ordinal_mapping():
 
 def test_derive_friendship_grid_nomination_count(synthetic_w1_df):
     """Row 0 has exactly 1 nominated slot (H1MF2A=1) with all five contact
-    items=1. Row 1 has H1MF2A=7 -> not nominated."""
+    items=1. Item 9 is excluded from CONTACT_SUM (disclosure anchor), so
+    contact-sum = 4 (items 6, 7, 8, 10). Row 1 has H1MF2A=7 -> not nominated.
+    """
     grid = derive_friendship_grid(synthetic_w1_df)
     assert grid["FRIEND_N_NOMINEES"].iloc[0] == 1
-    assert grid["FRIEND_CONTACT_SUM"].iloc[0] == 5.0
+    assert grid["FRIEND_CONTACT_SUM"].iloc[0] == 4.0
     assert grid["FRIEND_DISCLOSURE_ANY"].iloc[0] == 1
     assert grid["FRIEND_N_NOMINEES"].iloc[1] == 0
     assert grid["FRIEND_CONTACT_SUM"].iloc[1] == 0.0
@@ -374,8 +396,24 @@ def test_derive_friendship_grid_reserve_codes_not_counted():
     assert grid["FRIEND_DISCLOSURE_ANY"].iloc[0] == 0
 
 
+def test_derive_friendship_grid_propagates_nan_for_no_anchor_data():
+    """Per the 2026-04-26 fix: a respondent with NaN at every anchor
+    item (H1MF2A..E + H1FF2A..E) gets NaN for all three returned columns,
+    NOT 0/0/0 (which silently treated absence-of-data as zero nominees).
+    """
+    rec = {f"H1{p}{item}{slot}": np.nan
+           for p in ["MF", "FF"]
+           for item in [2, 6, 7, 8, 9, 10]
+           for slot in "ABCDE"}
+    df = pd.DataFrame([rec])
+    grid = derive_friendship_grid(df)
+    assert pd.isna(grid["FRIEND_N_NOMINEES"].iloc[0])
+    assert pd.isna(grid["FRIEND_CONTACT_SUM"].iloc[0])
+    assert pd.isna(grid["FRIEND_DISCLOSURE_ANY"].iloc[0])
+
+
 def test_friendship_grid_constants_match_spec():
     """Spot-check FRIEND_* constants against codebook description."""
     assert FRIEND_SLOTS == ["A", "B", "C", "D", "E"]
-    assert FRIEND_ITEMS_CONTACT == [6, 7, 8, 9, 10]
+    assert FRIEND_ITEMS_CONTACT == [6, 7, 8, 10]  # item 9 is the disclosure anchor
     assert FRIEND_ITEM_DISCLOSURE == 9

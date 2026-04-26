@@ -4,7 +4,7 @@
 
 | ID | Claim | Strength | Evidence |
 |---|---|---|---|
-| C1 | Social integration (IDGX2) protects against adult adiposity (BMI, waist) | strong | [cardiometabolic-handoff](experiments/cardiometabolic-handoff/), [multi-outcome-screening](experiments/multi-outcome-screening/) |
+| C1 | Social integration (IDGX2) protects against adult adiposity (BMI, waist) | provisional | [multi-outcome-screening](experiments/multi-outcome-screening/) (screening β only); [cardiometabolic-handoff](experiments/cardiometabolic-handoff/) is *planned, unstarted* — no E-value, per-outcome DAG, or ordered-logit on `H4BMICLS` yet. Re-rate after the handoff lands. |
 | C2 | School belonging → adult mental health is mediator-leaky (D4 instability) | provisional | [multi-outcome-screening](experiments/multi-outcome-screening/) |
 | C3 | Network-centrality → cognition β attenuates 30-50% with AHPVT (trajectory framing) | strong | [cognitive-screening](experiments/cognitive-screening/), [methods.md §1](reference/methods.md#1-identification-assumptions-and-target-estimand) |
 | C4 | ODGX2 → adult earnings is robust to AHPVT adjustment | provisional | [multi-outcome-screening](experiments/multi-outcome-screening/), [ses-handoff](experiments/ses-handoff/) (planned) |

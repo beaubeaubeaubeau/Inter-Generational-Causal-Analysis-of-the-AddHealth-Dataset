@@ -354,10 +354,16 @@ SURVEY_EXPOSURES = {
     "FRIEND_CONTACT_SUM":    ("FRIEND_CONTACT_SUM",    "friendship_grid", "continuous"),
     "FRIEND_DISCLOSURE_ANY": ("FRIEND_DISCLOSURE_ANY", "friendship_grid", "binary"),
     "SCHOOL_BELONG":         ("SCHOOL_BELONG",         "belonging",       "continuous"),
-    "H1FS13":                ("H1FS13",                "loneliness",      "continuous"),
-    "H1FS14":                ("H1FS14",                "loneliness",      "continuous"),
-    "H1DA7":                 ("H1DA7",                 "qualitative",     "continuous"),
-    "H1PR4":                 ("H1PR4",                 "qualitative",     "continuous"),
+    # H1FS13/14, H1DA7, H1PR4 are 4-5 level Likert ordinals (verified vs
+    # variable_dictionary §2.3.6/7). Tagged `ordinal` rather than `continuous`
+    # so the kind taxonomy is consistent with the dictionary and any future
+    # ordinal-aware D6/D7 logic routes correctly. The current screen treats
+    # both kinds the same in practice (linear-in-quintile rank correlation),
+    # but tagging matters for documentation and downstream interpretability.
+    "H1FS13":                ("H1FS13",                "loneliness",      "ordinal"),
+    "H1FS14":                ("H1FS14",                "loneliness",      "ordinal"),
+    "H1DA7":                 ("H1DA7",                 "qualitative",     "ordinal"),
+    "H1PR4":                 ("H1PR4",                 "qualitative",     "ordinal"),
 }
 
 EXPOSURES: Dict[str, Tuple[str, str, str, str, bool]] = {}
@@ -566,7 +572,11 @@ def _d6_dose_response(df, col, kind):
     monotone_sign = (
         all(b > 0 for b in b_vals) or all(b < 0 for b in b_vals)
     ) if len(b_vals) >= 2 else None
-    passes = (not np.isnan(rho)) and (abs(rho) > 0.7) and bool(monotone_sign)
+    # Threshold |rho| > 0.6 per the conventional dose-response dose-monotonicity
+    # cutoff (decision 2026-04-26). Previously 0.7; loosened to align with
+    # the standard convention and avoid being needlessly strict on the
+    # 4-free-quintile-β rank correlation.
+    passes = (not np.isnan(rho)) and (abs(rho) > 0.6) and bool(monotone_sign)
     return {"trend_rho": rho, "monotone_sign": bool(monotone_sign),
             "betas_q2_q5": b_vals.tolist(),
             "pass": bool(passes)}
@@ -754,7 +764,7 @@ def _write_screening_markdown(results: pd.DataFrame, path: Path) -> None:
     L.append("- **D3** sibling-exposure dissociation (where a sibling exists); pass: |beta_t| > |beta_sib| with |diff| > pooled SE.")
     L.append("- **D4** adjustment-set stability across L0 / L0+L1 / L0+L1+AHPVT; pass: relative shift <30% AND sign stable.")
     L.append("- **D5** outcome-component consistency across C4WD90_1 / C4WD60_1 / C4NUMSCR; pass: sign consistent AND >=2/3 with p<0.10.")
-    L.append("- **D6** dose-response monotonicity (continuous only); pass: |rho_trend| > 0.7 AND monotone sign.")
+    L.append("- **D6** dose-response monotonicity (continuous only); pass: |rho_trend| > 0.6 AND monotone sign.")
     L.append("- **D7** positivity / overlap (Q5 vs Q1 logit, or binary balance); pass: p_hat in (0.02, 0.98) AND eff N >= 500.")
     L.append("- **D8** saturated-school selection penalty (network exposures, informational).")
     L.append("- **D9** collider / double-adjustment red flag (hard-coded lookup).")

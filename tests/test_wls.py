@@ -17,8 +17,11 @@ from analysis.wls import quintile_dummies, weighted_ols
 # weighted_ols
 # ---------------------------------------------------------------------------
 
-def test_weighted_ols_df_correction(mock_weights, mock_psu):
-    """H=5 PSU clusters -> df_resid = H - 1 = 4."""
+def test_weighted_ols_df_resid_is_n_minus_k(mock_weights, mock_psu):
+    """Per the 2026-04-26 decision, weighted_ols defers to statsmodels'
+    default ``df_resid = n - k`` (not the manual H - 1 override). With
+    n=50 observations and k=2 regressors (const + x), df_resid = 48.
+    """
     rng = np.random.default_rng(2026)
     n = 50
     x = rng.normal(size=n)
@@ -28,7 +31,7 @@ def test_weighted_ols_df_correction(mock_weights, mock_psu):
     assert res is not None
     assert res["n"] == 50
     assert res["n_psu"] == 5
-    assert res["df_resid"] == 4
+    assert res["df_resid"] == 48  # n - k = 50 - 2
     assert abs(res["beta"]["x"] - 2.0) < 0.5
 
 

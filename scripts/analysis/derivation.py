@@ -24,18 +24,30 @@ CESD_ITEMS = [f"H1FS{i}" for i in range(1, 20)]
 CESD_REVERSE = {4, 8, 11, 15}
 
 
-def derive_cesd_sum(df: pd.DataFrame) -> pd.Series:
+def derive_cesd_sum(df: pd.DataFrame, min_valid: int = 15) -> pd.Series:
     """Sum of the 19 CES-D items with items 4/8/11/15 reverse-scored.
 
-    Returns NaN if ANY of the 19 items is missing (``min_count=19``);
-    reverse-scored items propagate NaN through ``3 - NaN``. Strict listwise
-    by design — one missing item zeroes the respondent's score.
+    Default ``min_valid=15``: at least 15 of the 19 items must be present;
+    fewer → NaN. Respondents with 15-19 valid items get a *scaled* sum
+    (``raw_sum * 19 / n_valid``) so the result is on the canonical 0-57 scale
+    regardless of how many items they answered. This is more permissive than
+    strict listwise (``min_valid=19``); per the project decision (2026-04-26)
+    the 4-item tolerance is acceptable to avoid zeroing respondents with a
+    single missing item.
+
+    Reverse-scored items (4, 8, 11, 15) propagate NaN through ``3 - NaN``,
+    so a NaN at any reverse item still counts as missing.
     """
     cleaned = pd.DataFrame({v: clean_var(df[v], v) for v in CESD_ITEMS})
     for idx in CESD_REVERSE:
         col = f"H1FS{idx}"
         cleaned[col] = 3 - cleaned[col]
-    return cleaned.sum(axis=1, min_count=19)
+    raw_sum = cleaned.sum(axis=1, min_count=min_valid)
+    n_valid = cleaned.notna().sum(axis=1)
+    # Scale to the 19-item-equivalent total. Where n_valid < min_valid,
+    # raw_sum is already NaN (min_count); leave NaN.
+    scaled = raw_sum * (len(CESD_ITEMS) / n_valid.replace(0, np.nan))
+    return scaled
 
 
 def derive_w5_bds(df: pd.DataFrame) -> pd.Series:
@@ -111,24 +123,36 @@ def derive_race_ethnicity(df: pd.DataFrame) -> pd.Series:
 
 
 def derive_parent_ed(df: pd.DataFrame) -> pd.Series:
-    """Teen-reported max(mother, father) education using valid-range filter.
+    """Teen-reported max(mother, father) education on a 0-6 ordinal.
 
-    H1RM1/H1RF1 codes (approx per W1 codebook):
+    H1RM1/H1RF1 W1 codebook codes:
       1 = 8th grade or less
-      2 = more than 8, less than HS
-      3 = business/trade/vocational, instead of HS
+      2 = more than 8th but did not graduate from HS
+      3 = went to business/trade/vocational *instead of* HS
       4 = HS grad
-      5 = business/trade/vocational after HS
-      6 = some college
-      7 = college grad
-      8 = professional training beyond college
+      5 = went to business/trade/vocational *after* HS
+      6 = went to college, did not graduate
+      7 = graduated from college
+      8 = professional training beyond a 4-year college (post-bachelor's: MA/JD/MD/PhD)
       9 = never went to school
-      10, 11 = other / don't know / NA via reserves
-    We collapse to an ordinal 0-7 scale: 0 = never, 1 = <HS, 2 = HS,
-    3 = post-HS voc, 4 = some college, 5 = college, 6 = post-grad.
+
+    Codes 10/11/12 ("other / don't know / NA") are stripped to NaN at the
+    ``clean_var`` stage via ``VALID_RANGES["H1RM1"] = (1, 9)`` and so do
+    NOT enter the recode below. Previously (pre-2026-04-26) those codes
+    were silently mapped to ordinal 6, biasing parent_ed upward for
+    respondents with missing data.
+
+    Resulting ordinal:
+      0 = never went to school (code 9)
+      1 = less than HS (codes 1, 2, 3)
+      2 = HS grad (code 4)
+      3 = post-HS vocational (code 5)
+      4 = some college (code 6)
+      5 = college grad (code 7)
+      6 = post-grad / professional training (code 8)
     """
-    def recode(x):
-        x = clean_var(x, "H1RM1")
+    def recode(x, name):
+        x = clean_var(x, name)
         out = pd.Series(np.nan, index=x.index, dtype=float)
         out[x == 9] = 0
         out[x.isin([1, 2, 3])] = 1
@@ -136,10 +160,10 @@ def derive_parent_ed(df: pd.DataFrame) -> pd.Series:
         out[x == 5] = 3
         out[x == 6] = 4
         out[x == 7] = 5
-        out[x.isin([8, 10, 11])] = 6
+        out[x == 8] = 6  # post-grad ONLY (codes 10/11 are NaN, not 6)
         return out
-    m = recode(df["H1RM1"])
-    f = recode(df["H1RF1"])
+    m = recode(df["H1RM1"], "H1RM1")
+    f = recode(df["H1RF1"], "H1RF1")
     return pd.concat([m, f], axis=1).max(axis=1, skipna=True)
 
 
@@ -156,7 +180,11 @@ def derive_parent_ed(df: pd.DataFrame) -> pd.Series:
 # So `H1MF2A` = "is 1st male friend in your school?"
 #    `H1MF10E` = "did you talk on phone with 5th male friend?"
 FRIEND_SLOTS = ["A", "B", "C", "D", "E"]     # 5 friends per gender -> 10 max
-FRIEND_ITEMS_CONTACT = [6, 7, 8, 9, 10]      # past-7-day interaction items
+# Contact items are past-7-day non-disclosure interaction items. Item 9
+# ("talked about a problem") is the disclosure anchor and is NOT counted in
+# contact-sum to avoid double-counting it as both contact intensity and
+# disclosure (decision 2026-04-26).
+FRIEND_ITEMS_CONTACT = [6, 7, 8, 10]
 FRIEND_ITEM_DISCLOSURE = 9                    # "talked about a problem"
 
 
@@ -164,20 +192,35 @@ def derive_friendship_grid(df: pd.DataFrame) -> pd.DataFrame:
     """Derive total nominees + contact-intensity from H1MF/H1FF grid.
 
     A friend *slot* is counted as nominated when the "is in your school" item
-    (digit 2) has a valid response (0 or 1). Legit-skip (7) and NA mean no
-    nomination. Contact-intensity sums 0/1 responses across items 6-10 over
-    all nominated slots; disclosure is any item-9 = 1.
+    (digit 2) has a valid response (0 or 1). Legit-skip (7) and any other
+    non-{0,1} value mean no nomination *for that slot*.
+
+    Per-respondent semantics (2026-04-26 decision):
+      * If ALL 10 anchor items (H1MF2A..E + H1FF2A..E) are NaN, the
+        respondent is treated as having no friendship-grid data — the three
+        returned columns are NaN.
+      * Otherwise, total_noms / contact_sum / disclosure_any are computed
+        from whichever slots have a valid anchor.
+
+    Contact-intensity sums 0/1 responses across items 6, 7, 8, 10 (item 9
+    is the disclosure anchor and is NOT included in contact-sum so the two
+    columns measure non-overlapping aspects of friendship intensity).
+    Disclosure is any item-9 = 1 across nominated slots.
     """
     total_noms = pd.Series(0, index=df.index, dtype=int)
     contact_intensity = pd.Series(0.0, index=df.index, dtype=float)
     disclosure = pd.Series(0, index=df.index, dtype=int)
+    # Track which respondents have at least one valid anchor item somewhere.
+    any_anchor = pd.Series(False, index=df.index)
 
     for prefix in ["H1MF", "H1FF"]:
         for slot in FRIEND_SLOTS:
             in_school_col = f"{prefix}2{slot}"
             if in_school_col not in df.columns:
                 continue
-            nominated = df[in_school_col].isin([0, 1])
+            anchor_valid = df[in_school_col].isin([0, 1])
+            any_anchor = any_anchor | df[in_school_col].notna()
+            nominated = anchor_valid
             total_noms = total_noms + nominated.astype(int)
             for item in FRIEND_ITEMS_CONTACT:
                 c = f"{prefix}{item}{slot}"
@@ -189,8 +232,12 @@ def derive_friendship_grid(df: pd.DataFrame) -> pd.DataFrame:
                 v = df[dcol].where(df[dcol].isin([0, 1])).fillna(0)
                 disclosure = disclosure + ((v == 1) & nominated).astype(int)
 
-    return pd.DataFrame({
-        "FRIEND_N_NOMINEES": total_noms,
+    out = pd.DataFrame({
+        "FRIEND_N_NOMINEES": total_noms.astype(float),
         "FRIEND_CONTACT_SUM": contact_intensity,
-        "FRIEND_DISCLOSURE_ANY": (disclosure > 0).astype(int),
+        "FRIEND_DISCLOSURE_ANY": (disclosure > 0).astype(float),
     })
+    # Propagate NaN for respondents with no observable anchor data anywhere.
+    no_data = ~any_anchor
+    out.loc[no_data, :] = np.nan
+    return out
