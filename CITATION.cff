@@ -1,0 +1,63 @@
+cff-version: 1.2.0
+message: >-
+  If you use this analysis or its derived outputs, please cite both the
+  underlying Add Health public-use distribution (ICPSR 21600 v26) and this
+  repository.
+title: "Inter-Generational Causal Analysis of the Add Health Dataset"
+abstract: >-
+  Reproducible causal-screening pipeline for the Add Health public-use data
+  (ICPSR 21600 v26). Builds 24 W1 social-integration exposures, 13 outcomes
+  (W4 cognitive composite + 12 secondary cardiometabolic, mental-health,
+  functional, and SES outcomes), three nested adjustment sets, and a nine-
+  diagnostic D1–D9 screen, then hands off four shortlisted exposure-outcome
+  pairs to formal estimation in Task 16.
+type: software
+authors:
+  - given-names: Jacob
+    family-names: Brinton
+    email: jbrin@bu.edu
+    affiliation: Boston University
+version: "0.1.0-pre"
+date-released: "2026-04-25"
+license: "LicenseRef-AddHealth-research-use-only"
+license-url: "https://addhealth.cpc.unc.edu/data/"
+repository-code: "https://github.com/JacobBrinton/Inter-Generational-Causal-Analysis-of-the-AddHealth-Dataset"
+keywords:
+  - Add Health
+  - causal inference
+  - social network analysis
+  - cognitive aging
+  - inter-generational
+  - epidemiology
+references:
+  - type: data
+    title: >-
+      National Longitudinal Study of Adolescent to Adult Health (Add Health),
+      1994-2018 [Public Use]
+    authors:
+      - family-names: Harris
+        given-names: Kathleen Mullan
+      - family-names: Udry
+        given-names: J. Richard
+    year: 2026
+    version: "v26 (2026-03-03)"
+    publisher:
+      name: >-
+        Carolina Population Center, University of North Carolina-Chapel Hill
+        [distributor]; Inter-university Consortium for Political and Social
+        Research [distributor]
+    doi: "10.3886/ICPSR21600.v26"  # [verify against the ICPSR 21600 v26 landing page]
+    url: "https://www.icpsr.umich.edu/web/DSDR/studies/21600"
+    notes: >-
+      Public-use distribution; restricted-use waves (W6 cognitive battery,
+      genotypes, contextual files at fine geography) are NOT used in this
+      project. The user does not have rights to redistribute the underlying
+      microdata; cite the ICPSR DOI to obtain it from the original source.
+notes: >-
+  License note: this repository contains analysis code and derived,
+  aggregate outputs only. The Add Health microdata themselves are NOT
+  redistributed here and remain subject to ICPSR 21600's public-use data
+  use agreement (research use only, no re-identification, no
+  redistribution). Pieces marked "[verify]" or "[label not yet verified]"
+  should be confirmed against the ICPSR 21600 v26 landing page and the
+  shipped W1 codebook respectively before citing externally.
