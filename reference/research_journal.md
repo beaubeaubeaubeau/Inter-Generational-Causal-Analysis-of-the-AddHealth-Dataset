@@ -143,7 +143,7 @@ All four pass D1 and D4 on the non-cognitive outcome, and none are covered by AH
 
 3. **Weight choice for W5 outcomes.** The screen uses `GSWGT4_2` uniformly because `GSW5` is only populated on the mode-restricted W5 subsample (N = 824 in `analytic_w5`). Formal estimation on W5 outcomes should substitute `GSW5` + IPAW for W4 → W5 attrition; the screen may be modestly biased toward W4-retained respondents.
 
-4. **`H5EC1` is bracketed ordinal**, not continuous earnings — 13 income brackets (see [variable_dictionary.md §5](variable_dictionary.md#5-secondary-outcomes-task-15-12-total)). Treated linearly in the screen (acceptable for ranking) but formal estimation should use ordered-logit or interval regression. `H5LM5` (3-level, not binary) gets the same caveat.
+4. **`H5EC1` is bracketed ordinal**, not continuous earnings — 13 income brackets (see [variable_dictionary.md §2.5](variable_dictionary.md#25-secondary-outcomes--task-15-multi-outcome-extension-12)). Treated linearly in the screen (acceptable for ranking) but formal estimation should use ordered-logit or interval regression. `H5LM5` (3-level, not binary) gets the same caveat.
 
 5. **Sibling dissociation is cognition-specific.** Current D3 pairs are tuned to the cognitive outcome (`ODGX2` as sibling for peer-network exposures). Non-cognitive outcomes would need different pairings; not done, flagged for Task 16 on handoff candidates.
 

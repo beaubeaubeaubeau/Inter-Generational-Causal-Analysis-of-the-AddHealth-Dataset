@@ -27,6 +27,7 @@ Conventions: labels in quotes are quoted verbatim from the shipped SAS/XPT files
 | `C4NUMSCR` | W4 | "TOTAL SCORE ON NUMBER RECALL TASK-W4" | Backward digit span: longest digit string (2–8 digits) the respondent repeated in reverse order. Range 0–7. |
 | `C4WD60_1` | W4 | "S14 # WORDS ON LIST RECALLED 60 SEC-W4" | Delayed word recall: # of 15 words recalled in 60 s after a 1–2 min distractor. |
 | `C4WD90_1` | W4 | "S14 # WORDS ON LIST RECALLED 90 SEC-W4" | Immediate word recall: # of 15 read-aloud nouns recalled in 90 s. |
+| `C5WD60_1` | W5 | "S19 # WORDS ON LIST RECALLED 60 SEC-W5" | W5 delayed word recall: # of 15 words recalled in 60 s after a 1–2 min distractor; W5 analogue of `C4WD60_1`, mode-restricted to in-person + telephone interviews. |
 | `C5WD90_1` | W5 | "S14 # WORDS ON LIST RECALLED 90 SEC-W5" | W5 immediate word recall: # of 15 read-aloud nouns recalled in 90 s; W5 analogue of `C4WD90_1`, mode-restricted to in-person + telephone interviews. |
 | `CESD_SUM` | `[derived]` | `[derived]` | W1 depressive-symptoms scale: sum of 19 CES-D Likert items (0–57), items {4, 8, 11, 15} reverse-scored. |
 | `CLUSTER2` | W1–W6 | "SAMPLE CLUSTER" | School-pair primary sampling unit (132 PSUs). Used as the clustering variable for cluster-robust standard errors. |
@@ -37,14 +38,14 @@ Conventions: labels in quotes are quoted verbatim from the shipped SAS/XPT files
 | `FRIEND_CONTACT_SUM` | `[derived]` | `[derived]` | Sum of past-7-day interaction flags (Section-20 items 6–10: house visits, after-school meets, weekend time, phone calls, problem talks) across all nominated friends. |
 | `FRIEND_DISCLOSURE_ANY` | `[derived]` | `[derived]` | Binary: did the respondent say they "talked about a problem" (item 9) with *any* of their 10 nominated friends? |
 | `FRIEND_N_NOMINEES` | `[derived]` | `[derived]` | Number of friend slots (0–10) the respondent filled in the W1 in-home Section-20 nomination grid. |
-| `GSW5` | W5 | "CROSS-SECTION WGT WV ALL SP" | W5 cross-sectional sample weight; drops to N ≈ 824 once intersected with mode-restricted cognitive data. |
+| `GSW5` | W5 | "CROSS-SECTION WGT WV ALL SP" | W5 cross-sectional sample weight; drops to N ≈ 824 (W1 in-home ∩ W5 cognitive) once intersected with mode-restricted cognitive data. |
 | `GSW6` | W6 | "WAVE 6 PUF CROSSSECTIONAL OPTIMIZED WEIGHT" | W6 cross-sectional weight (not used in this project — W6 cognitive battery is restricted-use). |
 | `GSW12345` | W5 | "LONGTDNL WGT WI-II-III-IV-V ALL SP" | Five-wave longitudinal weight; restricts to Grades 7–11 because W2 dropped seniors. |
 | `GSW145` | W5 | "LONGTDNL WGT WI-IV-V ALL SP" | W1 → W4 → W5 longitudinal weight; retains Grades 7–12. |
 | `GSW1345` | W5 | "LONGTDNL WGT WI-III-IV-V ALL SP" | W1 → W3 → W4 → W5 longitudinal weight. |
 | `GSWGT1` | W1 | "GRAND SAMPLE WEIGHT-W1" | W1 cross-sectional weight. |
 | `GSWGT4` | W4 | "POSTSTRAT GS LONGIT WGT-PUBLIC-W4" | W4 longitudinal (W1 → W4) post-stratified weight. |
-| `GSWGT4_2` | W4 | "POSTSTRAT GS CROSS_SECT WGT-PUBLIC-W4" | **Primary weight for this project.** W4 cross-sectional weight; used for all task 10–15 fits. |
+| `GSWGT4_2` | W4 | "POSTSTRAT GS CROSS_SECT WGT-PUBLIC-W4" | **Primary weight for this project.** W4 cross-sectional weight; used for the cognitive-screening and multi-outcome-screening fits. |
 | `H1DA7` | W1 | "S2Q7 HANG OUT WITH FRIENDS-W1" | Past-week frequency of hanging out with friends, 0 = not at all → 3 = 5 or more times. |
 | `H1ED19` | W1 | "S5Q19 FEEL CLOSE TO PEOPLE AT SCHOOL-W1" | Likert 1–5 (higher = stronger agreement) with "you feel close to people at your school". |
 | `H1ED20` | W1 | "S5Q20 FEEL PART OF YOUR SCHOOL-W1" | Likert 1–5 with "you feel like you are part of your school". |
@@ -77,7 +78,7 @@ Conventions: labels in quotes are quoted verbatim from the shipped SAS/XPT files
 | `H5MN2` | W5 | "S13Q2 LAST MO CONFID HANDLE PERS PBMS—W5" | PSS item: "…how often felt confident about handling personal problems?" 1 = never → 5 = very often. Direction is reverse of `H5MN1` (higher = better coping). |
 | `HAVEBFF` | W1 | "R has a best Female friend" | Binary: respondent identified at least one best female friend. |
 | `HAVEBMF` | W1 | "R has a Best Male Friend" | Binary: respondent identified at least one best male friend. |
-| `HEIGHT_IN` | `[derived]` | `[derived]` | W4 measured height in inches (`feet × 12 + inches`); used as the negative-control outcome in task 14 D2. |
+| `HEIGHT_IN` | `[derived]` | `[derived]` | W4 measured height in inches (`feet × 12 + inches`); used as the negative-control outcome in the cognitive-screening D2 diagnostic. |
 | `IDG_LEQ1` | `[derived]` | `[derived]` | Binary isolation flag: 1 if the respondent was nominated as a friend by ≤ 1 classmate (`IDGX2 ≤ 1`). |
 | `IDG_ZERO` | `[derived]` | `[derived]` | Binary isolation flag: 1 if no classmate nominated the respondent as a friend (`IDGX2 == 0`). |
 | `IDGX2` | W1 | "In-Degree: TFN" | Incoming friendship nominations: how many classmates named this respondent as a friend on the In-School roster (0–30). Reads as peer-conferred status / popularity. |
@@ -128,7 +129,7 @@ Everything below is organised by the variable's role in the analysis, not by wav
 | `CLUSTER2` | "SAMPLE CLUSTER" | W1–W6 | 132 PSUs | categorical | Always `svyset CLUSTER2` with replacement. Stratum is not in public-use. See [dataset_manual.md §2.2](dataset_manual.md#22-design-variables-in-public-use). |
 | `MODE` | "SURVEY MODE" | W5 | 4,196 | categorical (W/I/T/M/S) | Cognitive items only administered in modes I + T; other modes get reserve code 95/995/9995 ("not asked"). |
 | `MODEOK5` | mode-restricted flag | `[derived]` | 3,553 | binary | Derived in [scripts/prep/03de_wave5_cognitive.py](../scripts/prep/03de_wave5_cognitive.py). Gates `W4_COG_COMP` construction. |
-| `FR_FLAG` | "NUMBER OF FRIENDS ASKED TO NOMINATE-W1" | W1 | ~6,500 | ordinal | Used in task 11 sensitivity checks on the friendship grid. |
+| `FR_FLAG` | "NUMBER OF FRIENDS ASKED TO NOMINATE-W1" | W1 | ~6,500 | ordinal | Used in cognitive-screening sensitivity checks on the friendship grid. |
 
 ---
 
@@ -136,8 +137,8 @@ Everything below is organised by the variable's role in the analysis, not by wav
 
 | Code | Label | Wave | N | Used in this project | Caveats |
 |---|---|:-:|---:|---|---|
-| `GSWGT4_2` | "POSTSTRAT GS CROSS_SECT WGT-PUBLIC-W4" | W4 | 5,114 | **Primary weight** for tasks 10–15. All D1 baselines, D4 adjustment-stability fits, and the task 15 multi-outcome screen use this weight. | For W5 outcomes this is a screening-only approximation; formal estimation should switch to `GSW5` + IPAW for W4 → W5 attrition. |
-| `GSW5` | "CROSS-SECTION WGT WV ALL SP" | W5 | 4,196 (824 in the mode-restricted cognitive cell) | Held in reserve for task 16. | Mode-restriction cost is severe once W5 cognition is required. |
+| `GSWGT4_2` | "POSTSTRAT GS CROSS_SECT WGT-PUBLIC-W4" | W4 | 5,114 | **Primary weight** for the cognitive-screening and multi-outcome-screening experiments. All D1 baselines, D4 adjustment-stability fits, and the multi-outcome screen use this weight. | For W5 outcomes this is a screening-only approximation; formal estimation should switch to `GSW5` + IPAW for W4 → W5 attrition. |
+| `GSW5` | "CROSS-SECTION WGT WV ALL SP" | W5 | 4,196 (824 in the mode-restricted cognitive cell, W1 in-home ∩ W5 cognitive) | Held in reserve for task 16. | Mode-restriction cost is severe once W5 cognition is required. |
 | `GSW145` / `GSW1345` | "LONGTDNL WGT WI-IV-V" / "… WI-III-IV-V" | W5 | 3,713 / 3,147 | Recommended for any longitudinal W1 → W4 → W5 claim after the screen. | Corrects partially for observed-cause attrition. |
 | `GSWGT1`, `GSWGT4`, `GSW12345`, `GSW6`, … | see [dataset_manual.md §2.3](dataset_manual.md#23-weight-variables-public-use-empirically-verified) | W1 / W4 / W5 / W6 | various | Not used in this project's outputs; listed in the dataset manual for completeness. |
 
@@ -153,13 +154,13 @@ Exposure-level findings from the cognitive-screening primary screen are summaris
 
 All require the respondent to be in a saturated school (≥ 75 % roster participation), which costs ~32 % of W1 respondents.
 
-| Code | Wave | N (task 14) | Kind | Findings | Caveats & uncertainties |
+| Code | Wave | N (cognitive-screening) | Kind | Findings | Caveats & uncertainties |
 |---|:-:|---:|---|---|---|
-| `IDGX2` | W1 | 3,268 | continuous (0–30) | D1 PASS on cognition (β shrinks sharply after L0+L1+AHPVT); **cross-outcome robust** on 7 non-cognitive outcomes in task 15 (BMI, waist, BMICLS, H5ID1, H5ID4, H5LM5, H5EC1). D2 height-NC fails. | Top Task-16 handoff candidate for H4WAIST / H4BMI / H4BMICLS. D2 fail is not conclusive because the height NC is contaminated (see [§2.7](#27-negative-control-outcome)). |
+| `IDGX2` | W1 | 3,268 | continuous (0–30) | D1 PASS on cognition (β shrinks sharply after L0+L1+AHPVT); **cross-outcome robust** on 7 non-cognitive outcomes in multi-outcome-screening (BMI, waist, BMICLS, H5ID1, H5ID4, H5LM5, H5EC1). D2 height-NC fails. | Top Task-16 handoff candidate for H4WAIST / H4BMI / H4BMICLS. D2 fail is not conclusive because the height NC is contaminated (see [§2.7](#27-negative-control-outcome)). |
 | `ODGX2` | W1 | 3,268 | continuous (0–10) | Largest stable β on cognition post-AHPVT; D3 sibling for `IDGX2` / `BCENT10X`. Hands off to H5EC1 for task 16. | Reads as self-reported sociability (you name up to 10 peers), distinct from peer-conferred status (`IDGX2`). |
 | `BCENT10X` | W1 | 3,268 | continuous (0–4.29) | Highest raw β on cognition but D4 rel-shift ≈ 39 % — the exposure most attenuated by AHPVT adjustment. | Makes AHPVT-as-confounder-vs-mediator ambiguity most consequential here. |
-| `REACH` | W1 | 3,268 | continuous (0–1,791) | D1 FAIL on cognition (p = 0.48); activates on `H5MN1` and `H5LM5` in task 15. | Tracks school size closely, limiting within-school variance. |
-| `REACH3` | W1 | 3,268 | continuous (0–264) | D1 PASS on cognition and H5EC1 in task 15. | More local than `REACH`; less school-size confounded. |
+| `REACH` | W1 | 3,268 | continuous (0–1,791) | D1 FAIL on cognition (p = 0.48); activates on `H5MN1` and `H5LM5` in multi-outcome-screening. | Tracks school size closely, limiting within-school variance. |
+| `REACH3` | W1 | 3,268 | continuous (0–264) | D1 PASS on cognition and H5EC1 in multi-outcome-screening. | More local than `REACH`; less school-size confounded. |
 | `INFLDMN` | W1 | 3,268 | continuous (0–1,705) | D1 FAIL on cognition (p = 0.70). Near-duplicate of `REACH`. | Redundant with `REACH` — keep only one in any formal model. |
 | `PRXPREST` | W1 | 3,006 | continuous (0.00045–0.774) | D1 PASS on cognition after re-tag; re-categorised as Weakened (score 4). Strong on `H4WAIST`, `H4BMI`. | Earlier miscoding as binary (fixed 2026-04-20) logged in [research_journal.md §Phase 4.5](research_journal.md#phase-45--adversarial-review-of-the-screen). |
 | `IGDMEAN` | W1 | 2,783 | continuous (1.00–21.39) | Mixed — inverse of prestige. | Higher missingness than other centralities; interpret with care. |
@@ -214,7 +215,7 @@ Both items are D9 red-flagged because they are components of the `CESD_SUM` L1 c
 | Code | Wave | N | Kind | Caveats |
 |---|:-:|---:|---|---|
 | `H1DA7` | W1 | 4,710 | ordinal 0–3 | Plausible low-specificity exposure; D1 PASS on `H4SBP`. |
-| `H1PR4` | W1 | 4,697 | ordinal 1–5 | Protective-factors section. Not in the cache by default; task 14 re-attaches from `w1inhome.parquet`. |
+| `H1PR4` | W1 | 4,697 | ordinal 1–5 | Protective-factors section. Not in the cache by default; cognitive-screening re-attaches from `w1inhome.parquet`. |
 
 ---
 
@@ -222,7 +223,7 @@ Both items are D9 red-flagged because they are components of the `CESD_SUM` L1 c
 
 | Code | Label | Wave | N | Kind | Findings | Caveats |
 |---|---|:-:|---:|---|---|---|
-| `W4_COG_COMP` | `[derived]` | W4 | 3,238 (primary frame) | continuous (z-scored) | Used as `y` in every task 10–14 analysis and as the "cognitive" outcome in task 15 (mid-pack at 5/24 significant exposures). | Every exposure fails D4 adjustment stability, with AHPVT contributing most of the drift. See [research_journal.md §Phase 4 main finding](research_journal.md#phase-4--preliminary-causal-screening-d1d9). |
+| `W4_COG_COMP` | `[derived]` | W4 | 3,238 (primary frame) | continuous (z-scored) | Used as `y` in every cognitive-screening regression and as the "cognitive" outcome in multi-outcome-screening (mid-pack at 5/24 significant exposures). | Every exposure fails D4 adjustment stability, with AHPVT contributing most of the drift. See [research_journal.md §Phase 4 main finding](research_journal.md#phase-4--preliminary-causal-screening-d1d9). |
 | `C4WD90_1` | "S14 # WORDS ON LIST RECALLED 90 SEC-W4" | W4 | 5,101 | continuous (0–15) | Immediate-recall component. | Protocol in [dataset_manual.md §4.4](dataset_manual.md#44-wave-iv-cognitive-battery-dataw4w4inhomesas7bdat). |
 | `C4WD60_1` | "S14 # WORDS ON LIST RECALLED 60 SEC-W4" | W4 | 5,097 | continuous (0–15) | Delayed-recall component. | |
 | `C4NUMSCR` | "TOTAL SCORE ON NUMBER RECALL TASK-W4" | W4 | 5,102 | continuous (0–7) | Backward-digit-span component. | |
@@ -249,7 +250,7 @@ All W5 outcomes. Median N ≈ 2,400 network-gated, ≈ 3,400 grid-gated. Screen 
 
 | Code | Label | Wave | Kind | Findings (p<0.05 / 24) | Caveats |
 |---|---|:-:|---|:-:|---|
-| `H5ID1` | "S5Q1 HOW IS GEN PHYSICAL HEALTH—W5" | W5 | likert 1–5 (higher = worse) | 11 | Second-broadest signal in task 15. |
+| `H5ID1` | "S5Q1 HOW IS GEN PHYSICAL HEALTH—W5" | W5 | likert 1–5 (higher = worse) | 11 | Second-broadest signal in multi-outcome-screening. |
 | `H5ID4` | "S5Q4 LIMIT CLIMB SEV. FLIGHT STAIRS—W5" | W5 | ordinal 1–3 | 8 | Functional-limitation item; floor effect at younger ages. |
 | `H5ID16` | "S5Q16 HOW OFTEN TROUBLE SLEEPING—W5" | W5 | ordinal 0–4 | 2 | |
 | `H5MN1` | "S13Q1 LAST MO NO CNTRL IMPORT THINGS—W5" | W5 | likert 1–5 | 3 | Perceived Stress Scale item (CASI-administered). |

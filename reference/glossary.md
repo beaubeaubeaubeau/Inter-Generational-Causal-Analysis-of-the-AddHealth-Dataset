@@ -2,6 +2,10 @@
 
 Plain-language definitions of the causal-inference and survey-statistics vocabulary used throughout the reference set. Each entry points to the section in this document where the concept first appears and explains *why* it matters for the project. Alphabetical.
 
+### ATE (Average Treatment Effect)
+E[Y(1) − Y(0)] across a defined target population — the average causal effect of exposure on outcome if everyone were treated vs. everyone untreated.
+**Why it matters here:** the project's target estimand is an ATE *within saturated schools* for network exposures and an ATE within the analytic cell for non-network exposures (see [methods.md §1](methods.md#1-identification-assumptions-and-target-estimand)).
+
 ### Back-door path
 <a id="glossary-back-door-path"></a>
 An indirect route from the exposure X to the outcome Y through a common ancestor C (C → X and C → Y), rather than through the intended causal channel X → Y. Back-door paths create *spurious* associations that look like causation. **Why it matters**: every unblocked back-door path biases the causal estimate. The job of the adjustment set ([methods.md §1](methods.md#1-identification-assumptions-and-target-estimand)) is to "close" all back-door paths by conditioning on at least one variable on each path. First used in [dataset_manual.md §7 pitfall #1 context](dataset_manual.md#7-data-quality-gotchas); formalised in [methods.md §1](methods.md#1-identification-assumptions-and-target-estimand).
@@ -58,7 +62,7 @@ A variable Z that affects the exposure X but not the outcome Y except through X,
 A variable on the causal path X → M → Y. **Why it matters**: adjusting for M blocks part of the total effect, *shrinking β toward zero*. This is the opposite of what adjusting for a confounder does (which should reveal the true β by removing bias). The two operations look identical in a regression table — only a DAG (or a front-door / IV decomposition) can tell them apart. See [AHPVT callout, methods.md §1](methods.md#1-identification-assumptions-and-target-estimand).
 
 ### Mode (W5 survey mode)
-The channel through which the W5 interview was administered: W = Web, I = In-person, M = Mail, T = Telephone, S = Spanish CAPI. **Why it matters**: cognitive items were administered only in I + T, restricting the W5 cognitive analytic cell to ~624 of 4,196. See [dataset_manual.md §4.5](dataset_manual.md#wave-v-cognitive-battery).
+The channel through which the W5 interview was administered: W = Web, I = In-person, M = Mail, T = Telephone, S = Spanish CAPI. **Why it matters**: cognitive items were administered only in I + T, restricting the W5 cognitive analytic cell to ~620 of 4,196. See [dataset_manual.md §4.5](dataset_manual.md#wave-v-cognitive-battery).
 
 ### Negative-control outcome (NC)
 An outcome Y* that, under the assumed causal model, should **not** be affected by X. If X still predicts Y*, unmeasured confounding is implicated. **Why it matters**: D2 in the diagnostic battery uses `HEIGHT_IN`. The NC is contaminated (adolescent height correlates with peer popularity), so failures on network exposures are ambiguous. See [dataset_manual.md §9](dataset_manual.md#9-outcome-battery-primary--multi-outcome-extension).
