@@ -1,4 +1,4 @@
-# Task 10 - Baseline regressions (exploratory)
+# Baseline regressions (exploratory)
 
 All specifications: WLS on GSWGT4_2, cluster-robust on CLUSTER2, use_t=True, df = (n_psu − 1). Exposures reported per spec; covariates are sex, race dummies (ref NH-White), parent education, CES-D sum, self-rated health, and (unless noted) AHPVT raw.
 

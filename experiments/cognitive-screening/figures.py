@@ -588,7 +588,7 @@ def plot_screening_heatmap() -> None:
         ("D5 components", "d5_pass"),
         ("D6 dose-resp", "d6_pass"),
         ("D7 overlap", "d7_pass"),
-        ("D9 red flag", "d9_red_flag"),
+        ("D9 (no red flag)", "d9_red_flag"),
     ]
     labels = [l for l, _ in diag_cols]
     M = np.full((len(results), len(diag_cols)), np.nan)

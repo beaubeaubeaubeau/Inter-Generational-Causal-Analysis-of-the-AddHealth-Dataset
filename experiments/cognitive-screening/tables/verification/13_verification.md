@@ -1,4 +1,4 @@
-# Task 13 — Verification pass
+# Verification pass
 
 ## 1. Published-benchmark weighted means
 
@@ -48,12 +48,12 @@ A baseline indicator with no theoretical link to cognitive outcomes — should b
 
 ## 7. Attrition IPW re-fit of anchor model (S01C)
 
-Stage-1 logit pseudo-R² = 0.0295, N = 3230.
+Stage-1 logit failed; IPW set to 1.
 
 | spec                    |   beta_idgx2 |         p |    n |
 |:------------------------|-------------:|----------:|-----:|
-| Primary (GSWGT4_2 only) |    0.00926   | 0.0154    | 3268 |
-| With attrition IPW      |    0.0100135 | 0.0114588 | 3210 |
+| Primary (GSWGT4_2 only) |   0.00926382 | 0.0153668 | 3268 |
+| With attrition IPW      |   0.00926382 | 0.0153668 | 3268 |
 
 ## 8. BH-FDR multiple-testing adjustment (primary family)
 

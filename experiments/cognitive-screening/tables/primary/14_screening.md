@@ -1,6 +1,6 @@
-# Task 14 - Preliminary causal screening of social-exposure treatments
+# Preliminary causal screening of social-exposure treatments
 
-Screens each W1 adolescent-social exposure against a battery of falsification / plausibility diagnostics (D1-D9). All diagnostics reuse weighted OLS on `GSWGT4_2`, cluster-robust SEs on `CLUSTER2`, and the same adjustment set conventions used in task10.
+Screens each W1 adolescent-social exposure against a battery of falsification / plausibility diagnostics (D1-D9). All diagnostics reuse weighted OLS on `GSWGT4_2`, cluster-robust SEs on `CLUSTER2`, and the same adjustment set conventions used in the baseline-regressions block of this experiment.
 
 ## Diagnostics
 
@@ -21,9 +21,9 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 | IDGX2 | peer_network | 3268 | PASS | FAIL | FAIL | FAIL | PASS | PASS | PASS | no | Drop | 4 |
 | ODGX2 | self_network | 3268 | PASS | PASS | NA | FAIL | PASS | PASS | PASS | no | Mixed | 6 |
 | BCENT10X | peer_network | 3268 | PASS | PASS | PASS | FAIL | PASS | PASS | PASS | no | Mixed | 8 |
-| REACH | peer_network | 3268 | FAIL | FAIL | NA | FAIL | FAIL | FAIL | PASS | no | Drop | 1 |
+| REACH | peer_network | 3268 | FAIL | FAIL | NA | FAIL | FAIL | FAIL | PASS | no | Weakened | 1 |
 | REACH3 | peer_network | 3268 | PASS | PASS | NA | FAIL | FAIL | PASS | PASS | no | Mixed | 5 |
-| INFLDMN | peer_network | 3268 | FAIL | FAIL | NA | FAIL | FAIL | FAIL | PASS | no | Drop | 1 |
+| INFLDMN | peer_network | 3268 | FAIL | FAIL | NA | FAIL | FAIL | FAIL | PASS | no | Weakened | 1 |
 | PRXPREST | peer_network | 3006 | FAIL | PASS | NA | FAIL | FAIL | PASS | PASS | no | Weakened | 4 |
 | IGDMEAN | peer_network | 2783 | FAIL | PASS | NA | FAIL | FAIL | PASS | PASS | no | Weakened | 4 |
 | IDG_ZERO | isolation | 3268 | FAIL | FAIL | NA | FAIL | FAIL | NA | PASS | no | Weakened | 1 |
@@ -31,13 +31,13 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 | HAVEBMF | isolation | 3268 | FAIL | PASS | FAIL | FAIL | FAIL | NA | PASS | no | Drop | 3 |
 | HAVEBFF | isolation | 3268 | FAIL | PASS | NA | FAIL | FAIL | NA | PASS | no | Weakened | 3 |
 | ESDEN | egonet | 2783 | FAIL | PASS | NA | FAIL | FAIL | FAIL | PASS | no | Weakened | 3 |
-| ERDEN | egonet | 3006 | FAIL | FAIL | NA | PASS | FAIL | FAIL | PASS | no | Drop | 3 |
-| ESRDEN | egonet | 3167 | FAIL | FAIL | NA | FAIL | FAIL | FAIL | PASS | no | Drop | 1 |
+| ERDEN | egonet | 3006 | FAIL | FAIL | NA | PASS | FAIL | FAIL | PASS | no | Weakened | 3 |
+| ESRDEN | egonet | 3167 | FAIL | FAIL | NA | FAIL | FAIL | FAIL | PASS | no | Weakened | 1 |
 | RCHDEN | egonet | 3268 | FAIL | PASS | NA | PASS | FAIL | FAIL | PASS | no | Weakened | 5 |
 | FRIEND_N_NOMINEES | friendship_grid | 4710 | FAIL | PASS | NA | FAIL | FAIL | FAIL | PASS | no | Weakened | 3 |
 | FRIEND_CONTACT_SUM | friendship_grid | 4710 | FAIL | PASS | NA | FAIL | FAIL | FAIL | PASS | no | Weakened | 3 |
-| FRIEND_DISCLOSURE_ANY | friendship_grid | 4710 | FAIL | FAIL | PASS | FAIL | FAIL | NA | FAIL | no | Drop | 2 |
-| SCHOOL_BELONG | belonging | 4629 | FAIL | FAIL | NA | FAIL | FAIL | PASS | FAIL | YES | Drop | 1 |
+| FRIEND_DISCLOSURE_ANY | friendship_grid | 4710 | FAIL | FAIL | PASS | FAIL | FAIL | NA | FAIL | no | Weakened | 2 |
+| SCHOOL_BELONG | belonging | 4629 | FAIL | FAIL | NA | FAIL | FAIL | PASS | FAIL | YES | Weakened | 1 |
 | H1FS13 | loneliness | 4710 | FAIL | PASS | NA | FAIL | FAIL | FAIL | FAIL | YES | Weakened | 2 |
 | H1FS14 | loneliness | 4710 | FAIL | PASS | NA | FAIL | FAIL | FAIL | FAIL | YES | Weakened | 2 |
 | H1DA7 | qualitative | 4710 | FAIL | FAIL | NA | FAIL | FAIL | FAIL | PASS | no | Weakened | 1 |
@@ -55,7 +55,7 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - D6 trend rho = 0.8; monotone sign = True; PASS.
 - D7 overlap: p_hat in [0.118, 0.785]; eff N = 1308; PASS.
 - D8 saturated-school selection: 32.4% of W1 is outside the network frame.
-- Notes: D2 fails hard (p<0.05).
+- Notes: D3 fails: sibling stronger.
 
 ### ODGX2 (self_network)  --  **Mixed** [score 6]
 
@@ -80,7 +80,7 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - D8 saturated-school selection: 32.4% of W1 is outside the network frame.
 - Notes: D4 unstable across adjustment sets.
 
-### REACH (peer_network)  --  **Drop** [score 1]
+### REACH (peer_network)  --  **Weakened** [score 1]
 
 - D1 primary beta = 2.695e-05 (SE 3.764e-05, p = 0.475, N = 3268).
 - D2 HEIGHT_IN beta = -0.0003319 (p = 0.028); FAIL.
@@ -89,7 +89,7 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - D6 trend rho = 0; monotone sign = True; FAIL.
 - D7 overlap: p_hat in [0.0442, 0.831]; eff N = 1302; PASS.
 - D8 saturated-school selection: 32.4% of W1 is outside the network frame.
-- Notes: D2 fails hard (p<0.05).
+- Notes: D1 association null (p>=0.05).
 
 ### REACH3 (peer_network)  --  **Mixed** [score 5]
 
@@ -102,7 +102,7 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - D8 saturated-school selection: 32.4% of W1 is outside the network frame.
 - Notes: D4 unstable across adjustment sets.
 
-### INFLDMN (peer_network)  --  **Drop** [score 1]
+### INFLDMN (peer_network)  --  **Weakened** [score 1]
 
 - D1 primary beta = -1.608e-05 (SE 4.137e-05, p = 0.698, N = 3268).
 - D2 HEIGHT_IN beta = -0.000424 (p = 0.012); FAIL.
@@ -111,7 +111,7 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - D6 trend rho = -1; monotone sign = False; FAIL.
 - D7 overlap: p_hat in [0.0376, 0.89]; eff N = 1296; PASS.
 - D8 saturated-school selection: 32.4% of W1 is outside the network frame.
-- Notes: D2 fails hard (p<0.05).
+- Notes: D1 association null (p>=0.05).
 
 ### PRXPREST (peer_network)  --  **Weakened** [score 4]
 
@@ -187,7 +187,7 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - D8 saturated-school selection: 32.4% of W1 is outside the network frame.
 - Notes: D1 association null (p>=0.05).
 
-### ERDEN (egonet)  --  **Drop** [score 3]
+### ERDEN (egonet)  --  **Weakened** [score 3]
 
 - D1 primary beta = -0.02342 (SE 0.06431, p = 0.716, N = 3006).
 - D2 HEIGHT_IN beta = 0.9166 (p = 0.00153); FAIL.
@@ -196,9 +196,9 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - D6 trend rho = 0; monotone sign = False; FAIL.
 - D7 overlap: p_hat in [0.15, 0.688]; eff N = 1215; PASS.
 - D8 saturated-school selection: 32.4% of W1 is outside the network frame.
-- Notes: D2 fails hard (p<0.05).
+- Notes: D1 association null (p>=0.05).
 
-### ESRDEN (egonet)  --  **Drop** [score 1]
+### ESRDEN (egonet)  --  **Weakened** [score 1]
 
 - D1 primary beta = 0.01183 (SE 0.09285, p = 0.899, N = 3167).
 - D2 HEIGHT_IN beta = 1.235 (p = 0.00707); FAIL.
@@ -207,7 +207,7 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - D6 trend rho = 0; monotone sign = False; FAIL.
 - D7 overlap: p_hat in [0.316, 0.713]; eff N = 1275; PASS.
 - D8 saturated-school selection: 32.4% of W1 is outside the network frame.
-- Notes: D2 fails hard (p<0.05).
+- Notes: D1 association null (p>=0.05).
 
 ### RCHDEN (egonet)  --  **Weakened** [score 5]
 
@@ -240,7 +240,7 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - D7 overlap: p_hat in [0.141, 0.852]; eff N = 1870; PASS.
 - Notes: D1 association null (p>=0.05).
 
-### FRIEND_DISCLOSURE_ANY (friendship_grid)  --  **Drop** [score 2]
+### FRIEND_DISCLOSURE_ANY (friendship_grid)  --  **Weakened** [score 2]
 
 - D1 primary beta = 0.03998 (SE 0.02442, p = 0.104, N = 4710).
 - D2 HEIGHT_IN beta = -0.2687 (p = 0.0153); FAIL.
@@ -248,9 +248,9 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - D4 rel-shift across adj sets = 1.97; sign stable = True; FAIL.
 - D5 1/3 components significant at p<0.10; sign consistent = True; FAIL.
 - D7 overlap: p_hat in [0.0841, 0.983]; eff N = 4697; FAIL.
-- Notes: D2 fails hard (p<0.05).
+- Notes: D1 association null (p>=0.05).
 
-### SCHOOL_BELONG (belonging)  --  **Drop** [score 1]
+### SCHOOL_BELONG (belonging)  --  **Weakened** [score 1]
 
 - D1 primary beta = 0.003592 (SE 0.003206, p = 0.265, N = 4629).
 - D2 HEIGHT_IN beta = -0.04021 (p = 0.00392); FAIL.
@@ -259,7 +259,7 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 - D6 trend rho = 1; monotone sign = True; PASS.
 - D7 overlap: p_hat in [0.00694, 0.903]; eff N = 1817; FAIL.
 - D9 RED FLAG: Mixes individual disposition with school-level context; possible collider given W1 CESD/SRH.
-- Notes: D2 fails hard (p<0.05).
+- Notes: D1 association null (p>=0.05).
 
 ### H1FS13 (loneliness)  --  **Weakened** [score 2]
 
@@ -307,10 +307,12 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 
 - **Promising (0):** (none)
 - **Mixed (4):** BCENT10X, ODGX2, REACH3, IDG_LEQ1
-- **Weakened (12):** PRXPREST, IGDMEAN, IDG_ZERO, HAVEBFF, ESDEN, RCHDEN, FRIEND_N_NOMINEES, FRIEND_CONTACT_SUM, H1FS13, H1FS14, H1DA7, H1PR4
-- **Dropped (8):** IDGX2, REACH, INFLDMN, HAVEBMF, ERDEN, ESRDEN, FRIEND_DISCLOSURE_ANY, SCHOOL_BELONG
+- **Weakened (18):** REACH, INFLDMN, PRXPREST, IGDMEAN, IDG_ZERO, HAVEBFF, ESDEN, ERDEN, ESRDEN, RCHDEN, FRIEND_N_NOMINEES, FRIEND_CONTACT_SUM, FRIEND_DISCLOSURE_ANY, SCHOOL_BELONG, H1FS13, H1FS14, H1DA7, H1PR4
+- **Dropped (2):** IDGX2, HAVEBMF
 
 **Shortlist for formal causal estimation: BCENT10X, ODGX2**
+
+> Note: this shortlist is for the **cognitive** outcome only. The cross-outcome handoff list (which includes IDGX2 for cardiometabolic outcomes) comes from `experiments/multi-outcome-screening/`.
 
 - `BCENT10X` (Mixed): D1 beta = 0.0911 (p=3.19e-05); D2 HEIGHT_IN p = 0.636; D4 rel-shift = 0.394.
 - `ODGX2` (Mixed): D1 beta = 0.0142 (p=0.000697); D2 HEIGHT_IN p = 0.707; D4 rel-shift = 0.505.

@@ -4,7 +4,9 @@ Re-runs the outcome-dependent part of the cognitive-screening diagnostic battery
 
 **Weight caveat:** `GSWGT4_2` is used uniformly for screening. Formal causal estimation on W5 outcomes should substitute `GSW5` and handle W4→W5 attrition (IPAW or bounding).
 
-**Adjustment-set caveat:** the primary spec includes `AH_PVT` (verbal IQ at W1) uniformly. For `H5EC1` / `H5LM5` / `H4BMI` this is plausibly a mediator (cognition → attainment / health behaviours → outcome); D4 flags any outcome where adding AHPVT moves β by > 30%.
+**Adjustment-set caveat:** the primary spec includes `AH_PVT` (verbal IQ at W1) uniformly. For `H5EC1` / `H5LM5` / `H4BMI` this is plausibly a mediator (cognition → attainment / health behaviours → outcome); D4 flags any outcome where adding AHPVT moves β by > 30%. **For SES outcomes (`H5EC1`, `H5LM5`)**, the matrix CSV emits a parallel `beta_no_ahpvt` / `se_no_ahpvt` / `p_no_ahpvt` triple from a L0+L1 (AHPVT-dropped) fit — that is the methodologically-correct screening estimate per `DAG-SES`, since AHPVT lies on the SOC → AHPVT → educational credentialism → earnings causal path. The AHPVT-adjusted β biases the SOC effect downward.
+
+**Multiple-testing caveat:** the `d1_q` column gives Benjamini–Hochberg q-values within each outcome family (24 tests per outcome). Use `d1_q` rather than raw `p` when discussing breadth of significant exposures.
 
 ## Per-outcome rankings
 
@@ -177,4 +179,4 @@ Exposures appearing in top-3 (by lowest p among significant) for ≥3 outcomes:
 
 **Task16 handoff: ['IDGX2 → H4WAIST', 'IDGX2 → H4BMI', 'IDGX2 → H4BMICLS', 'ODGX2 → H5EC1']**
 
-Each pair passes D1 (β significantly non-zero under primary spec) and D4 (β stable across nested adjustment sets to within 30%). Cross-reference with task14's D2/D6/D7 for the chosen exposures before committing to formal causal estimation.
+Each pair passes D1 (β significantly non-zero under primary spec) and D4 (β stable across nested adjustment sets to within 30%). Cross-reference with the cognitive-screening D2/D6/D7 results for the chosen exposures before committing to formal causal estimation.

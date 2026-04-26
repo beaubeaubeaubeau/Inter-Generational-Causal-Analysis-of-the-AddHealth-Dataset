@@ -62,9 +62,10 @@ OUTCOMES: Dict[str, Tuple[str, str, str]] = {
 
 # ---------------------------------------------------------------------------
 # Exposure registry — same 24 as EXP-14-COG
-# Inlined from task14_causal_screening.py so this experiment is self-contained
-# (the cognitive-screening run.py is the canonical home of these constants;
-# any change there must be mirrored here).
+# Inlined from the cognitive-screening experiment's run.py (causal-screening
+# block) so this experiment is self-contained. The cognitive-screening run.py
+# is the canonical home of these constants; any change there must be mirrored
+# here. (TODO §D — move to scripts/analysis/diagnostics.py to deduplicate.)
 # ---------------------------------------------------------------------------
 NETWORK_EXPOSURES = {
     # name: (column, group, kind)
@@ -242,6 +243,41 @@ def d4_outcome(df: pd.DataFrame, exposure_col: str, outcome_col: str) -> dict:
 # ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
+# For SES outcomes the SES DAG explicitly drops AHPVT (it sits on the
+# SOC → AHPVT → educational credentialism → earnings path; conditioning on
+# it under-estimates the total effect). The screen uses L0+L1+AHPVT
+# uniformly for cross-outcome comparability, but for these outcomes we ALSO
+# emit the AHPVT-dropped β (`beta_no_ahpvt`) so the report can use the
+# methodologically-correct estimate.
+SES_DROP_AHPVT_OUTCOMES = {"H5EC1", "H5LM5"}
+
+
+def _bh_qvalues(p: np.ndarray) -> np.ndarray:
+    """Benjamini–Hochberg q-values for the input p-vector. NaNs preserved."""
+    p = np.asarray(p, dtype=float)
+    n = p.size
+    out = np.full(n, np.nan, dtype=float)
+    valid = ~np.isnan(p)
+    if valid.sum() == 0:
+        return out
+    p_valid = p[valid]
+    try:
+        from scipy.stats import false_discovery_control
+        q_valid = false_discovery_control(p_valid, method="bh")
+    except (ImportError, AttributeError):
+        # Manual BH: sort ascending, q_i = p_i * m / rank_i, monotonic from bottom.
+        m = p_valid.size
+        order = np.argsort(p_valid)
+        ranked = p_valid[order]
+        q_sorted = ranked * m / np.arange(1, m + 1)
+        # Monotone (max from the right, but enforce non-decreasing from left)
+        q_sorted = np.minimum.accumulate(q_sorted[::-1])[::-1]
+        q_valid = np.empty(m, dtype=float)
+        q_valid[order] = q_sorted
+    out[valid] = np.clip(q_valid, 0.0, 1.0)
+    return out
+
+
 def run_matrix(W4: pd.DataFrame, W1_FULL: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for exp_name, (frame_key, col, group, kind, _) in EXPOSURES.items():
@@ -249,6 +285,17 @@ def run_matrix(W4: pd.DataFrame, W1_FULL: pd.DataFrame) -> pd.DataFrame:
         for outcome_code, (label, o_group, o_kind) in OUTCOMES.items():
             d1 = d1_outcome(df, col, outcome_code)
             d4 = d4_outcome(df, col, outcome_code)
+            # AHPVT-dropped (L0+L1) parallel fit for SES outcomes.
+            if outcome_code in SES_DROP_AHPVT_OUTCOMES:
+                res_no_a = _fit(df, col, outcome_code, _adj_L0_L1)
+                if res_no_a is None:
+                    beta_no_a = se_no_a = p_no_a = np.nan
+                else:
+                    beta_no_a = float(res_no_a["beta"]["exposure"])
+                    se_no_a = float(res_no_a["se"]["exposure"])
+                    p_no_a = float(res_no_a["p"]["exposure"])
+            else:
+                beta_no_a = se_no_a = p_no_a = np.nan
             rows.append({
                 "exposure": exp_name,
                 "exposure_group": group,
@@ -266,8 +313,17 @@ def run_matrix(W4: pd.DataFrame, W1_FULL: pd.DataFrame) -> pd.DataFrame:
                 "d4_rel_shift": d4["rel_shift"],
                 "d4_sign_stable": d4["sign_stable"],
                 "d4_pass": d4["pass"],
+                "beta_no_ahpvt": beta_no_a,
+                "se_no_ahpvt": se_no_a,
+                "p_no_ahpvt": p_no_a,
             })
-    return pd.DataFrame(rows)
+    mat = pd.DataFrame(rows)
+    # BH-FDR within outcome on the D1 grid (24 tests per outcome).
+    mat["d1_q"] = np.nan
+    for oc in mat["outcome"].unique():
+        sel = mat["outcome"] == oc
+        mat.loc[sel, "d1_q"] = _bh_qvalues(mat.loc[sel, "p"].to_numpy())
+    return mat
 
 
 # ---------------------------------------------------------------------------
@@ -294,7 +350,18 @@ def write_markdown(mat: pd.DataFrame) -> None:
         "**Adjustment-set caveat:** the primary spec includes `AH_PVT` (verbal "
         "IQ at W1) uniformly. For `H5EC1` / `H5LM5` / `H4BMI` this is plausibly "
         "a mediator (cognition → attainment / health behaviours → outcome); "
-        "D4 flags any outcome where adding AHPVT moves β by > 30%.\n"
+        "D4 flags any outcome where adding AHPVT moves β by > 30%. "
+        "**For SES outcomes (`H5EC1`, `H5LM5`)**, the matrix CSV emits a "
+        "parallel `beta_no_ahpvt` / `se_no_ahpvt` / `p_no_ahpvt` triple from a "
+        "L0+L1 (AHPVT-dropped) fit — that is the methodologically-correct "
+        "screening estimate per `DAG-SES`, since AHPVT lies on the "
+        "SOC → AHPVT → educational credentialism → earnings causal path. "
+        "The AHPVT-adjusted β biases the SOC effect downward.\n"
+    )
+    lines.append(
+        "**Multiple-testing caveat:** the `d1_q` column gives Benjamini–Hochberg "
+        "q-values within each outcome family (24 tests per outcome). Use `d1_q` "
+        "rather than raw `p` when discussing breadth of significant exposures.\n"
     )
 
     # Per-outcome tables.
@@ -346,9 +413,10 @@ def write_markdown(mat: pd.DataFrame) -> None:
     else:
         lines.append(
             "No exposure appears in the top-3 for 3+ outcomes. Cross-outcome "
-            "robustness is weak. Consider focusing task16 on a single "
-            "(exposure, outcome) pair justified by task14's primary-cognition "
-            "screen rather than attempting a multi-outcome summary estimator.\n"
+            "robustness is weak. Consider focusing the planned handoff "
+            "experiments on a single (exposure, outcome) pair justified by the "
+            "cognitive-screening D1–D9 results rather than attempting a "
+            "multi-outcome summary estimator.\n"
         )
 
     # Handoff recommendation.
@@ -373,8 +441,9 @@ def write_markdown(mat: pd.DataFrame) -> None:
             f"**Task16 handoff: {pairs}**\n\n"
             "Each pair passes D1 (β significantly non-zero under primary spec) "
             "and D4 (β stable across nested adjustment sets to within 30%). "
-            "Cross-reference with task14's D2/D6/D7 for the chosen exposures "
-            "before committing to formal causal estimation."
+            "Cross-reference with the cognitive-screening D2/D6/D7 results "
+            "for the chosen exposures before committing to formal causal "
+            "estimation."
         )
 
     (TABLES / "15_multi_outcome.md").write_text("\n".join(lines) + "\n")

@@ -15,6 +15,7 @@ attrition.
 | DAG | [`DAG-SES`](../../reference/dag_library.md) (planned) |
 | Method | Interval regression on bracket midpoints + IPAW (via planned EXP-16-IPAW-W5) |
 | Sensitivity | E-value bound on the unmeasured-confounder strength required to explain the result away (per [TODO.md A7](../../TODO.md)) |
+| Estimand wording | Among Add Health respondents in saturated schools (for ODGX2) or full W1 in-home cohort (for survey exposures), conditional on W1 demographics and family/parent-ed covariates (AHPVT DROPPED per `DAG-SES`), exposure *X* is associated with a β-unit change in W5 bracketed adult earnings (modeled via interval regression on the bracket midpoint). Estimation uses GSW5 × IPAW for W4→W5 attrition. |
 
 ## Notes
 

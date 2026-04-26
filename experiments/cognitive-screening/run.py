@@ -32,6 +32,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from analysis import CACHE  # noqa: E402
 from analysis.cleaning import clean_var, neg_control_outcome, VALID_RANGES  # noqa: E402
+from analysis.derivation import derive_parent_ed, derive_race_ethnicity  # noqa: E402
 from analysis.wls import weighted_ols, quintile_dummies  # noqa: E402
 from analysis.weighted_stats import weighted_mean_se, weighted_prop_ci  # noqa: E402
 
@@ -253,7 +254,7 @@ def _run_all_baseline_specs() -> pd.DataFrame:
 
 
 def _write_baseline_markdown(df: pd.DataFrame, path: Path) -> None:
-    lines = ["# Task 10 - Baseline regressions (exploratory)", ""]
+    lines = ["# Baseline regressions (exploratory)", ""]
     lines.append("All specifications: WLS on GSWGT4_2, cluster-robust on CLUSTER2, "
                  "use_t=True, df = (n_psu − 1). Exposures reported per spec; covariates "
                  "are sex, race dummies (ref NH-White), parent education, CES-D sum, "
@@ -453,23 +454,29 @@ def _fit_quintiles(df: pd.DataFrame, exposure_col: str, y_col: str,
 def _d1_baseline(df, col):
     res = _fit_screen(df, col, "W4_COG_COMP", _adj_full)
     if res is None:
-        return {"beta": np.nan, "se": np.nan, "p": np.nan, "n": 0, "pass": False}
+        # Could not fit at all — distinguish from a real fail with pass=None.
+        return {"beta": np.nan, "se": np.nan, "p": np.nan, "n": 0, "pass": None}
     b = float(res["beta"]["exposure"])
     p = float(res["p"]["exposure"])
+    # Degenerate fit (p=NaN) is a third state distinct from FAIL.
+    passes = None if np.isnan(p) else bool(p < 0.05)
     return {"beta": b, "se": float(res["se"]["exposure"]),
             "p": p, "n": int(res["n"]),
-            "pass": bool(p < 0.05)}
+            "pass": passes}
 
 
 def _d2_negctrl(df, col):
     res = _fit_screen(df, col, "HEIGHT_IN", _adj_full)
     if res is None:
-        return {"beta": np.nan, "se": np.nan, "p": np.nan, "n": 0, "pass": False}
+        # Could not fit at all — distinguish from a real fail with pass=None.
+        return {"beta": np.nan, "se": np.nan, "p": np.nan, "n": 0, "pass": None}
     b = float(res["beta"]["exposure"])
     p = float(res["p"]["exposure"])
+    # Degenerate fit (p=NaN) is a third state distinct from FAIL.
+    passes = None if np.isnan(p) else bool(p > 0.10)
     return {"beta": b, "se": float(res["se"]["exposure"]),
             "p": p, "n": int(res["n"]),
-            "pass": bool(p > 0.10)}
+            "pass": passes}
 
 
 def _d3_sibling(df, col, sibling_col):
@@ -652,6 +659,11 @@ def _screen_all(w4_screen: pd.DataFrame, w1_screen: pd.DataFrame) -> pd.DataFram
 
 
 def _classify_screening(df: pd.DataFrame) -> pd.DataFrame:
+    def _is_none(v) -> bool:
+        # Helper: a diagnostic is "None" (degenerate / not applicable) when
+        # it is literally None or NaN.
+        return v is None or (isinstance(v, float) and pd.isna(v))
+
     def _row(r: pd.Series) -> Tuple[str, int, str]:
         d1 = r["d1_pass"]
         d2 = r["d2_pass"]
@@ -662,41 +674,48 @@ def _classify_screening(df: pd.DataFrame) -> pd.DataFrame:
         d7 = r["d7_pass"]
         red = r["d9_red_flag"]
 
-        passes = [d1, d2, d4, d5, d7]
-        if d3 is not None and not (isinstance(d3, float) and pd.isna(d3)):
+        # Build score from real pass/fail booleans only; skip None (degenerate).
+        passes = []
+        for d in (d1, d2, d4, d5, d7):
+            if not _is_none(d):
+                passes.append(d)
+        if not _is_none(d3):
             passes.append(d3)
-        if d6 is not None and not (isinstance(d6, float) and pd.isna(d6)):
+        if not _is_none(d6):
             passes.append(d6)
         score = int(sum(bool(p) for p in passes))
         wscore = score
         for w in (d2, d4):
-            if w:
+            if w is True:
                 wscore += 1
         if d3 is True:
             wscore += 1
 
         notes = []
-        if d2 is False and r["d2_p"] < 0.05:
-            notes.append("D2 fails hard (p<0.05)")
-            cat = "Drop"
-        elif (d3 is False) and (r["d3_delta_abs_beta"] is not None) \
+        # D2 (HEIGHT_IN) is contaminated per methods.md §2 — do not Drop on
+        # D2 alone; only flag.
+        # D3-fail with sibling stronger remains a Drop reason. Guard the
+        # comparisons against NaN/None p-values.
+        if (d3 is False) and (r["d3_delta_abs_beta"] is not None) \
                 and (not pd.isna(r["d3_delta_abs_beta"])) \
                 and (r["d3_delta_abs_beta"] < 0):
             notes.append("D3 fails: sibling stronger")
             cat = "Drop"
-        elif not d1:
+        elif d1 is False:
             notes.append("D1 association null (p>=0.05)")
             cat = "Weakened"
         elif red:
             notes.append(f"D9 red flag: {r['d9_red_flag_msg']}")
             cat = "Weakened"
-        elif d1 and d2 and d4 and (d3 is True or d3 is None or
-                                    (isinstance(d3, float) and pd.isna(d3))):
+        elif d1 and (d2 is True or _is_none(d2)) and d4 and (
+                d3 is True or _is_none(d3)):
             cat = "Promising"
         else:
             cat = "Mixed"
             fails = []
-            if not d2:
+            # NaN-guard the D2 weak-fail flag — only annotate when d2_p is
+            # a real number.
+            if d2 is False and pd.notna(r["d2_p"]) and r["d2_p"] <= 0.10:
                 fails.append("D2 weakly fails (p<=0.10)")
             if d3 is False:
                 fails.append("D3 fails (sibling not dissociated)")
@@ -720,12 +739,13 @@ def _classify_screening(df: pd.DataFrame) -> pd.DataFrame:
 
 def _write_screening_markdown(results: pd.DataFrame, path: Path) -> None:
     L: List[str] = []
-    L.append("# Task 14 - Preliminary causal screening of social-exposure treatments")
+    L.append("# Preliminary causal screening of social-exposure treatments")
     L.append("")
     L.append("Screens each W1 adolescent-social exposure against a battery of "
              "falsification / plausibility diagnostics (D1-D9). All diagnostics "
              "reuse weighted OLS on `GSWGT4_2`, cluster-robust SEs on `CLUSTER2`, "
-             "and the same adjustment set conventions used in task10.")
+             "and the same adjustment set conventions used in the "
+             "baseline-regressions block of this experiment.")
     L.append("")
     L.append("## Diagnostics")
     L.append("")
@@ -817,6 +837,11 @@ def _write_screening_markdown(results: pd.DataFrame, path: Path) -> None:
         L.append("**Shortlist for formal causal estimation: "
                  + ", ".join(shortlist["exposure"].tolist()) + "**")
         L.append("")
+        L.append("> Note: this shortlist is for the **cognitive** outcome only. "
+                 "The cross-outcome handoff list (which includes IDGX2 for "
+                 "cardiometabolic outcomes) comes from "
+                 "`experiments/multi-outcome-screening/`.")
+        L.append("")
         for _, r in shortlist.iterrows():
             L.append(f"- `{r.exposure}` ({r.category}): D1 beta = {r.d1_beta:.3g} (p={r.d1_p:.3g}); "
                      f"D2 HEIGHT_IN p = {r.d2_p:.3g}; D4 rel-shift = "
@@ -826,12 +851,49 @@ def _write_screening_markdown(results: pd.DataFrame, path: Path) -> None:
     path.write_text("\n".join(L))
 
 
+def _bh_qvalues(pvals: np.ndarray) -> np.ndarray:
+    """Benjamini-Hochberg q-values for a 1-D array of p-values.
+
+    Uses scipy.stats.false_discovery_control when available; otherwise
+    falls back to a manual implementation. NaN p-values pass through as
+    NaN q-values (BH only applied across valid p-values).
+    """
+    arr = np.asarray(pvals, dtype=float)
+    out = np.full_like(arr, np.nan, dtype=float)
+    valid = ~np.isnan(arr)
+    if valid.sum() == 0:
+        return out
+    p_valid = arr[valid]
+    try:
+        from scipy.stats import false_discovery_control
+        q_valid = false_discovery_control(p_valid, method="bh")
+    except (ImportError, AttributeError):
+        # Manual BH: sort ascending, q_i = p_i * N / rank_i, then enforce
+        # monotonicity from the largest rank down.
+        m = len(p_valid)
+        order = np.argsort(p_valid)
+        ranked = p_valid[order]
+        q_sorted = ranked * m / np.arange(1, m + 1)
+        # Cumulative min from the right (largest p downward).
+        for i in range(m - 2, -1, -1):
+            q_sorted[i] = min(q_sorted[i], q_sorted[i + 1])
+        q_valid = np.empty(m, dtype=float)
+        q_valid[order] = np.clip(q_sorted, 0.0, 1.0)
+    out[valid] = q_valid
+    return out
+
+
 def run_causal_screening() -> pd.DataFrame:
     """Task-14 block: 24 × D1–D9 screening matrix + shortlist + markdown."""
     print("Running causal screening pass ...")
     w4_screen, w1_screen = _attach_screening_extras()
     results = _screen_all(w4_screen, w1_screen)
     results = _classify_screening(results)
+
+    # BH-FDR within outcome on the D1 grid. Cognitive-screening has only one
+    # outcome (W4_COG_COMP), so the q-values are computed across all 24
+    # exposures.
+    results["d1_q"] = _bh_qvalues(results["d1_p"].to_numpy())
 
     matrix_path = TABLES_PRIMARY / "14_screening_matrix.csv"
     results.to_csv(matrix_path, index=False)
@@ -1041,7 +1103,7 @@ def _w5_mode_selection() -> Dict:
 
 
 def _write_sensitivity_report(path, wu, vif_df, corr, perm, shift, balance, mode_sel):
-    L: List[str] = ["# Task 11 - Sensitivity analyses", ""]
+    L: List[str] = ["# Sensitivity analyses", ""]
     L.append("## 1. Weighted vs unweighted (primary exposures)")
     L.append("")
     L.append("Any sign flip or |t_w/t_u| > 3 is flagged.")
@@ -1371,6 +1433,23 @@ def run_verification() -> None:
     )
 
     # 7. Attrition-IPW re-fit of anchor model
+    # Live refit of the primary anchor (IDGX2 -> W4_COG_COMP, _adj_full,
+    # GSWGT4_2) so the comparison row reflects the current data, not a
+    # frozen snapshot from a previous run.
+    keep_primary = ["IDGX2", "W4_COG_COMP", "GSWGT4_2", "CLUSTER2"] + COVARS
+    d_primary = w4.dropna(subset=keep_primary).copy()
+    Xdf_p = pd.DataFrame({"const": 1.0}, index=d_primary.index)
+    Xdf_p["IDGX2"] = d_primary["IDGX2"].values
+    for c in COVARS:
+        Xdf_p[c] = d_primary[c].values
+    primary_res = weighted_ols(
+        d_primary["W4_COG_COMP"].astype(float).values,
+        Xdf_p.values,
+        d_primary["GSWGT4_2"].astype(float).values,
+        d_primary["CLUSTER2"].astype(int).values,
+        ["const", "IDGX2"] + COVARS,
+    )
+
     w1net2 = W1_NET[["AID", "IDGX2"]].copy()
     w1net2["IDGX2"] = pd.to_numeric(w1net2["IDGX2"], errors="coerce").where(lambda s: s.between(0, 50))
     w1net2 = w1net2.dropna(subset=["IDGX2"])
@@ -1382,18 +1461,8 @@ def run_verification() -> None:
 
     w1race = W1_ALL[["AID", "H1GI4", "H1GI6A", "H1GI6B", "H1GI6C", "H1GI6D", "H1GI6E",
                      "H1RM1", "H1RF1"]].copy()
-    for c in ["H1GI4", "H1GI6A", "H1GI6B"]:
-        w1race[c] = pd.to_numeric(w1race[c], errors="coerce").where(lambda s: s.between(0, 1))
-    hisp = w1race["H1GI4"].fillna(0) == 1
-    black = (w1race["H1GI6B"].fillna(0) == 1) & (~hisp)
-    white = (w1race["H1GI6A"].fillna(0) == 1) & (~hisp) & (~black)
-    other = ~hisp & ~black & ~white
-    w1race["RACE"] = np.where(hisp, "Hispanic",
-                      np.where(black, "NH-Black",
-                      np.where(white, "NH-White", "Other")))
-    for c in ["H1RM1", "H1RF1"]:
-        w1race[c] = pd.to_numeric(w1race[c], errors="coerce").where(lambda s: s.between(1, 9))
-    w1race["PARENT_ED"] = w1race[["H1RM1", "H1RF1"]].max(axis=1)
+    w1race["PARENT_ED"] = derive_parent_ed(w1race)
+    w1race["RACE"] = derive_race_ethnicity(w1race)
 
     cesd = build_cesd("na")
     cesd.name = "CESD_SUM"
@@ -1448,7 +1517,9 @@ def run_verification() -> None:
     ipw_res = weighted_ols(y, X, wt, psu, names)
     ipw_rows = pd.DataFrame([
         {"spec": "Primary (GSWGT4_2 only)",
-         "beta_idgx2": 0.00926, "p": 0.0154, "n": 3268},
+         "beta_idgx2": float(primary_res["beta"]["IDGX2"]),
+         "p": float(primary_res["p"]["IDGX2"]),
+         "n": int(primary_res["n"])},
         {"spec": "With attrition IPW",
          "beta_idgx2": float(ipw_res["beta"]["IDGX2"]),
          "p": float(ipw_res["p"]["IDGX2"]),
@@ -1538,7 +1609,7 @@ def run_verification() -> None:
         + "\n".join(f"- {k}: **{v}** rows missing CLUSTER2" for k, v in miss.items())
     )
 
-    md = "# Task 13 — Verification pass\n\n" + "\n\n".join(sections) + "\n"
+    md = "# Verification pass\n\n" + "\n\n".join(sections) + "\n"
     (TABLES_VERIFICATION / "13_verification.md").write_text(md)
     print(f"Wrote {TABLES_VERIFICATION / '13_verification.md'}")
 

@@ -12,5 +12,6 @@ outcomes that don't share the height ↔ peer-status mechanism.
 | Exposure | All 24 EXP-14-COG exposures, in the cognition outcome's adjustment set |
 | DAG | `DAG-Cog` with each NC outcome substituted for `Y` |
 | Method | Same WLS + cluster-SE as EXP-14-COG |
+| Estimand wording | Per-NC null: among the cognitive-screening cohort, the W1 social-integration exposures should not predict the negative-control outcome (blood type / age at menarche / hand-dominance / pre-W1 residential stability) under the null of no unmeasured confounding. The estimand is a placebo β (target value 0); a non-zero β indicates an unblocked back-door path. |
 | Outputs | TBD: `tables/primary/16_nc_battery.csv`, `tables/primary/16_nc_battery.md` |
 | Plots | TBD: NC-failure forest plot per exposure |

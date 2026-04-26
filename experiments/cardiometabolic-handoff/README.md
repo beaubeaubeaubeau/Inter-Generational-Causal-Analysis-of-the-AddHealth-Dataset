@@ -10,6 +10,7 @@ measurement scale.
 |---|---|
 | Status | planned (stub created Phase 2 of restructure; analytic work not yet started) |
 | DAG | [`DAG-CardioMet`](../../reference/dag_library.md) (planned) |
+| Estimand wording | Among Add Health respondents in saturated schools (network exposures) or the full W1 in-home cohort (survey exposures), conditional on baseline W1 demographics, W1 affective/somatic state, and AHPVT, exposure *X* is associated with a β-unit change in [outcome: BMI, waist circumference, BMI category] at W4 relative to its baseline-predicted level. **Note:** AHPVT may be over-adjusted for cardiometabolic outcomes; the per-outcome DAG (`DAG-CardioMet`, planned) will refine the adjustment set. |
 
 ## Handoff pairs
 
