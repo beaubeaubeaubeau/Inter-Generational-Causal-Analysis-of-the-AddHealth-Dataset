@@ -1,0 +1,5 @@
+frame,n_psu,n_rows
+W1 (all analytic_w1_full),132,5114
+W4 analytic,132,5114
+W4 with valid cognitive,132,5101
+W5 analytic (I/T modes),131,824

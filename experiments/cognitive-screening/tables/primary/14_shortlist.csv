@@ -1,0 +1,5 @@
+exposure,category,score,notes,recommended_next
+BCENT10X,Mixed,8,D4 unstable across adjustment sets,AIPW conditional on widened adjustment set
+ODGX2,Mixed,6,D4 unstable across adjustment sets,AIPW conditional on widened adjustment set
+REACH3,Mixed,5,D4 unstable across adjustment sets,AIPW conditional on widened adjustment set
+IDG_LEQ1,Mixed,2,"D2 weakly fails (p<=0.10), D4 unstable across adjustment sets",AIPW conditional on widened adjustment set

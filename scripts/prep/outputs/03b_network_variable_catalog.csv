@@ -1,0 +1,440 @@
+var_name,label,dtype,category
+AID,RESPONDENT IDENTIFIER,string,id
+SIZE,Number of questionnaires in school,double,school_level
+IDGX2,In-Degree: TFN,double,centrality
+ODGX2,Out-Degree: TFN,double,centrality
+NOUTNOM,Number of ties sent outside the school,double,school_level
+TAB113,Ties: Matchable to Other School,double,school_level
+BCENT10X,Bonacich Centrality P=.1,double,centrality
+REACH,N reachable alters: TFN,double,centrality
+REACH3,N reachable alters 3 steps: TFN,double,centrality
+IGDMEAN,mean dist to reachable alters,double,centrality
+PRXPREST,Proximity Prestige,double,centrality
+INFLDMN,Influence Domain,double,centrality
+HAVEBMF,R has a Best Male Friend,double,isolation
+HAVEBFF,R has a best Female friend,double,isolation
+BMFRECIP,Best Male Frnd Recip (any),double,local_structure
+BMFRECBF,Best Male Frnd Recip. as BF,double,other
+BFFRECIP,Best Female Frnd Recip.(any),double,local_structure
+BFFRECBF,Best Female Frnd Recip as BF,double,other
+ESDEN,Density: Ego Send Net,double,local_structure
+NES,Size: Ego Send Net,double,other
+ERDEN,Density: Ego Recieve Net,double,local_structure
+NER,Size: Ego Recieve Net,double,other
+ESRDEN,Density: Ego S&R net,double,local_structure
+NESR,Size: Ego Send & Recv Net,double,other
+EHSGRD,Ego SEND net Heterogeneity: GRADE,double,local_structure
+ERSNGRD,Prop. GRD rep in ego network,double,local_structure
+NEHSGRD,# of cases used: EHSGRD,double,other
+EHRGRD,Ego RECV net Heterogeneity: GRD,double,local_structure
+ERRNGRD,Prop. GRD rep in ego RECV network,double,local_structure
+NEHRGRD,# of cases used: EHRGRD,double,other
+EHGRD,Ego S&R net Heterogeneity: GRADE,double,local_structure
+ERNGRD,Prop. GRADE rep in ego network,double,local_structure
+NEHGRD,# of cases used: EHGRD,double,other
+EHSRC5,Ego SEND net Heterogeneity: Race(5),double,local_structure
+ESRNRC5,Prop. Race(5) rep in ego SEND network,double,local_structure
+NEHSRC5,# of cases used: EHSRC5,double,other
+EHRRC5,Ego RECV net Heterogeneity: Race(5),double,local_structure
+ERRNRC5,Prop. Race(5) rep in ego RECV network,double,local_structure
+NEHRRC5,# of cases used: EHRRC5,double,other
+EHRC5,Ego S&R net Heterogeneity: Race(5),double,local_structure
+ERNRC5,Prop. Race(5) rep in ego network,double,local_structure
+NEHRC5,# of cases used: EHRC5,double,other
+EHSAGE,Ego SEND net Heterogeneity: AGE,double,local_structure
+ERSNAGE,Prop. AGE rep in ego network,double,local_structure
+NEHSAGE,# of cases used: EHSAGE,double,other
+EHRAGE,Ego RECV net Heterogeneity: AGE,double,local_structure
+ERRNAGE,Prop. AGE rep in ego RECV network,double,local_structure
+NEHRAGE,# of cases used: EHRAGE,double,other
+EHAGE,Ego S&R net Heterogeneity: AGE,double,local_structure
+ERNAGE,Prop. AGE rep in ego network,double,local_structure
+NEHAGE,# of cases used: EHAGE,double,other
+AXSGPA,Send alter mean: gpa,double,school_level
+AXSNACT,Send alter mean: numact,double,school_level
+AXSS1,Send alter mean: s1,double,school_level
+AXSS2,Send alter mean: s2,double,school_level
+AXSS3,Send alter mean: s3,double,school_level
+AXSS45A,Send alter mean: s45a,double,school_level
+AXSS45B,Send alter mean: s45b,double,school_level
+AXSS45C,Send alter mean: s45c,double,school_level
+AXSS45D,Send alter mean: s45d,double,school_level
+AXSS45E,Send alter mean: s45e,double,school_level
+AXSS45F,Send alter mean: s45f,double,school_level
+AXSS46A,Send alter mean: s46a,double,school_level
+AXSS46B,Send alter mean: s46b,double,school_level
+AXSS46C,Send alter mean: s46c,double,school_level
+AXSS46D,Send alter mean: s46d,double,school_level
+AXSS47,Send alter mean: s47,double,school_level
+AXSS48,Send alter mean: s48,double,school_level
+AXSS49,Send alter mean: s49,double,school_level
+AXSS50,Send alter mean: s50,double,school_level
+AXSS59A,Send alter mean: s59a,double,school_level
+AXSS59B,Send alter mean: s59b,double,school_level
+AXSS59C,Send alter mean: s59c,double,school_level
+AXSS59D,Send alter mean: s59d,double,school_level
+AXSS59E,Send alter mean: s59e,double,school_level
+AXSS59F,Send alter mean: s59f,double,school_level
+AXSS59G,Send alter mean: s59g,double,school_level
+AXSS60A,Send alter mean: s60a,double,school_level
+AXSS60B,Send alter mean: s60b,double,school_level
+AXSS60C,Send alter mean: s60c,double,school_level
+AXSS60D,Send alter mean: s60d,double,school_level
+AXSS60E,Send alter mean: s60e,double,school_level
+AXSS60F,Send alter mean: s60f,double,school_level
+AXSS60G,Send alter mean: s60g,double,school_level
+AXSS60H,Send alter mean: s60h,double,school_level
+AXSS60I,Send alter mean: s60i,double,school_level
+AXSS60J,Send alter mean: s60j,double,school_level
+AXSS60K,Send alter mean: s60k,double,school_level
+AXSS60L,Send alter mean: s60l,double,school_level
+AXSS60M,Send alter mean: s60m,double,school_level
+AXSS60N,Send alter mean: s60n,double,school_level
+AXSS60O,Send alter mean: s60o,double,school_level
+AXSS62A,Send alter mean: s62a,double,school_level
+AXSS62B,Send alter mean: s62b,double,school_level
+AXSS62C,Send alter mean: s62c,double,school_level
+AXSS62D,Send alter mean: s62d,double,school_level
+AXSS62E,Send alter mean: s62e,double,school_level
+AXSS62F,Send alter mean: s62f,double,school_level
+AXSS62G,Send alter mean: s62g,double,school_level
+AXSS62H,Send alter mean: s62h,double,school_level
+AXSS62I,Send alter mean: s62i,double,school_level
+AXSS62J,Send alter mean: s62j,double,school_level
+AXSS62K,Send alter mean: s62k,double,school_level
+AXSS62L,Send alter mean: s62l,double,school_level
+AXSS62M,Send alter mean: s62m,double,school_level
+AXSS62N,Send alter mean: s62n,double,school_level
+AXSS62O,Send alter mean: s62o,double,school_level
+AXSS62P,Send alter mean: s62p,double,school_level
+AXSS62Q,Send alter mean: s62q,double,school_level
+AXSS62R,Send alter mean: s62r,double,school_level
+AXSS63,Send alter mean: s63,double,school_level
+AXSS64,Send alter mean: s64,double,school_level
+NASGPA,Ego Net Denominator axsgpa,double,other
+NASNACT,Ego Net Denominator axsnact,double,other
+NASS1,Ego Net Denominator axss1,double,other
+NASS2,Ego Net Denominator axss2,double,other
+NASS3,Ego Net Denominator axss3,double,other
+NASS45A,Ego Net Denominator axss45a,double,other
+NASS45B,Ego Net Denominator axss45b,double,other
+NASS45C,Ego Net Denominator axss45c,double,other
+NASS45D,Ego Net Denominator axss45d,double,other
+NASS45E,Ego Net Denominator axss45e,double,other
+NASS45F,Ego Net Denominator axss45f,double,other
+NASS46A,Ego Net Denominator axss46a,double,other
+NASS46B,Ego Net Denominator axss46b,double,other
+NASS46C,Ego Net Denominator axss46c,double,other
+NASS46D,Ego Net Denominator axss46d,double,other
+NASS47,Ego Net Denominator axss47,double,other
+NASS48,Ego Net Denominator axss48,double,other
+NASS49,Ego Net Denominator axss49,double,other
+NASS50,Ego Net Denominator axss50,double,other
+NASS59A,Ego Net Denominator axss59a,double,other
+NASS59B,Ego Net Denominator axss59b,double,other
+NASS59C,Ego Net Denominator axss59c,double,other
+NASS59D,Ego Net Denominator axss59d,double,other
+NASS59E,Ego Net Denominator axss59e,double,other
+NASS59F,Ego Net Denominator axss59f,double,other
+NASS59G,Ego Net Denominator axss59g,double,other
+NASS60A,Ego Net Denominator axss60a,double,other
+NASS60B,Ego Net Denominator axss60b,double,other
+NASS60C,Ego Net Denominator axss60c,double,other
+NASS60D,Ego Net Denominator axss60d,double,other
+NASS60E,Ego Net Denominator axss60e,double,other
+NASS60F,Ego Net Denominator axss60f,double,other
+NASS60G,Ego Net Denominator axss60g,double,other
+NASS60H,Ego Net Denominator axss60h,double,other
+NASS60I,Ego Net Denominator axss60i,double,other
+NASS60J,Ego Net Denominator axss60j,double,other
+NASS60K,Ego Net Denominator axss60k,double,other
+NASS60L,Ego Net Denominator axss60l,double,other
+NASS60M,Ego Net Denominator axss60m,double,other
+NASS60N,Ego Net Denominator axss60n,double,other
+NASS60O,Ego Net Denominator axss60o,double,other
+NASS62A,Ego Net Denominator axss62a,double,other
+NASS62B,Ego Net Denominator axss62b,double,other
+NASS62C,Ego Net Denominator axss62c,double,other
+NASS62D,Ego Net Denominator axss62d,double,other
+NASS62E,Ego Net Denominator axss62e,double,other
+NASS62F,Ego Net Denominator axss62f,double,other
+NASS62G,Ego Net Denominator axss62g,double,other
+NASS62H,Ego Net Denominator axss62h,double,other
+NASS62I,Ego Net Denominator axss62i,double,other
+NASS62J,Ego Net Denominator axss62j,double,other
+NASS62K,Ego Net Denominator axss62k,double,other
+NASS62L,Ego Net Denominator axss62l,double,other
+NASS62M,Ego Net Denominator axss62m,double,other
+NASS62N,Ego Net Denominator axss62n,double,other
+NASS62O,Ego Net Denominator axss62o,double,other
+NASS62P,Ego Net Denominator axss62p,double,other
+NASS62Q,Ego Net Denominator axss62q,double,other
+NASS62R,Ego Net Denominator axss62r,double,other
+NASS63,Ego Net Denominator axss63,double,other
+NASS64,Ego Net Denominator axss64,double,other
+AXRGPA,Recieve alter mean: gpa,double,school_level
+AXRNACT,Recieve alter mean: numact,double,school_level
+AXRS1,Recieve alter mean: s1,double,school_level
+AXRS2,Recieve alter mean: s2,double,school_level
+AXRS3,Recieve alter mean: s3,double,school_level
+AXRS45A,Recieve alter mean: s45a,double,school_level
+AXRS45B,Recieve alter mean: s45b,double,school_level
+AXRS45C,Recieve alter mean: s45c,double,school_level
+AXRS45D,Recieve alter mean: s45d,double,school_level
+AXRS45E,Recieve alter mean: s45e,double,school_level
+AXRS45F,Recieve alter mean: s45f,double,school_level
+AXRS46A,Recieve alter mean: s46a,double,school_level
+AXRS46B,Recieve alter mean: s46b,double,school_level
+AXRS46C,Recieve alter mean: s46c,double,school_level
+AXRS46D,Recieve alter mean: s46d,double,school_level
+AXRS47,Recieve alter mean: s47,double,school_level
+AXRS48,Recieve alter mean: s48,double,school_level
+AXRS49,Recieve alter mean: s49,double,school_level
+AXRS50,Recieve alter mean: s50,double,school_level
+AXRS59A,Recieve alter mean: s59a,double,school_level
+AXRS59B,Recieve alter mean: s59b,double,school_level
+AXRS59C,Recieve alter mean: s59c,double,school_level
+AXRS59D,Recieve alter mean: s59d,double,school_level
+AXRS59E,Recieve alter mean: s59e,double,school_level
+AXRS59F,Recieve alter mean: s59f,double,school_level
+AXRS59G,Recieve alter mean: s59g,double,school_level
+AXRS60A,Recieve alter mean: s60a,double,school_level
+AXRS60B,Recieve alter mean: s60b,double,school_level
+AXRS60C,Recieve alter mean: s60c,double,school_level
+AXRS60D,Recieve alter mean: s60d,double,school_level
+AXRS60E,Recieve alter mean: s60e,double,school_level
+AXRS60F,Recieve alter mean: s60f,double,school_level
+AXRS60G,Recieve alter mean: s60g,double,school_level
+AXRS60H,Recieve alter mean: s60h,double,school_level
+AXRS60I,Recieve alter mean: s60i,double,school_level
+AXRS60J,Recieve alter mean: s60j,double,school_level
+AXRS60K,Recieve alter mean: s60k,double,school_level
+AXRS60L,Recieve alter mean: s60l,double,school_level
+AXRS60M,Recieve alter mean: s60m,double,school_level
+AXRS60N,Recieve alter mean: s60n,double,school_level
+AXRS60O,Recieve alter mean: s60o,double,school_level
+AXRS62A,Recieve alter mean: s62a,double,school_level
+AXRS62B,Recieve alter mean: s62b,double,school_level
+AXRS62C,Recieve alter mean: s62c,double,school_level
+AXRS62D,Recieve alter mean: s62d,double,school_level
+AXRS62E,Recieve alter mean: s62e,double,school_level
+AXRS62F,Recieve alter mean: s62f,double,school_level
+AXRS62G,Recieve alter mean: s62g,double,school_level
+AXRS62H,Recieve alter mean: s62h,double,school_level
+AXRS62I,Recieve alter mean: s62i,double,school_level
+AXRS62J,Recieve alter mean: s62j,double,school_level
+AXRS62K,Recieve alter mean: s62k,double,school_level
+AXRS62L,Recieve alter mean: s62l,double,school_level
+AXRS62M,Recieve alter mean: s62m,double,school_level
+AXRS62N,Recieve alter mean: s62n,double,school_level
+AXRS62O,Recieve alter mean: s62o,double,school_level
+AXRS62P,Recieve alter mean: s62p,double,school_level
+AXRS62Q,Recieve alter mean: s62q,double,school_level
+AXRS62R,Recieve alter mean: s62r,double,school_level
+AXRS63,Recieve alter mean: s63,double,school_level
+AXRS64,Recieve alter mean: s64,double,school_level
+NARGPA,Ego Net Denominator axrgpa,double,other
+NARNACT,Ego Net Denominator axrnact,double,other
+NARS1,Ego Net Denominator axrs1,double,other
+NARS2,Ego Net Denominator axrs2,double,other
+NARS3,Ego Net Denominator axrs3,double,other
+NARS45A,Ego Net Denominator axrs45a,double,other
+NARS45B,Ego Net Denominator axrs45b,double,other
+NARS45C,Ego Net Denominator axrs45c,double,other
+NARS45D,Ego Net Denominator axrs45d,double,other
+NARS45E,Ego Net Denominator axrs45e,double,other
+NARS45F,Ego Net Denominator axrs45f,double,other
+NARS46A,Ego Net Denominator axrs46a,double,other
+NARS46B,Ego Net Denominator axrs46b,double,other
+NARS46C,Ego Net Denominator axrs46c,double,other
+NARS46D,Ego Net Denominator axrs46d,double,other
+NARS47,Ego Net Denominator axrs47,double,other
+NARS48,Ego Net Denominator axrs48,double,other
+NARS49,Ego Net Denominator axrs49,double,other
+NARS50,Ego Net Denominator axrs50,double,other
+NARS59A,Ego Net Denominator axrs59a,double,other
+NARS59B,Ego Net Denominator axrs59b,double,other
+NARS59C,Ego Net Denominator axrs59c,double,other
+NARS59D,Ego Net Denominator axrs59d,double,other
+NARS59E,Ego Net Denominator axrs59e,double,other
+NARS59F,Ego Net Denominator axrs59f,double,other
+NARS59G,Ego Net Denominator axrs59g,double,other
+NARS60A,Ego Net Denominator axrs60a,double,other
+NARS60B,Ego Net Denominator axrs60b,double,other
+NARS60C,Ego Net Denominator axrs60c,double,other
+NARS60D,Ego Net Denominator axrs60d,double,other
+NARS60E,Ego Net Denominator axrs60e,double,other
+NARS60F,Ego Net Denominator axrs60f,double,other
+NARS60G,Ego Net Denominator axrs60g,double,other
+NARS60H,Ego Net Denominator axrs60h,double,other
+NARS60I,Ego Net Denominator axrs60i,double,other
+NARS60J,Ego Net Denominator axrs60j,double,other
+NARS60K,Ego Net Denominator axrs60k,double,other
+NARS60L,Ego Net Denominator axrs60l,double,other
+NARS60M,Ego Net Denominator axrs60m,double,other
+NARS60N,Ego Net Denominator axrs60n,double,other
+NARS60O,Ego Net Denominator axrs60o,double,other
+NARS62A,Ego Net Denominator axrs62a,double,other
+NARS62B,Ego Net Denominator axrs62b,double,other
+NARS62C,Ego Net Denominator axrs62c,double,other
+NARS62D,Ego Net Denominator axrs62d,double,other
+NARS62E,Ego Net Denominator axrs62e,double,other
+NARS62F,Ego Net Denominator axrs62f,double,other
+NARS62G,Ego Net Denominator axrs62g,double,other
+NARS62H,Ego Net Denominator axrs62h,double,other
+NARS62I,Ego Net Denominator axrs62i,double,other
+NARS62J,Ego Net Denominator axrs62j,double,other
+NARS62K,Ego Net Denominator axrs62k,double,other
+NARS62L,Ego Net Denominator axrs62l,double,other
+NARS62M,Ego Net Denominator axrs62m,double,other
+NARS62N,Ego Net Denominator axrs62n,double,other
+NARS62O,Ego Net Denominator axrs62o,double,other
+NARS62P,Ego Net Denominator axrs62p,double,other
+NARS62Q,Ego Net Denominator axrs62q,double,other
+NARS62R,Ego Net Denominator axrs62r,double,other
+NARS63,Ego Net Denominator axrs63,double,other
+NARS64,Ego Net Denominator axrs64,double,other
+AXGPA,S&R alter mean: gpa,double,school_level
+AXNUMACT,S&R alter mean: numact,double,school_level
+AXS1,S&R alter mean: s1,double,school_level
+AXS2,S&R alter mean: s2,double,school_level
+AXS3,S&R alter mean: s3,double,school_level
+AXS45A,S&R alter mean: s45a,double,school_level
+AXS45B,S&R alter mean: s45b,double,school_level
+AXS45C,S&R alter mean: s45c,double,school_level
+AXS45D,S&R alter mean: s45d,double,school_level
+AXS45E,S&R alter mean: s45e,double,school_level
+AXS45F,S&R alter mean: s45f,double,school_level
+AXS46A,S&R alter mean: s46a,double,school_level
+AXS46B,S&R alter mean: s46b,double,school_level
+AXS46C,S&R alter mean: s46c,double,school_level
+AXS46D,S&R alter mean: s46d,double,school_level
+AXS47,S&R alter mean: s47,double,school_level
+AXS48,S&R alter mean: s48,double,school_level
+AXS49,S&R alter mean: s49,double,school_level
+AXS50,S&R alter mean: s50,double,school_level
+AXS59A,S&R alter mean: s59a,double,school_level
+AXS59B,S&R alter mean: s59b,double,school_level
+AXS59C,S&R alter mean: s59c,double,school_level
+AXS59D,S&R alter mean: s59d,double,school_level
+AXS59E,S&R alter mean: s59e,double,school_level
+AXS59F,S&R alter mean: s59f,double,school_level
+AXS59G,S&R alter mean: s59g,double,school_level
+AXS60A,S&R alter mean: s60a,double,school_level
+AXS60B,S&R alter mean: s60b,double,school_level
+AXS60C,S&R alter mean: s60c,double,school_level
+AXS60D,S&R alter mean: s60d,double,school_level
+AXS60E,S&R alter mean: s60e,double,school_level
+AXS60F,S&R alter mean: s60f,double,school_level
+AXS60G,S&R alter mean: s60g,double,school_level
+AXS60H,S&R alter mean: s60h,double,school_level
+AXS60I,S&R alter mean: s60i,double,school_level
+AXS60J,S&R alter mean: s60j,double,school_level
+AXS60K,S&R alter mean: s60k,double,school_level
+AXS60L,S&R alter mean: s60l,double,school_level
+AXS60M,S&R alter mean: s60m,double,school_level
+AXS60N,S&R alter mean: s60n,double,school_level
+AXS60O,S&R alter mean: s60o,double,school_level
+AXS62A,S&R alter mean: s62a,double,school_level
+AXS62B,S&R alter mean: s62b,double,school_level
+AXS62C,S&R alter mean: s62c,double,school_level
+AXS62D,S&R alter mean: s62d,double,school_level
+AXS62E,S&R alter mean: s62e,double,school_level
+AXS62F,S&R alter mean: s62f,double,school_level
+AXS62G,S&R alter mean: s62g,double,school_level
+AXS62H,S&R alter mean: s62h,double,school_level
+AXS62I,S&R alter mean: s62i,double,school_level
+AXS62J,S&R alter mean: s62j,double,school_level
+AXS62K,S&R alter mean: s62k,double,school_level
+AXS62L,S&R alter mean: s62l,double,school_level
+AXS62M,S&R alter mean: s62m,double,school_level
+AXS62N,S&R alter mean: s62n,double,school_level
+AXS62O,S&R alter mean: s62o,double,school_level
+AXS62P,S&R alter mean: s62p,double,school_level
+AXS62Q,S&R alter mean: s62q,double,school_level
+AXS62R,S&R alter mean: s62r,double,school_level
+AXS63,S&R alter mean: s63,double,school_level
+AXS64,S&R alter mean: s64,double,school_level
+NAGPA,Ego Net Denominator axgpa,double,other
+NANUMACT,Ego Net Denominator axnumact,double,other
+NAS1,Ego Net Denominator axs1,double,other
+NAS2,Ego Net Denominator axs2,double,other
+NAS3,Ego Net Denominator axs3,double,other
+NAS45A,Ego Net Denominator axs45a,double,other
+NAS45B,Ego Net Denominator axs45b,double,other
+NAS45C,Ego Net Denominator axs45c,double,other
+NAS45D,Ego Net Denominator axs45d,double,other
+NAS45E,Ego Net Denominator axs45e,double,other
+NAS45F,Ego Net Denominator axs45f,double,other
+NAS46A,Ego Net Denominator axs46a,double,other
+NAS46B,Ego Net Denominator axs46b,double,other
+NAS46C,Ego Net Denominator axs46c,double,other
+NAS46D,Ego Net Denominator axs46d,double,other
+NAS47,Ego Net Denominator axs47,double,other
+NAS48,Ego Net Denominator axs48,double,other
+NAS49,Ego Net Denominator axs49,double,other
+NAS50,Ego Net Denominator axs50,double,other
+NAS59A,Ego Net Denominator axs59a,double,other
+NAS59B,Ego Net Denominator axs59b,double,other
+NAS59C,Ego Net Denominator axs59c,double,other
+NAS59D,Ego Net Denominator axs59d,double,other
+NAS59E,Ego Net Denominator axs59e,double,other
+NAS59F,Ego Net Denominator axs59f,double,other
+NAS59G,Ego Net Denominator axs59g,double,other
+NAS60A,Ego Net Denominator axs60a,double,other
+NAS60B,Ego Net Denominator axs60b,double,other
+NAS60C,Ego Net Denominator axs60c,double,other
+NAS60D,Ego Net Denominator axs60d,double,other
+NAS60E,Ego Net Denominator axs60e,double,other
+NAS60F,Ego Net Denominator axs60f,double,other
+NAS60G,Ego Net Denominator axs60g,double,other
+NAS60H,Ego Net Denominator axs60h,double,other
+NAS60I,Ego Net Denominator axs60i,double,other
+NAS60J,Ego Net Denominator axs60j,double,other
+NAS60K,Ego Net Denominator axs60k,double,other
+NAS60L,Ego Net Denominator axs60l,double,other
+NAS60M,Ego Net Denominator axs60m,double,other
+NAS60N,Ego Net Denominator axs60n,double,other
+NAS60O,Ego Net Denominator axs60o,double,other
+NAS62A,Ego Net Denominator axs62a,double,other
+NAS62B,Ego Net Denominator axs62b,double,other
+NAS62C,Ego Net Denominator axs62c,double,other
+NAS62D,Ego Net Denominator axs62d,double,other
+NAS62E,Ego Net Denominator axs62e,double,other
+NAS62F,Ego Net Denominator axs62f,double,other
+NAS62G,Ego Net Denominator axs62g,double,other
+NAS62H,Ego Net Denominator axs62h,double,other
+NAS62I,Ego Net Denominator axs62i,double,other
+NAS62J,Ego Net Denominator axs62j,double,other
+NAS62K,Ego Net Denominator axs62k,double,other
+NAS62L,Ego Net Denominator axs62l,double,other
+NAS62M,Ego Net Denominator axs62m,double,other
+NAS62N,Ego Net Denominator axs62n,double,other
+NAS62O,Ego Net Denominator axs62o,double,other
+NAS62P,Ego Net Denominator axs62p,double,other
+NAS62Q,Ego Net Denominator axs62q,double,other
+NAS62R,Ego Net Denominator axs62r,double,other
+NAS63,Ego Net Denominator axs63,double,other
+NAS64,Ego Net Denominator axs64,double,other
+DENX2,Total Network Density: TFN,double,local_structure
+RCHDEN,Density at maximum Reach,double,centrality
+RELDEN,Density/Max Pos. Den,double,local_structure
+PCTMUT,PCT dyads mutual,double,other
+PCTASY,Pct dyads Asysmetric,double,other
+RHO2,Katz and Powells Mutuality index,double,other
+SEG1S3,Freeman Seg Index: Grade,double,other
+SS37,Saliency Index: Grade=7,double,other
+SS38,Saliency Index: Grade=8,double,other
+SS39,Saliency Index: Grade=9,double,other
+SS310,Saliency Index: Grade=10,double,other
+SS311,Saliency Index: Grade=11,double,other
+SS312,Saliency Index: Grade=12,double,other
+SEG1RCE5,Freeman Seg Index: Race/Ethnic(5),double,other
+SRCE51,Saliency Index: Race(5)=White,double,other
+SRCE52,Saliency Index: Race(5)=Black,double,other
+SRCE53,Saliency Index: Race(5)=Hispanic,double,other
+SRCE54,Saliency Index: race(5)=Asian,double,other
+SRCE55,Saliency Index: Race(5)=Other,double,other
+SEG1S2,Freeman Seg Index: Gender (1=Fem),double,other
+SS20,Saliency Index: Gender=Male,double,other
+SS21,Saliency Index: Gender=Female,double,other

@@ -1,6 +1,6 @@
 # DAG library
 
-A versioned catalogue of the causal directed-acyclic graphs (DAGs) used in this project. Each DAG specifies (i) the variables, (ii) the assumed arrows among them, and (iii) the explicitly-unmeasured set whose absence is the load-bearing assumption. The [experiments register](experiments_register.md) maps every analytical experiment in the project to one of these DAGs by ID.
+A versioned catalogue of the causal directed-acyclic graphs (DAGs) used in this project. Each DAG specifies (i) the variables, (ii) the assumed arrows among them, and (iii) the explicitly-unmeasured set whose absence is the load-bearing assumption. The [experiments index](../experiments/README.md) maps every analytical experiment in the project to one of these DAGs by ID.
 
 **Conventions:**
 
@@ -10,13 +10,13 @@ A versioned catalogue of the causal directed-acyclic graphs (DAGs) used in this 
 - "Adjustment set" = the variables you must condition on under back-door criterion to identify the X → Y total effect (or, for cognitive outcomes, the trajectory-adjusted effect). Listed beneath each DAG.
 - "Estimand wording" = the exact one-sentence interpretation that should appear in any report or plot caption that uses this DAG. Cuts down on framing drift between a chart and its prose.
 
-For plain-language definitions of *back-door path*, *positivity*, *negative control*, and *confounder vs. mediator*, see the [synthesis Glossary](addhealth_synthesis.md#glossary).
+For plain-language definitions of *back-door path*, *positivity*, *negative control*, and *confounder vs. mediator*, see [glossary.md](glossary.md).
 
 ---
 
 ## DAG-Cog (v1.0) — W1 social integration → W4 cognitive outcome
 
-**Used by:** task14 cognition screen (24 exposures × `W4_COG_COMP`); the cognitive-outcome column of task15. **Date locked:** 2026-04-25 (DAG drafted with the user; iterations in conversation log).
+**Used by:** [cognitive-screening](../experiments/cognitive-screening/README.md) (24 exposures × `W4_COG_COMP`); the cognitive-outcome column of [multi-outcome-screening](../experiments/multi-outcome-screening/README.md). **Date locked:** 2026-04-25 (DAG drafted with the user; iterations in conversation log).
 
 ```mermaid
 flowchart LR
@@ -77,7 +77,7 @@ flowchart LR
 | `BIO_SEX`, `RACE` | Demographic → both adolescent peer position AND adult cognition (well-established literatures) |
 | `PARENT_ED` | Family SES → both adolescent social integration AND adult cognition; also feeds AHPVT (parental education raises childhood verbal exposure) |
 | `CESD_SUM`, `H1GH1` | W1 affective and somatic state confounds peer position AND cognitive trajectory |
-| `AH_PVT` | **Baseline cognition.** Conditioning on it converts the regression into an approximate change-from-baseline estimand. See the [trajectory caveats in synthesis §5.6](addhealth_synthesis.md#56-identification-assumptions-and-target-estimand). |
+| `AH_PVT` | **Baseline cognition.** Conditioning on it converts the regression into an approximate change-from-baseline estimand. See the [trajectory caveats in methods.md §1](methods.md#1-identification-assumptions-and-target-estimand). |
 
 **Estimand wording (use verbatim in reports):**
 
@@ -103,7 +103,7 @@ The following entries are stubs; arrows + adjustment sets get drawn during Task 
 
 ### DAG-CardioMet (planned)
 
-**Used by:** task15 cardiometabolic outcomes (`H4BMI`, `H4SBP`, `H4DBP`, `H4WAIST`, `H4BMICLS`); Task-16 handoff pairs (`IDGX2 → H4WAIST`, `IDGX2 → H4BMI`, `IDGX2 → H4BMICLS`).
+**Used by:** [multi-outcome-screening](../experiments/multi-outcome-screening/README.md) cardiometabolic outcomes (`H4BMI`, `H4SBP`, `H4DBP`, `H4WAIST`, `H4BMICLS`); [cardiometabolic-handoff](../experiments/cardiometabolic-handoff/README.md) pairs (`IDGX2 → H4WAIST`, `IDGX2 → H4BMI`, `IDGX2 → H4BMICLS`).
 
 **Distinguishing arrows from `DAG-Cog`:** must add W1 self-reported weight (`H1GH28` — codebook label not yet verified, see [variable_dictionary.md](variable_dictionary.md)) into L1; AHPVT becomes a general-ability confounder (no longer "baseline") since the outcome is not cognitive; possible `SCHOOL` arrow to BMI (school food environment) added as unmeasured.
 

@@ -1,0 +1,20 @@
+configuration,design_purpose,N
+W1 network observed (IDGX2 non-miss),—,4397
+W1 AH_PVT valid,—,6223
+W4 immediate recall valid,—,5101
+W4 delayed recall valid,—,5097
+W4 backward digit span valid,—,5102
+W5 immediate recall valid,—,623
+W5 delayed recall valid,—,620
+W5 BDS any trial valid,—,625
+W1 network ∩ W4 immediate,Primary W4 design,3505
+W1 network ∩ W4 BDS,Primary W4 design (BDS),3506
+W1 network ∩ W5 immediate,Primary W5 design,394
+W1 network ∩ W5 BDS,Primary W5 design (BDS),394
+W1 network ∩ W4 imm ∩ W5 imm,Longitudinal change-score,334
+W1 network ∩ W4 BDS ∩ W5 BDS,Longit change (BDS),335
+W1 AH_PVT ∩ W4 immediate,"Friendship(survey)→W4 cog, with baseline",4883
+W1 AH_PVT ∩ W5 immediate,"Friendship(survey)→W5 cog, with baseline",594
+W1 network ∩ W1 AH_PVT ∩ W4 imm,Network + baseline + W4 outcome,3353
+W1 network ∩ W1 AH_PVT ∩ W5 imm,Network + baseline + W5 outcome,372
+W1 network ∩ W1 AH_PVT ∩ W4 imm ∩ W5 imm,Full longitudinal with baseline,316

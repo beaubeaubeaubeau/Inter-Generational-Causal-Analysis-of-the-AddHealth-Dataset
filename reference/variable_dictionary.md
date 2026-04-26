@@ -7,7 +7,7 @@ This document has two sections:
 1. **[Quick reference](#1-quick-reference-alphabetical)** — alphabetical lookup for humans reading plots and briefs. For every code: verbatim codebook label + one-line plain-English gloss of what the variable *measures*.
 2. **[Detailed reference](#2-detailed-reference-by-role)** — organised by role in the analysis (design, weights, exposures, outcomes, covariates, negative control, derivations). Includes N, kind, findings, caveats, uncertainties, and links into [research_journal.md](research_journal.md).
 
-For wave-level design context and sampling-frame discussion, see [addhealth_synthesis.md](addhealth_synthesis.md).
+For wave-level design context and sampling-frame discussion, see [dataset_manual.md](dataset_manual.md). For the causal model behind each adjustment-set choice, see [dag_library.md](dag_library.md). For the experiment ↔ DAG ↔ method ↔ plot map (so you can trace any chart back to its causal claim), see [experiments/README.md](../experiments/README.md).
 
 ---
 
@@ -102,9 +102,9 @@ Conventions: labels in quotes are quoted verbatim from the shipped SAS/XPT files
 
 Everything below is organised by the variable's role in the analysis, not by wave. Each subsection adds **N**, **kind**, **findings from this project's screens**, and **caveats / uncertainties** on top of the quick-ref gloss. Cross-references into [research_journal.md](research_journal.md) point to the phase where the variable's behaviour was investigated.
 
-**How to read the N column.** For exposures and outcomes this is the effective N in the task 14 / task 15 analytic frame (already network-gated or mode-gated, reserve codes stripped via [scripts/analysis_utils.py](../scripts/analysis_utils.py) `VALID_RANGES`). For raw codebook variables it's the shipped non-missing N.
+**How to read the N column.** For exposures and outcomes this is the effective N in the cognitive-screening / multi-outcome-screening analytic frame (already network-gated or mode-gated, reserve codes stripped via [scripts/analysis/cleaning.py](../scripts/analysis/cleaning.py) `VALID_RANGES`). For raw codebook variables it's the shipped non-missing N.
 
-> **Legend — D-codes used in the findings/caveats columns below.** Formal pass/fail thresholds + plain-language intuition for each diagnostic are in [addhealth_synthesis.md §6.5](addhealth_synthesis.md#65-causal-screening-diagnostic-battery-d1d9). Narrative context in [research_journal.md §Phase 4](research_journal.md#phase-4--preliminary-causal-screening-d1d9). One-line refresher below:
+> **Legend — D-codes used in the findings/caveats columns below.** Formal pass/fail thresholds + plain-language intuition for each diagnostic are in [methods.md §2](methods.md#2-causal-screening-diagnostic-battery-d1d9). Narrative context in [research_journal.md §Phase 4](research_journal.md#phase-4--preliminary-causal-screening-d1d9). One-line refresher below:
 >
 > - **D1** baseline significance (L0+L1+AHPVT, p < 0.05)
 > - **D2** height negative-control outcome — **contaminated** (see [§2.7](#27-negative-control-outcome)); D2 is reported but not load-bearing for the shortlist
@@ -116,7 +116,7 @@ Everything below is organised by the variable's role in the analysis, not by wav
 > - **D8** saturated-school selection penalty (informational)
 > - **D9** hard-coded collider / double-adjustment red flags
 
-> ⚠ **AHPVT callout.** `AH_PVT` (W1 verbal IQ) serves as the **W1 baseline cognitive measure**. Every β this dictionary annotates for a cognitive outcome comes from the L0+L1+AHPVT primary spec, which conditions on `AH_PVT` and therefore reports an **approximate change-from-baseline / trajectory** estimate ("where you ended up given where you started"), not a level-on-level association. Caveats: AHPVT is *vocabulary* (crystallized) while `W4_COG_COMP` is word-recall + digit-span (more fluid) — AHPVT is a *proxy* baseline, not an identical-construct pre-test. The strict mediator reading (years of pre-W1 social integration → AHPVT → adult cognition) is implausible-but-not-impossible and is downgraded to a Task-16 sensitivity check (front-door decomposition). See [synthesis §5.6 trajectory callout](addhealth_synthesis.md#56-identification-assumptions-and-target-estimand) for the full caveats.
+> ⚠ **AHPVT callout.** `AH_PVT` (W1 verbal IQ) serves as the **W1 baseline cognitive measure**. Every β this dictionary annotates for a cognitive outcome comes from the L0+L1+AHPVT primary spec, which conditions on `AH_PVT` and therefore reports an **approximate change-from-baseline / trajectory** estimate ("where you ended up given where you started"), not a level-on-level association. Caveats: AHPVT is *vocabulary* (crystallized) while `W4_COG_COMP` is word-recall + digit-span (more fluid) — AHPVT is a *proxy* baseline, not an identical-construct pre-test. The strict mediator reading (years of pre-W1 social integration → AHPVT → adult cognition) is implausible-but-not-impossible and is downgraded to a Task-16 sensitivity check (front-door decomposition). See [methods.md §1 trajectory callout](methods.md#1-identification-assumptions-and-target-estimand) for the full caveats.
 
 ---
 
@@ -125,9 +125,9 @@ Everything below is organised by the variable's role in the analysis, not by wav
 | Code | Label | Wave | N | Kind | Caveats |
 |---|---|:-:|---:|---|---|
 | `AID` | "RESPONDENT IDENTIFIER" | W1–W6 | 6,504 (W1 base) | string | Public-use IDs. No mapping to friend / sibling / partner IDs. |
-| `CLUSTER2` | "SAMPLE CLUSTER" | W1–W6 | 132 PSUs | categorical | Always `svyset CLUSTER2` with replacement. Stratum is not in public-use. See [addhealth_synthesis.md §2.2](addhealth_synthesis.md#22-design-variables-in-public-use). |
+| `CLUSTER2` | "SAMPLE CLUSTER" | W1–W6 | 132 PSUs | categorical | Always `svyset CLUSTER2` with replacement. Stratum is not in public-use. See [dataset_manual.md §2.2](dataset_manual.md#22-design-variables-in-public-use). |
 | `MODE` | "SURVEY MODE" | W5 | 4,196 | categorical (W/I/T/M/S) | Cognitive items only administered in modes I + T; other modes get reserve code 95/995/9995 ("not asked"). |
-| `MODEOK5` | mode-restricted flag | `[derived]` | 3,553 | binary | Derived in [scripts/task03de_wave5_cognitive.py](../scripts/task03de_wave5_cognitive.py). Gates `W4_COG_COMP` construction. |
+| `MODEOK5` | mode-restricted flag | `[derived]` | 3,553 | binary | Derived in [scripts/prep/03de_wave5_cognitive.py](../scripts/prep/03de_wave5_cognitive.py). Gates `W4_COG_COMP` construction. |
 | `FR_FLAG` | "NUMBER OF FRIENDS ASKED TO NOMINATE-W1" | W1 | ~6,500 | ordinal | Used in task 11 sensitivity checks on the friendship grid. |
 
 ---
@@ -139,15 +139,15 @@ Everything below is organised by the variable's role in the analysis, not by wav
 | `GSWGT4_2` | "POSTSTRAT GS CROSS_SECT WGT-PUBLIC-W4" | W4 | 5,114 | **Primary weight** for tasks 10–15. All D1 baselines, D4 adjustment-stability fits, and the task 15 multi-outcome screen use this weight. | For W5 outcomes this is a screening-only approximation; formal estimation should switch to `GSW5` + IPAW for W4 → W5 attrition. |
 | `GSW5` | "CROSS-SECTION WGT WV ALL SP" | W5 | 4,196 (824 in the mode-restricted cognitive cell) | Held in reserve for task 16. | Mode-restriction cost is severe once W5 cognition is required. |
 | `GSW145` / `GSW1345` | "LONGTDNL WGT WI-IV-V" / "… WI-III-IV-V" | W5 | 3,713 / 3,147 | Recommended for any longitudinal W1 → W4 → W5 claim after the screen. | Corrects partially for observed-cause attrition. |
-| `GSWGT1`, `GSWGT4`, `GSW12345`, `GSW6`, … | see [addhealth_synthesis.md §2.3](addhealth_synthesis.md#23-weight-variables-public-use-empirically-verified) | W1 / W4 / W5 / W6 | various | Not used in this project's outputs; listed in the synthesis for completeness. |
+| `GSWGT1`, `GSWGT4`, `GSW12345`, `GSW6`, … | see [dataset_manual.md §2.3](dataset_manual.md#23-weight-variables-public-use-empirically-verified) | W1 / W4 / W5 / W6 | various | Not used in this project's outputs; listed in the dataset manual for completeness. |
 
 ---
 
 ### 2.3. Exposures (24 total)
 
-All exposures are W1 measurements. 16 come from the W1 Public-Use Network File (`w1network.sas7bdat`); 8 come from the W1 In-Home Questionnaire or derived constructs. Structure and rationale in [addhealth_synthesis.md §3](addhealth_synthesis.md#3-primary-exposure-adolescent-friendship--social-connection).
+All exposures are W1 measurements. 16 come from the W1 Public-Use Network File (`w1network.sas7bdat`); 8 come from the W1 In-Home Questionnaire or derived constructs. Structure and rationale in [dataset_manual.md §3](dataset_manual.md#3-primary-exposure-adolescent-friendship--social-connection).
 
-Exposure-level findings from the task 14 primary screen are summarised in [outputs/14_screening.md](../outputs/14_screening.md) and the task 15 cross-outcome pattern in [outputs/15_multi_outcome.md](../outputs/15_multi_outcome.md); see [research_journal.md §Phase 4](research_journal.md#phase-4--preliminary-causal-screening-d1d9) and [§Phase 5](research_journal.md#phase-5--multi-outcome-screening-pivot) for narrative context.
+Exposure-level findings from the cognitive-screening primary screen are summarised in [experiments/cognitive-screening/tables/primary/14_screening.md](../experiments/cognitive-screening/tables/primary/14_screening.md) and the multi-outcome cross-outcome pattern in [experiments/multi-outcome-screening/tables/primary/15_multi_outcome.md](../experiments/multi-outcome-screening/tables/primary/15_multi_outcome.md); see [research_journal.md §Phase 4](research_journal.md#phase-4--preliminary-causal-screening-d1d9) and [§Phase 5](research_journal.md#phase-5--multi-outcome-screening-pivot) for narrative context.
 
 #### 2.3.1 Peer-network centrality (8)
 
@@ -168,8 +168,8 @@ All require the respondent to be in a saturated school (≥ 75 % roster particip
 
 | Code | Wave | N | Kind | Findings | Caveats |
 |---|:-:|---:|---|---|---|
-| `IDG_ZERO` | `[derived]` | 3,268 | binary | PASS on H4BMI / H4WAIST / H4BMICLS / H5MN2 in task 15. | `= (IDGX2 == 0)`. Derivation: [task08_build_analytic_frame.py:88](../scripts/task08_build_analytic_frame.py#L88). |
-| `IDG_LEQ1` | `[derived]` | 3,268 | binary | PASS on H4BMI / H4WAIST / H4BMICLS / H5ID4. | `= (IDGX2 <= 1)`. Derivation: [task08_build_analytic_frame.py:90](../scripts/task08_build_analytic_frame.py#L90). |
+| `IDG_ZERO` | `[derived]` | 3,268 | binary | PASS on H4BMI / H4WAIST / H4BMICLS / H5MN2 in multi-outcome screening. | `= (IDGX2 == 0)`. Derivation: [scripts/prep/08_build_analytic_frame.py](../scripts/prep/08_build_analytic_frame.py). |
+| `IDG_LEQ1` | `[derived]` | 3,268 | binary | PASS on H4BMI / H4WAIST / H4BMICLS / H5ID4. | `= (IDGX2 <= 1)`. Derivation: [scripts/prep/08_build_analytic_frame.py](../scripts/prep/08_build_analytic_frame.py). |
 | `HAVEBMF` | W1 | 3,268 | binary | D3 sibling for `HAVEBFF`. | Network-file flag. |
 | `HAVEBFF` | W1 | 3,268 | binary | D3 sibling for `HAVEBMF`. | |
 
@@ -186,7 +186,7 @@ Wasserman–Faust density definitions. All require network frame.
 
 #### 2.3.4 Friendship grid derived (3)
 
-From the W1 Section-20 self-reported 10-friend nomination grid (`H1MF*`/`H1FF*`). Not network-gated — larger N than centrality variables. Derivation: [scripts/analysis_utils.py:428](../scripts/analysis_utils.py#L428) (`derive_friendship_grid`).
+From the W1 Section-20 self-reported 10-friend nomination grid (`H1MF*`/`H1FF*`). Not network-gated — larger N than centrality variables. Derivation: [scripts/analysis/derivation.py](../scripts/analysis/derivation.py) (`derive_friendship_grid`).
 
 | Code | Wave | N | Kind | Caveats |
 |---|:-:|---:|---|---|
@@ -198,7 +198,7 @@ From the W1 Section-20 self-reported 10-friend nomination grid (`H1MF*`/`H1FF*`)
 
 | Code | Wave | N | Kind | Findings | Caveats |
 |---|:-:|---:|---|---|---|
-| `SCHOOL_BELONG` | `[derived]` | 4,629 | continuous (6–30) | **Dominates mental-health and functional outcomes in task 15** (H5MN1, H5MN2, H5ID1, H5ID4, H5ID16). | **D9 red flag**: mixes individual disposition with school-level context; possible collider given W1 `CESD_SUM` / `H1GH1`. Fails D4 on several of its activations → mediator leakage suspected. Derivation: [scripts/analysis_utils.py:304](../scripts/analysis_utils.py#L304). |
+| `SCHOOL_BELONG` | `[derived]` | 4,629 | continuous (6–30) | **Dominates mental-health and functional outcomes in multi-outcome screening** (H5MN1, H5MN2, H5ID1, H5ID4, H5ID16). | **D9 red flag**: mixes individual disposition with school-level context; possible collider given W1 `CESD_SUM` / `H1GH1`. Fails D4 on several of its activations → mediator leakage suspected. Derivation: [scripts/analysis/derivation.py](../scripts/analysis/derivation.py) (`derive_school_belonging`). |
 
 #### 2.3.6 Loneliness (2)
 
@@ -223,7 +223,7 @@ Both items are D9 red-flagged because they are components of the `CESD_SUM` L1 c
 | Code | Label | Wave | N | Kind | Findings | Caveats |
 |---|---|:-:|---:|---|---|---|
 | `W4_COG_COMP` | `[derived]` | W4 | 3,238 (primary frame) | continuous (z-scored) | Used as `y` in every task 10–14 analysis and as the "cognitive" outcome in task 15 (mid-pack at 5/24 significant exposures). | Every exposure fails D4 adjustment stability, with AHPVT contributing most of the drift. See [research_journal.md §Phase 4 main finding](research_journal.md#phase-4--preliminary-causal-screening-d1d9). |
-| `C4WD90_1` | "S14 # WORDS ON LIST RECALLED 90 SEC-W4" | W4 | 5,101 | continuous (0–15) | Immediate-recall component. | Protocol in [addhealth_synthesis.md §4.4](addhealth_synthesis.md#4-primary-outcome-cognitive-performance). |
+| `C4WD90_1` | "S14 # WORDS ON LIST RECALLED 90 SEC-W4" | W4 | 5,101 | continuous (0–15) | Immediate-recall component. | Protocol in [dataset_manual.md §4.4](dataset_manual.md#44-wave-iv-cognitive-battery-dataw4w4inhomesas7bdat). |
 | `C4WD60_1` | "S14 # WORDS ON LIST RECALLED 60 SEC-W4" | W4 | 5,097 | continuous (0–15) | Delayed-recall component. | |
 | `C4NUMSCR` | "TOTAL SCORE ON NUMBER RECALL TASK-W4" | W4 | 5,102 | continuous (0–7) | Backward-digit-span component. | |
 
@@ -231,7 +231,7 @@ Both items are D9 red-flagged because they are components of the `CESD_SUM` L1 c
 
 ### 2.5. Secondary outcomes — task 15 multi-outcome extension (12)
 
-Added in task 15 to test whether the social-exposure signal is cognition-specific or broader. Loaded via [scripts/analysis_utils.py:91](../scripts/analysis_utils.py#L91) (`load_outcome`) with reserve-code stripping. See [addhealth_synthesis.md §9](addhealth_synthesis.md#9-outcome-battery-primary--multi-outcome-extension) for the full outcome-battery table and [research_journal.md §Phase 5](research_journal.md#phase-5--multi-outcome-screening-pivot) for narrative.
+Added in multi-outcome screening to test whether the social-exposure signal is cognition-specific or broader. Loaded via [scripts/analysis/data_loading.py](../scripts/analysis/data_loading.py) (`load_outcome`) with reserve-code stripping. See [experiments/multi-outcome-screening/README.md](../experiments/multi-outcome-screening/README.md) for the full outcome-battery table and [research_journal.md §Phase 5](research_journal.md#phase-5--multi-outcome-screening-pivot) for narrative.
 
 #### 2.5.1 Cardiometabolic (5)
 
@@ -266,15 +266,15 @@ All W5 outcomes. Median N ≈ 2,400 network-gated, ≈ 3,400 grid-gated. Screen 
 
 ### 2.6. Covariates — three-tier adjustment sets
 
-Defined in [scripts/task14_causal_screening.py:128–169](../scripts/task14_causal_screening.py#L128). The screen runs nested L0 → L0+L1 → L0+L1+AHPVT to measure D4 adjustment-set stability.
+Defined in the causal-screening block of [experiments/cognitive-screening/run.py](../experiments/cognitive-screening/run.py). The screen runs nested L0 → L0+L1 → L0+L1+AHPVT to measure D4 adjustment-set stability.
 
 #### 2.6.1 L0 — demographics
 
 | Code | Label | Wave | N | Kind | Caveats |
 |---|---|:-:|---:|---|---|
 | `BIO_SEX` | "BIOLOGICAL SEX-W1" | W1 | 6,503 | binary (1=M, 2=F) | Encoded as `male = (BIO_SEX == 1)` in the fits. |
-| `RACE` | `[derived]` | W1 | 4-level | categorical | Built from `H1GI4` + `H1GI6A` / `H1GI6B`. Multi-racial respondents collapsed. Derivation: [analysis_utils.py:321](../scripts/analysis_utils.py#L321). |
-| `PARENT_ED` | `[derived]` | W1 | ~5,900 | ordinal 0–6 | Max of teen-reported mother and father education, collapsed. Derivation: [analysis_utils.py:334](../scripts/analysis_utils.py#L334). |
+| `RACE` | `[derived]` | W1 | 4-level | categorical | Built from `H1GI4` + `H1GI6A` / `H1GI6B`. Multi-racial respondents collapsed. Derivation: [scripts/analysis/derivation.py](../scripts/analysis/derivation.py) (`derive_race_ethnicity`). |
+| `PARENT_ED` | `[derived]` | W1 | ~5,900 | ordinal 0–6 | Max of teen-reported mother and father education, collapsed. Derivation: [scripts/analysis/derivation.py](../scripts/analysis/derivation.py) (`derive_parent_ed`). |
 
 Raw feeds for the derivations:
 
@@ -292,7 +292,7 @@ Adds CES-D sum and self-rated health to L0.
 
 | Code | Label | Wave | N | Kind | Caveats |
 |---|---|:-:|---:|---|---|
-| `CESD_SUM` | `[derived]` | W1 | ~6,300 | continuous (0–57) | Sum of 19 CES-D items with {4, 8, 11, 15} reverse-scored. Derivation: [analysis_utils.py:255](../scripts/analysis_utils.py#L255). `H1FS13` / `H1FS14` are components — using them as exposure triggers D9 double-adjustment. |
+| `CESD_SUM` | `[derived]` | W1 | ~6,300 | continuous (0–57) | Sum of 19 CES-D items with {4, 8, 11, 15} reverse-scored. Derivation: [scripts/analysis/derivation.py](../scripts/analysis/derivation.py) (`derive_cesd_sum`). `H1FS13` / `H1FS14` are components — using them as exposure triggers D9 double-adjustment. |
 | `H1GH1` | "S1Q1 GENL HLTH-W1" (self-rated health) | W1 | 6,490 | likert 1–5 | Used as-is. |
 | `H1GH28` | "S1Q28 GENL HLTH WEIGHT-W1" `[label not yet verified]` | W1 | TBD | likert / ordinal (TBD) | **Not currently in any adjustment set.** Queued as a per-outcome L1 covariate for the `H4BMI` / `H4WAIST` Task-16 estimation; see [research_journal.md outstanding uncertainty #7](research_journal.md#outstanding-uncertainties). TODO: verify codebook label, range, and reserve codes against the W1 codebook before first use. |
 
@@ -311,7 +311,7 @@ Adds CES-D sum and self-rated health to L0.
 
 | Code | Label | Wave | N | Kind | Caveats |
 |---|---|:-:|---:|---|---|
-| `HEIGHT_IN` | `[derived]` | W4 | ~5,100 | continuous (56–84 in) | `feet × 12 + inches` from `H4GH5F` / `H4GH5I`. Used in task 14 D2. Derivation: [analysis_utils.py:406](../scripts/analysis_utils.py#L406). |
+| `HEIGHT_IN` | `[derived]` | W4 | ~5,100 | continuous (56–84 in) | `feet × 12 + inches` from `H4GH5F` / `H4GH5I`. Used in cognitive-screening D2. Derivation: [scripts/analysis/cleaning.py](../scripts/analysis/cleaning.py) (`neg_control_outcome`). |
 
 > ⚠ **Contaminated NC.** Adolescent height is positively correlated with peer popularity in the developmental-psychology literature. D2 failures on `IDGX2` / `BCENT10X` therefore cannot be read as evidence the exposures are non-causal — they may reflect a back-door path through height-mediated peer status. A cleaner NC battery (blood type, age at menarche, hand-dominance, residential stability pre-W1) is queued for Task 16. See [research_journal.md §Phase 4 critique](research_journal.md#phase-4--preliminary-causal-screening-d1d9).
 
@@ -323,15 +323,15 @@ Where each repo-internal derivation lives.
 
 | Derived code | Function | Source file | Inputs |
 |---|---|---|---|
-| `W4_COG_COMP` | `derive_w4_cog_composite` | [analysis_utils.py:287](../scripts/analysis_utils.py#L287) | `C4WD90_1`, `C4WD60_1`, `C4NUMSCR` (mode-gated) |
-| `W5_COG_COMP` | `derive_w5_cog_composite` | [analysis_utils.py:296](../scripts/analysis_utils.py#L296) | `C5WD90_1`, `C5WD60_1`, derived backward-digit-span |
-| `CESD_SUM` | `derive_cesd_sum` | [analysis_utils.py:255](../scripts/analysis_utils.py#L255) | `H1FS1`–`H1FS19`, reverse {4, 8, 11, 15} |
-| `PARENT_ED` | `derive_parent_ed` | [analysis_utils.py:334](../scripts/analysis_utils.py#L334) | `H1RM1`, `H1RF1` (max, collapsed 0–6) |
-| `RACE` | `derive_race_ethnicity` | [analysis_utils.py:321](../scripts/analysis_utils.py#L321) | `H1GI4`, `H1GI6A`, `H1GI6B` |
-| `SCHOOL_BELONG` | `derive_school_belonging` | [analysis_utils.py:304](../scripts/analysis_utils.py#L304) | `H1ED19`–`H1ED24` (reverse-score `H1ED21`) |
-| `FRIEND_N_NOMINEES`, `FRIEND_CONTACT_SUM`, `FRIEND_DISCLOSURE_ANY` | `derive_friendship_grid` | [analysis_utils.py:428](../scripts/analysis_utils.py#L428) | `H1MF*` / `H1FF*` 45-column grids (items 2, 6, 7, 8, 9, 10) |
-| `IDG_ZERO`, `IDG_LEQ1` | inline | [task08_build_analytic_frame.py:88](../scripts/task08_build_analytic_frame.py#L88) | `IDGX2` |
-| `HEIGHT_IN` | `neg_control_outcome` | [analysis_utils.py:406](../scripts/analysis_utils.py#L406) | W4 `H4GH5F` (feet), `H4GH5I` (inches) |
+| `W4_COG_COMP` | `derive_w4_cog_composite` | [scripts/analysis/derivation.py](../scripts/analysis/derivation.py) | `C4WD90_1`, `C4WD60_1`, `C4NUMSCR` (mode-gated) |
+| `W5_COG_COMP` | `derive_w5_cog_composite` | [scripts/analysis/derivation.py](../scripts/analysis/derivation.py) | `C5WD90_1`, `C5WD60_1`, derived backward-digit-span |
+| `CESD_SUM` | `derive_cesd_sum` | [scripts/analysis/derivation.py](../scripts/analysis/derivation.py) | `H1FS1`–`H1FS19`, reverse {4, 8, 11, 15} |
+| `PARENT_ED` | `derive_parent_ed` | [scripts/analysis/derivation.py](../scripts/analysis/derivation.py) | `H1RM1`, `H1RF1` (max, collapsed 0–6) |
+| `RACE` | `derive_race_ethnicity` | [scripts/analysis/derivation.py](../scripts/analysis/derivation.py) | `H1GI4`, `H1GI6A`, `H1GI6B` |
+| `SCHOOL_BELONG` | `derive_school_belonging` | [scripts/analysis/derivation.py](../scripts/analysis/derivation.py) | `H1ED19`–`H1ED24` (reverse-score `H1ED21`) |
+| `FRIEND_N_NOMINEES`, `FRIEND_CONTACT_SUM`, `FRIEND_DISCLOSURE_ANY` | `derive_friendship_grid` | [scripts/analysis/derivation.py](../scripts/analysis/derivation.py) | `H1MF*` / `H1FF*` 45-column grids (items 2, 6, 7, 8, 9, 10) |
+| `IDG_ZERO`, `IDG_LEQ1` | inline | [scripts/prep/08_build_analytic_frame.py](../scripts/prep/08_build_analytic_frame.py) | `IDGX2` |
+| `HEIGHT_IN` | `neg_control_outcome` | [scripts/analysis/cleaning.py](../scripts/analysis/cleaning.py) | W4 `H4GH5F` (feet), `H4GH5I` (inches) |
 
 ---
 
