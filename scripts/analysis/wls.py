@@ -33,18 +33,26 @@ def weighted_ols(
     X = np.asarray(X, dtype=float)
     w = np.asarray(w, dtype=float)
     psu = np.asarray(psu)
+    # Drop NaN PSU rows: pandas groupby and statsmodels' cluster grouping
+    # both handle NaN keys inconsistently; explicit filter keeps SE math honest.
+    psu_valid = ~pd.Series(psu).isna().values
     mask = (
         ~np.isnan(y)
         & ~np.isnan(w)
         & (w > 0)
         & ~np.isnan(X).any(axis=1)
+        & psu_valid
     )
     y, X, w, psu = y[mask], X[mask], w[mask], psu[mask]
     n = len(y)
     H = len(np.unique(psu))
     if n == 0 or H < 2:
         return None
-    model = sm.WLS(y, X, weights=w)
+    # Normalise survey weights to mean 1. Point estimate is invariant; this
+    # makes statsmodels' use_correction=True small-sample factor (which divides
+    # by σ̂² implicitly assuming E[w·e²] = σ²) operate on the right scale.
+    w_normalized = w * len(w) / w.sum()
+    model = sm.WLS(y, X, weights=w_normalized)
     res = model.fit(
         cov_type="cluster",
         cov_kwds={"groups": psu, "use_correction": True},

@@ -7,11 +7,6 @@ import seaborn as sns
 import numpy as np
 import pandas as pd
 
-from . import ROOT
-
-IMG = ROOT / "img"
-
-
 # Canonical per-outcome-group palette. Single source of truth for any chart
 # that wants to colour by `outcome_group` (cognitive / cardiometabolic /
 # mental_health / functional / ses). Imported by task15_journal_figs and
@@ -62,15 +57,6 @@ def weighted_median(y: np.ndarray, w: np.ndarray) -> float:
     half = cw[-1] / 2.0
     idx = np.searchsorted(cw, half)
     return float(y_s[min(idx, len(y_s) - 1)])
-
-
-def save(fig: plt.Figure, rel_path: str) -> Path:
-    """Save figure as PNG at IMG / rel_path."""
-    path_png = IMG / rel_path
-    path_png.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path_png)
-    plt.close(fig)
-    return path_png
 
 
 def annotate_n(ax: plt.Axes, n: int) -> None:

@@ -6,9 +6,9 @@ HEIGHT_IN negative-control outcome used by task13 / cognitive-screening.
 """
 from __future__ import annotations
 
+import warnings
 from typing import Dict, Tuple
 
-import numpy as np
 import pandas as pd
 
 from . import CACHE
@@ -68,6 +68,14 @@ def clean_var(s: pd.Series, name: str) -> pd.Series:
     if name in VALID_RANGES:
         lo, hi = VALID_RANGES[name]
         s = s.where((s >= lo) & (s <= hi))
+    else:
+        # Reserve-code stripping is opt-in via VALID_RANGES; warn so callers
+        # don't silently consume a variable with codes 6/7/8/9 / 96–99 etc.
+        warnings.warn(
+            f"clean_var called on {name!r} which is not in VALID_RANGES; "
+            f"passing through unstripped (reserve codes may contaminate the result).",
+            stacklevel=2,
+        )
     return s
 
 

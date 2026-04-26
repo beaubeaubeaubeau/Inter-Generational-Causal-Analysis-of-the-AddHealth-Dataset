@@ -130,7 +130,16 @@ def read_file(path: Path) -> tuple[pd.DataFrame, dict[str, str]]:
 def infer_scheme(s: pd.Series, wave5: bool = False,
                  override: str | None = None) -> str:
     """Pick a reserve-code scheme. Override wins; otherwise use the
-    observed max non-null value to choose a digit-width."""
+    observed max non-null value to choose a digit-width.
+
+    Caution: more conservative than a naive "max ≤ 9" check would suggest.
+    A 1-digit Likert with 6/7/8/9 reserves is only flagged ``1digit`` if
+    the substantive scale looks like 0–5 (low-Likert) AND 6/7/8/9 actually
+    appear. A 50/50 split between substantive values and reserve codes
+    returns ``"none"`` rather than 1digit, to avoid clobbering binary
+    indicators (0/1). Callers wanting strict "max ≤ 9 → 1digit" behaviour
+    should pass ``override``.
+    """
     if override is not None:
         return override
     v = s.dropna()

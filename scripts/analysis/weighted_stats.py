@@ -15,7 +15,11 @@ def weighted_mean_se(y, w, psu) -> Tuple[float, float, float, int, int]:
     y = np.asarray(y, dtype=float)
     w = np.asarray(w, dtype=float)
     psu = np.asarray(psu)
-    mask = ~np.isnan(y) & ~np.isnan(w) & (w > 0)
+    # Drop NaN PSU rows up front: pandas groupby silently drops NaN keys, so
+    # leaving them in the y/w arrays would inflate the weighted mean while
+    # vanishing from H and the cluster-variance numerator (SE biased downward).
+    psu_valid = ~pd.Series(psu).isna().values
+    mask = ~np.isnan(y) & ~np.isnan(w) & (w > 0) & psu_valid
     y, w, psu = y[mask], w[mask], psu[mask]
     n = len(y)
     if n == 0:

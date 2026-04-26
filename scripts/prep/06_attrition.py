@@ -322,14 +322,16 @@ def _df_to_md(df: pd.DataFrame) -> str:
         cells = []
         for c in cols:
             v = r[c]
-            if isinstance(v, float):
+            # Check NaN BEFORE float-formatting: NaN is a float, so the
+            # isinstance branch would render NaN as the string "nan" otherwise.
+            if pd.isna(v):
+                cells.append("")
+            elif isinstance(v, float):
                 # Integers-as-floats -> strip decimals; else keep 1 dp
                 if float(v).is_integer():
                     cells.append(str(int(v)))
                 else:
                     cells.append(f"{v:.1f}")
-            elif pd.isna(v):
-                cells.append("")
             else:
                 cells.append(str(v))
         rows.append("| " + " | ".join(cells) + " |")

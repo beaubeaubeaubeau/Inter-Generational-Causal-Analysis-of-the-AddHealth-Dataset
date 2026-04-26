@@ -5,3 +5,8 @@ returning stabilised IPAW weights, trimmed at the 95th percentile and layered
 on ``GSW5``. Required before any W5 point estimate is reported.
 """
 from __future__ import annotations
+
+raise NotImplementedError(
+    "analysis.ipw is a stub; fit_ipaw not yet implemented. See TODO §A "
+    "(IPAW for W5 outcomes) for the planned spec."
+)

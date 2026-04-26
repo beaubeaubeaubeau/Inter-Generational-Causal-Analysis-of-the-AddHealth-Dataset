@@ -38,135 +38,28 @@ Outputs:
 """
 
 from __future__ import annotations
-import os
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 import pyreadstat
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from analysis.cleaning import VALID_RANGES, clean_var  # noqa: E402
+from analysis.weighted_stats import weighted_mean_se, weighted_prop_ci  # noqa: E402
+from analysis.derivation import (  # noqa: E402
+    CESD_ITEMS,
+    derive_cesd_sum,
+    derive_w5_bds as derive_bds_score,
+)
+
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data"
 OUT = Path(__file__).resolve().parent / "outputs" / "05_weighted_descriptives.md"
 
-# ---------------------------------------------------------------------------
-# Valid ranges (min, max, inclusive).  Anything outside is set to NaN.
-# Reserve codes are handled by these ranges.
-# ---------------------------------------------------------------------------
-VALID_RANGES: Dict[str, Tuple[float, float]] = {
-    # W1 network (continuous counts / real-valued centralities)
-    "IDGX2": (0, 50),
-    "ODGX2": (0, 50),
-    "BCENT10X": (-1e6, 1e6),      # real-valued; keep everything finite
-    "REACH": (0, 5000),
-    "REACH3": (0, 5000),
-    "PRXPREST": (0, 1),
-    "HAVEBMF": (0, 1),
-    "HAVEBFF": (0, 1),
-    "BMFRECIP": (0, 1),
-    "BFFRECIP": (0, 1),
-    # W1 friendship / belonging (ordinal 0-6 / 1-5 etc.)
-    "H1DA7": (0, 3),              # 4-level freq (0-3); reserves 6/8/9
-    "H1ED19": (1, 5),
-    "H1ED20": (1, 5),
-    "H1ED21": (1, 5),
-    "H1ED22": (1, 5),
-    "H1ED23": (1, 5),
-    "H1ED24": (1, 5),
-    # W1 baseline cog & demog
-    "AH_PVT": (0, 200),           # standardized score ~55-145; reserves 996/7/8
-    "BIO_SEX": (1, 2),
-    "H1GI4": (0, 1),
-    "H1GI6A": (0, 1),
-    "H1GI6B": (0, 1),
-    "H1GI6C": (0, 1),
-    "H1GI6D": (0, 1),
-    "H1GI6E": (0, 1),
-    # CES-D items
-    **{f"H1FS{i}": (0, 3) for i in range(1, 20)},
-    # W4 cognitive
-    "C4WD90_1": (0, 15),
-    "C4WD60_1": (0, 15),
-    "C4NUMSCR": (0, 7),           # 0-7; reserves 96/97/98/99
-    # W5 cognitive
-    "C5WD90_1": (0, 15),
-    "C5WD60_1": (0, 15),
-    # W5 BDS per-trial items are 0/1
-}
-for L in range(3, 10):
-    for suf in ("A", "B"):
-        VALID_RANGES[f"H5MH{L}{suf}"] = (0, 1)
-
-CESD_ITEMS = [f"H1FS{i}" for i in range(1, 20)]
-CESD_REVERSE = {4, 8, 11, 15}    # 1-based item numbers to reverse-score
-
-
-def clean_var(s: pd.Series, name: str) -> pd.Series:
-    """Apply valid-range filter; values outside -> NaN."""
-    s = pd.to_numeric(s, errors="coerce")
-    if name in VALID_RANGES:
-        lo, hi = VALID_RANGES[name]
-        s = s.where((s >= lo) & (s <= hi))
-    return s
-
-
-# ---------------------------------------------------------------------------
-# Survey-weighted estimation (manual, no samplics)
-# ---------------------------------------------------------------------------
-def weighted_mean_se(
-    y: np.ndarray, w: np.ndarray, psu: np.ndarray
-) -> Tuple[float, float, float, int, int]:
-    """
-    Returns (mean, sd, se, n_unweighted, n_psu).
-    Cluster-robust (linearized) SE with PSUs; no stratification.
-    """
-    mask = ~np.isnan(y) & ~np.isnan(w) & (w > 0)
-    y = y[mask]; w = w[mask]; psu = psu[mask]
-    n = len(y)
-    if n == 0:
-        return (np.nan, np.nan, np.nan, 0, 0)
-    W = w.sum()
-    mean = float(np.sum(w * y) / W)
-    var_pop = float(np.sum(w * (y - mean) ** 2) / W)
-    sd = float(np.sqrt(var_pop))
-    # Cluster-robust linearized SE for the ratio estimator of the mean.
-    # u_i = w_i * (y_i - mean); u_h = Sum u_i over PSU h.
-    # Var(mean) ~= (H/(H-1)) * (1/W^2) * Sum_h (u_h - u_bar)^2
-    u_i = w * (y - mean)
-    df = pd.DataFrame({"u": u_i, "psu": psu})
-    u_h = df.groupby("psu")["u"].sum().values
-    H = len(u_h)
-    if H < 2:
-        return (mean, sd, np.nan, n, H)
-    u_bar = u_h.mean()
-    var_mean = (H / (H - 1.0)) * np.sum((u_h - u_bar) ** 2) / (W ** 2)
-    se = float(np.sqrt(max(var_mean, 0.0)))
-    return (mean, sd, se, n, H)
-
-
-def weighted_prop_ci(
-    ind: np.ndarray, w: np.ndarray, psu: np.ndarray
-) -> Tuple[float, float, float, float, int, int]:
-    """
-    Survey-weighted proportion with logit-transformed 95% CI.
-    Returns (p, se, ci_lo, ci_hi, n, n_psu).
-    """
-    p, _sd, se, n, H = weighted_mean_se(ind.astype(float), w, psu)
-    if np.isnan(p) or np.isnan(se) or p <= 0 or p >= 1:
-        # Fall back to symmetric normal CI bounded to [0,1].
-        if np.isnan(p):
-            return (p, se, np.nan, np.nan, n, H)
-        lo = max(0.0, p - 1.96 * (se if not np.isnan(se) else 0.0))
-        hi = min(1.0, p + 1.96 * (se if not np.isnan(se) else 0.0))
-        return (p, se, lo, hi, n, H)
-    # logit transform
-    logit = np.log(p / (1 - p))
-    se_logit = se / (p * (1 - p))
-    lo_l = logit - 1.96 * se_logit
-    hi_l = logit + 1.96 * se_logit
-    lo = 1 / (1 + np.exp(-lo_l))
-    hi = 1 / (1 + np.exp(-hi_l))
-    return (p, se, lo, hi, n, H)
+# VALID_RANGES, clean_var, weighted_mean_se, weighted_prop_ci are imported at
+# the module top from the analysis package — single source of truth.
 
 
 # ---------------------------------------------------------------------------
@@ -207,42 +100,8 @@ def load_w5_weight() -> pd.DataFrame:
     return df[["AID", "CLUSTER2", "GSW5"]]
 
 
-# ---------------------------------------------------------------------------
-# Derivation helpers
-# ---------------------------------------------------------------------------
-def derive_cesd_sum(df: pd.DataFrame) -> pd.Series:
-    """CES-D sum from H1FS1-H1FS19, items 4/8/11/15 reverse-scored (0..3 -> 3..0)."""
-    cleaned = pd.DataFrame({v: clean_var(df[v], v) for v in CESD_ITEMS})
-    for idx in CESD_REVERSE:
-        col = f"H1FS{idx}"
-        cleaned[col] = 3 - cleaned[col]
-    # Sum only if all 19 items are present (conservative).
-    total = cleaned.sum(axis=1, min_count=19)
-    return total
-
-
-def derive_bds_score(df: pd.DataFrame) -> pd.Series:
-    """
-    Max L in {2..8} such that H5MH(L+1)A == 1 OR H5MH(L+1)B == 1; else 0.
-    Using variable naming convention H5MH<i><A|B> where i = L+1 ranges 3..9.
-    """
-    n = len(df)
-    score = np.zeros(n, dtype=float)
-    # Drop-to-NaN only if ALL 14 items are NaN.
-    item_cols = [f"H5MH{L+1}{s}" for L in range(2, 9) for s in "AB"]
-    cleaned = {c: clean_var(df[c], c) for c in item_cols}
-    all_missing_mask = np.ones(n, dtype=bool)
-    for c, s in cleaned.items():
-        all_missing_mask &= s.isna().values
-    # Compute best L per respondent
-    for L in range(2, 9):                       # L = 2..8
-        a = cleaned[f"H5MH{L+1}A"].values
-        b = cleaned[f"H5MH{L+1}B"].values
-        success = (a == 1) | (b == 1)
-        score = np.where(success, float(L), score)
-    out = pd.Series(score, index=df.index, dtype=float)
-    out[all_missing_mask] = np.nan
-    return out
+# derive_cesd_sum and derive_bds_score (= derive_w5_bds) are imported at the
+# module top from analysis.derivation — single source of truth.
 
 
 # ---------------------------------------------------------------------------

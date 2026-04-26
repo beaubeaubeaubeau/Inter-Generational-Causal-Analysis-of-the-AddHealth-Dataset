@@ -9,3 +9,9 @@ Planned contents (see ``reference/methods.md`` §3 forthcoming):
   - ``reserve_code_sweep``
 """
 from __future__ import annotations
+
+raise NotImplementedError(
+    "analysis.sensitivity is a stub; the listed helpers currently live inline "
+    "in experiments/cognitive-screening/run.py (sensitivity-audit and "
+    "verification blocks). See TODO §A for the planned extraction."
+)

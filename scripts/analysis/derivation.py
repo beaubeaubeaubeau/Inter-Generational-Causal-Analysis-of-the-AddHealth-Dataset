@@ -25,6 +25,12 @@ CESD_REVERSE = {4, 8, 11, 15}
 
 
 def derive_cesd_sum(df: pd.DataFrame) -> pd.Series:
+    """Sum of the 19 CES-D items with items 4/8/11/15 reverse-scored.
+
+    Returns NaN if ANY of the 19 items is missing (``min_count=19``);
+    reverse-scored items propagate NaN through ``3 - NaN``. Strict listwise
+    by design — one missing item zeroes the respondent's score.
+    """
     cleaned = pd.DataFrame({v: clean_var(df[v], v) for v in CESD_ITEMS})
     for idx in CESD_REVERSE:
         col = f"H1FS{idx}"
@@ -34,6 +40,7 @@ def derive_cesd_sum(df: pd.DataFrame) -> pd.Series:
 
 def derive_w5_bds(df: pd.DataFrame) -> pd.Series:
     n = len(df)
+    # float dtype is required: np.nan can't be assigned to an int array.
     score = np.zeros(n, dtype=float)
     item_cols = [f"H5MH{L+1}{s}" for L in range(2, 9) for s in "AB"]
     cleaned = {c: clean_var(df[c], c) for c in item_cols}
