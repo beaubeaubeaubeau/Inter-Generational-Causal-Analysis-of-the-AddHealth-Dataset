@@ -35,7 +35,7 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 | ESRDEN | egonet | 3167 | FAIL | FAIL | NA | FAIL | FAIL | FAIL | PASS | no | Weakened | 1 |
 | RCHDEN | egonet | 3268 | FAIL | PASS | NA | PASS | FAIL | FAIL | PASS | no | Weakened | 5 |
 | FRIEND_N_NOMINEES | friendship_grid | 4710 | FAIL | PASS | NA | PASS | FAIL | FAIL | PASS | no | Weakened | 5 |
-| FRIEND_CONTACT_SUM | friendship_grid | 4710 | FAIL | PASS | NA | PASS | FAIL | FAIL | PASS | no | Weakened | 5 |
+| FRIEND_CONTACT_SUM | friendship_grid | 4706 | FAIL | PASS | NA | PASS | FAIL | FAIL | PASS | no | Weakened | 5 |
 | FRIEND_DISCLOSURE_ANY | friendship_grid | 4710 | FAIL | FAIL | PASS | PASS | FAIL | NA | FAIL | no | Weakened | 4 |
 | SCHOOL_BELONG | belonging | 4629 | FAIL | FAIL | NA | FAIL | FAIL | PASS | FAIL | YES | Weakened | 1 |
 | H1FS13 | loneliness | 4710 | FAIL | PASS | NA | FAIL | FAIL | FAIL | FAIL | YES | Weakened | 2 |
@@ -243,13 +243,13 @@ Screens each W1 adolescent-social exposure against a battery of falsification / 
 
 ### FRIEND_CONTACT_SUM (friendship_grid)  --  **Weakened** [score 5]
 
-- D1 primary beta = 0.001342 (SE 0.00173, p = 0.44, N = 4710).
-- D2 HEIGHT_IN beta = -0.003605 (p = 0.696); PASS.
-- **D4a (sensitivity, L0 → L0+L1):** rel-shift = 0.1; sign stable = True; PASS.
-- **D4b (estimand presentation, L0+L1 vs L0+L1+AHPVT, no pass/fail):** β_levels = 0.003957; β_trajectory = 0.001342; AHPVT-driven attenuation = 66.1%.
+- D1 primary beta = 0.001206 (SE 0.00174, p = 0.489, N = 4706).
+- D2 HEIGHT_IN beta = -0.003175 (p = 0.737); PASS.
+- **D4a (sensitivity, L0 → L0+L1):** rel-shift = 0.106; sign stable = True; PASS.
+- **D4b (estimand presentation, L0+L1 vs L0+L1+AHPVT, no pass/fail):** β_levels = 0.003985; β_trajectory = 0.001206; AHPVT-driven attenuation = 69.7%.
 - D5 0/3 components significant at p<0.10; sign consistent = False; FAIL.
 - D6 trend rho = 0; monotone sign = False; FAIL.
-- D7 overlap: p_hat in [0.141, 0.852]; eff N = 1870; PASS.
+- D7 overlap: p_hat in [0.143, 0.852]; eff N = 1868; PASS.
 - Notes: D1 association null (p>=0.05).
 
 ### FRIEND_DISCLOSURE_ANY (friendship_grid)  --  **Weakened** [score 4]

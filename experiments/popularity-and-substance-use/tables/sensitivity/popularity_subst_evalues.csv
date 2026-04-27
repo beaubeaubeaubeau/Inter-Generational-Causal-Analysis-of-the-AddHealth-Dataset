@@ -1,0 +1,4 @@
+outcome,outcome_label,beta,se,n,approx_rr,evalue,interpretation
+H4TO39,S28Q39 DRINKING DAYS PAST 30 DAYS—W4,0.03393741854196212,0.01008028982628871,3273,1.0550116532379177,1.2959222906740562,An unmeasured confounder must have at least this RR with both exposure and outcome to explain away the observed association.
+H5TO12,S6Q12 ALCOHOL DAYS PAST 12 MONTHS—W5,0.05628371294747118,0.010495875429581992,2440,1.1038338587013197,1.4423827162006846,An unmeasured confounder must have at least this RR with both exposure and outcome to explain away the observed association.
+H5TO15,S6Q15 BINGE-DRINKING DAYS PAST 12 MONTHS—W5,0.040614787013589115,0.01151243814821495,2435,1.0672222118300125,1.3350673864987597,An unmeasured confounder must have at least this RR with both exposure and outcome to explain away the observed association.

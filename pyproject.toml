@@ -1,0 +1,8 @@
+[tool.pytest.ini_options]
+# Use importlib-based collection so per-experiment `tests/test_smoke.py`
+# files (one per experiment folder, all sharing the same basename) get
+# fully-qualified module names and don't collide on bulk pytest runs.
+# See: https://docs.pytest.org/en/stable/explanation/pythonpath.html
+addopts = "--import-mode=importlib"
+testpaths = ["tests", "experiments"]
+python_files = ["test_*.py"]

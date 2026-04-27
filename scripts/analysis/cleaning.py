@@ -33,6 +33,7 @@ VALID_RANGES: Dict[str, Tuple[float, float]] = {
     # W1 baseline cognitive + demographics
     "AH_PVT": (0, 200), "AH_RAW": (0, 87),
     "BIO_SEX": (1, 2),
+    "H1GI1M": (1, 12),  # birth month; 96 = refused, 97 = legit-skip, 98 = DK, 99 = NA
     "H1GI4": (0, 1),
     "H1GI6A": (0, 1), "H1GI6B": (0, 1), "H1GI6C": (0, 1),
     "H1GI6D": (0, 1), "H1GI6E": (0, 1),
@@ -48,6 +49,12 @@ VALID_RANGES: Dict[str, Tuple[float, float]] = {
     "PA55": (0, 500),
     # CES-D items
     **{f"H1FS{i}": (0, 3) for i in range(1, 20)},
+    # CES-D summed score: 19 items each 0-3 -> theoretical (0, 57). Observed
+    # max in the W1 cohort tops out near 50; cap matches the item range. The
+    # derived variable was already cleaned at construction time but is
+    # registered here so `clean_var` does not warn when downstream
+    # experiments (e.g. em-depression-buffering) pass it through defensively.
+    "CESD_SUM": (0, 57),
     # W4 cognitive
     "C4WD90_1": (0, 15), "C4WD60_1": (0, 15), "C4NUMSCR": (0, 7),
     "C4WD90_2": (0, 15), "C4WD90_3": (0, 15),
@@ -61,6 +68,36 @@ VALID_RANGES: Dict[str, Tuple[float, float]] = {
     "H5MN1": (1, 5), "H5MN2": (1, 5),
     "H5ID1": (1, 5), "H5ID4": (1, 3), "H5ID16": (0, 4),
     "H5LM5": (1, 3), "H5EC1": (1, 13),
+    # Derived W1 indicator/exposure variables (already cleaned at derivation time;
+    # registered here so clean_var doesn't emit a warning when downstream
+    # experiments pass them through defensively).
+    "IDG_ZERO": (0, 1), "IDG_LEQ1": (0, 1),
+    "FRIEND_DISCLOSURE_ANY": (0, 1),
+    "FRIEND_N_NOMINEES": (0, 10),
+    "FRIEND_CONTACT_SUM": (0, 40),  # max = 4 contact items × 10 nominees
+    "SCHOOL_BELONG": (0, 30),       # max = 6 items × 5 (post-reverse)
+    # Derived parental education (max of H1RM1 / H1RF1 recoded to 0-6 ordinal:
+    # 0 = <HS, ..., 6 = professional training beyond college). Already cleaned
+    # at derivation time; registered so defensive `clean_var` calls don't warn.
+    "PARENT_ED": (0, 6),
+    # PCA-derived composite (no clipping; identity-pass with warning suppressed).
+    "POLYSOCIAL_PC1": (-1e6, 1e6),
+    # W4/W5 substance-use items (popularity-and-substance-use experiment).
+    # H4TO5 / H5TO2: smoking days past 30 days (count 0-30); refuse/DK = 96/98.
+    # H4TO39 / H4TO70 / H5TO12 / H5TO15: ordinal frequency 0-6 over the look-back
+    # window. Code 97 ("legitimate skip" — never drank / never used) is a real
+    # zero exposure but is OUTSIDE the substantive 0-6 range; per-experiment
+    # callers must impute 97 -> 0 BEFORE calling clean_var (clean_var strips
+    # 97 to NaN through the (0, 6) gate). Refuse/DK = 96/98.
+    # H4TO65B / H4TO65C: binary 0/1 (ever used MJ / cocaine); refuse/DK = 6/8.
+    "H4TO5": (0, 30),
+    "H4TO39": (0, 6),
+    "H4TO70": (0, 6),
+    "H4TO65B": (0, 1),
+    "H4TO65C": (0, 1),
+    "H5TO2": (0, 30),
+    "H5TO12": (0, 6),
+    "H5TO15": (0, 6),
 }
 for L in range(3, 10):
     for suf in ("A", "B"):

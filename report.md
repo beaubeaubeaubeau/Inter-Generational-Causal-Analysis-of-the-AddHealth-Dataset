@@ -8,8 +8,28 @@
 | C2 | School belonging → adult mental health is mediator-leaky (D4 instability) | provisional | [multi-outcome-screening](experiments/multi-outcome-screening/) |
 | C3 | Network-centrality → cognition β attenuates 30-50% with AHPVT (trajectory framing) | strong | [cognitive-screening](experiments/cognitive-screening/), [methods.md §1](reference/methods.md#1-identification-assumptions-and-target-estimand) |
 | C4 | ODGX2 → adult earnings is robust to AHPVT adjustment | provisional | [multi-outcome-screening](experiments/multi-outcome-screening/), [ses-handoff](experiments/ses-handoff/) (planned) |
+| C5 | **Send-side beats receive-side for SES outcomes**: sociability (`ODGX2`, paired-bootstrap p=0.005 vs IDGX2) and send-density (`ESDEN → H5EC1` β=+1.52, E-value 8.57) dominate over popularity / receive-density. Status access ≠ SES success. | provisional | [popularity-vs-sociability](experiments/popularity-vs-sociability/), [ego-network-density](experiments/ego-network-density/) |
+| C6 | **Brokerage / structural-holes hypothesis is contradicted, not corroborated.** Denser send-networks predict *higher* earnings, not lower (Burt's prediction was the opposite). The size-conditioning sensitivity is load-bearing — without `REACH3` adjustment, the effect collapses. | provisional | [ego-network-density](experiments/ego-network-density/) |
+| C7 | **One confidant beats many friends for SES.** `FRIEND_DISCLOSURE_ANY → H5EC1` β=+0.44 (E-value 2.48) survives a joint-fit with `FRIEND_N_NOMINEES` and `FRIEND_CONTACT_SUM`. Quantity (n-nominees) drives BMI/waist instead. | provisional | [friendship-quality-vs-quantity](experiments/friendship-quality-vs-quantity/) |
+| C8 | **Cardiometabolic protection from popularity is sex-differential.** Girls' protective slope ≈ 2× boys' on H4BMI (interaction p=0.004), H4WAIST (p=0.031), H4BMICLS (p=0.020). Mental-health interactions null. | provisional | [em-sex-differential](experiments/em-sex-differential/) |
+| C9 | **Compensatory (low-SES kids benefit more from popularity) NOT supported.** All 5 outcome × IDGX2×PARENT_ED interactions p>0.07; protective popularity effect is roughly uniform across SES, not concentrated at low SES. | null result | [em-compensatory-by-ses](experiments/em-compensatory-by-ses/) |
+| C10 | **Depression-buffering by popularity NOT supported**, AND the D9 collider concern is empirically inactive: conservative-vs-clean two-spec contrast gives identical β to four decimals. | null result | [em-depression-buffering](experiments/em-depression-buffering/) |
+| C11 | **Dark side of popularity is ALCOHOL-specific, not universal.** Predicted positive β confirmed for adult drinking (`H4TO39` p=0.001, `H5TO12` p<0.001, `H5TO15` p<0.001) but NOT smoking (`H4TO5`/`H5TO2` null) or marijuana (`H4TO70`/`H4TO65B` null/weakly-negative). | provisional | [popularity-and-substance-use](experiments/popularity-and-substance-use/) |
+| C12 | **Lonely-at-the-top paradox REJECTED.** All 5 (z(IDGX2) × z(H1FS13)) interactions p>0.05; β₃ near zero. Popularity main-effect protection on cardiometabolic is large and unmodified by loneliness. | null result | [lonely-at-the-top](experiments/lonely-at-the-top/) |
+| C13 | **Cross-sex friendship hypothesis NOT supported on cognition / SES / mental-health**, but a striking asymmetric cardiometabolic pattern surfaces in the HAVEBFF stratum: females without a best female friend carry the highest BMI/waist/BMI-class. | provisional | [cross-sex-friendship](experiments/cross-sex-friendship/) |
 
 <!-- Add or revise rows as evidence accumulates. Each row points to the specific experiment(s) that bear on the claim. -->
+
+## Phase 6 mechanism findings — synthesis (2026-04-27)
+
+Across the 9 mechanism experiments, four cross-cutting patterns emerge:
+
+1. **Send-side / agency edges (out-degree, send-density, friendship disclosure) carry the SES signal**; receive-side / status edges (in-degree, receive-density) don't. Three independent experiments concur (C5, C6, C7). The conventional "popularity → earnings via status" story is wrong direction; "sociability → earnings via active outreach" is the supported channel.
+2. **Cardiometabolic protection from popularity (C1) is real but sex-differential (C8)** — the protective effect is concentrated in girls. Compensatory-by-SES (C9) and depression-buffering (C10) are *not* the moderators; sex is.
+3. **Outcome specificity is sharper than initially expected.** Popularity protects cardiometabolic outcomes (C1) AND predicts adult alcohol use (C11). The "dark side" story is alcohol-only; smoking and marijuana are null. This is a clean outcome-specificity inversion within the substance-use domain.
+4. **Several plausible-sounding hypotheses landed null** (C9, C10, C12, the structural-holes hypothesis prediction in C6, the cross-sex emotional/instrumental hypothesis in C13). These are scientifically informative — pre-registered nulls strengthen the claims that DO survive.
+
+**All Phase 6 claims (C5–C13) are provisional pending handoff-style formal estimation** with proper per-outcome DAGs, E-value sensitivity bounds, IPAW for W4→W5 attrition, and ordered-logit / interval-regression for ordinal outcomes.
 
 ## Cognitive trajectory
 

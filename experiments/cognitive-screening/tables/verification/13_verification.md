@@ -11,8 +11,8 @@
 
 ## 2. Reserve-code leakage assertion
 
-- Columns checked: 32
-- Columns with any out-of-valid-range values: **0**
+- Columns checked: 61
+- Columns with any out-of-valid-range values: **14**
 - Detailed CSV: `tables/verification/13_reserve_leakage.csv`
 
 
