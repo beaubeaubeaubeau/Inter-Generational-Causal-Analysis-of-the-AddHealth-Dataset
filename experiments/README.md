@@ -27,16 +27,45 @@ One folder per experiment under this directory. Each folder is self-contained: a
 |---|---|---|---|---|
 | [ses-handoff](ses-handoff/) | planned | `ODGX2` → `H5EC1` (W4-W5 personal earnings, bracketed 1-13) | Interval regression on bracket midpoints + IPAW (W4 → W5 attrition, via the IPAW utility, [TODO §A3](TODO.md#a-research-pipeline--task-16-and-beyond)), with `GSW5` × IPAW substituted for the screening's `GSWGT4_2` | Per-outcome DAG `DAG-SES` (planned); E-value sensitivity bound per [TODO.md §A7](../TODO.md) |
 
+## Hypothesis: type-of-tie (Phase 6 mechanism experiments)
+
+| Experiment | Status | Exposure | Outcome | Method | Notes |
+|---|---|---|---|---|---|
+| [popularity-vs-sociability](popularity-vs-sociability/) | planned | `IDGX2` (popularity), `ODGX2` (sociability) | all 13 | WLS β per cell + paired-bootstrap (β_in − β_out) per outcome with cluster-resampling on `CLUSTER2` | Tests asymmetric mechanism prediction: popularity dominates status outcomes; sociability dominates agency outcomes |
+| [ego-network-density](ego-network-density/) | planned | `RCHDEN`, `ESDEN`, `ERDEN`, `ESRDEN` (4 ego-density measures) | mental health + SES + cognitive subset | Size-conditioned WLS (include `REACH3` as covariate); estimand is "density at constant network size" | Burt structural-holes hypothesis: high density → mental health protection; low density → SES advantage |
+| [friendship-quality-vs-quantity](friendship-quality-vs-quantity/) | planned | `FRIEND_DISCLOSURE_ANY`, `FRIEND_N_NOMINEES`, `FRIEND_CONTACT_SUM` (head-to-head in same regression) | all 13 | WLS sample-wide (no saturation gate, N≈4,700) | Quality-vs-quantity test; one-confidant vs many-friends |
+
+## Hypothesis: effect modification (Phase 6 mechanism experiments)
+
+| Experiment | Status | Exposure | Outcome | Method | Notes |
+|---|---|---|---|---|---|
+| [em-compensatory-by-ses](em-compensatory-by-ses/) | planned | `IDGX2 × PARENT_ED` interaction | cardiometabolic + SES | WLS interaction primary; bias-corrected matching for binary subgroup contrast (first project use of `analysis.matching`) | Compensatory hypothesis: low-SES kids benefit more from popularity |
+| [em-sex-differential](em-sex-differential/) | planned | `IDGX2 × BIO_SEX` interaction | cardiometabolic primarily; mental-health secondary | WLS interaction; sex-stratified forests; matching as robustness | Peer status policing of body weight stronger for girls hypothesis |
+| [em-depression-buffering](em-depression-buffering/) | planned | `IDGX2 × CESD_SUM` interaction | W5 mental health (`H5MN1`, `H5MN2`, `H5ID1`) | WLS interaction; D9 collider check (CESD_SUM in adjustment AND moderator); two-spec sensitivity | Popularity buffers pre-existing depression hypothesis |
+
+## Hypothesis: dark-side-of-popularity (Phase 6 mechanism experiments)
+
+| Experiment | Status | Exposure | Outcome | Method | Notes |
+|---|---|---|---|---|---|
+| [popularity-and-substance-use](popularity-and-substance-use/) | planned | `IDGX2` | substance-use outcomes (W4: H4TO5/H4TO39/H4TO70/H4TO65*; W5: H5TO2/H5TO12/H5TO15) | WLS L0+L1+AHPVT; predicted *positive* β = striking outcome-specificity inversion vs cardiometabolic protective signal | Tests "dark side" of popularity hypothesis |
+| [lonely-at-the-top](lonely-at-the-top/) | planned | `IDGX2 + H1FS13 + (z(IDGX2) × z(H1FS13))` continuous-interaction | cardiometabolic + mental-health subset | WLS continuous interaction; **2x2 design abandoned per pre-flight** (min cell N=73, < 150 threshold) | Paradox subgroup: high popularity + high loneliness predicts worse mid-life outcomes |
+
+## Hypothesis: cross-sex friendship (Phase 6 mechanism experiments)
+
+| Experiment | Status | Exposure | Outcome | Method | Notes |
+|---|---|---|---|---|---|
+| [cross-sex-friendship](cross-sex-friendship/) | planned | `BIO_SEX × HAVEBMF` and `BIO_SEX × HAVEBFF` (8 cells total) | all 13 | WLS within each cell; full forest plot per outcome (8 × 13 cells); narrative narrowing in report | Tests instrumental-vs-emotional cross-sex friendship hypotheses |
+
 ## Cross-cutting / methodological
 
 | Experiment | Status | Purpose |
 |---|---|---|
-| [negative-control-battery](negative-control-battery/) | planned | Replace contaminated `HEIGHT_IN` D2 negative-control outcome with a battery of clean NC outcomes (blood type, age at menarche or W1 pubertal-development index, hand-dominance, residential stability pre-W1; pre-flight required to confirm public-use availability). Tests the unmeasured-confounder assumption in `DAG-Cog`. |
+| [negative-control-battery](negative-control-battery/) | planned (broadened 2026-04-27) | **Two null directions in one experiment.** Direction 1 — exposure-side: blood type, age at menarche or W1 pubertal-development index, hand-dominance, residential stability pre-W1 (pre-flight required). Direction 2 — outcome-side: sensory (`H5EL6D`, `H5EL6F`, `H5DA9`), allergy/asthma (`H5EL6A`, `H5EL6B`). Tests the unmeasured-confounder assumption underlying every other DAG. |
 | [saturation-balance](saturation-balance/) | planned | Survey-weighted (`GSWGT1`) covariate balance table for L0 + L1 + AHPVT inside vs. outside saturated schools, with a standardized-mean-difference column. Quantifies the external-validity gap of the within-saturated-schools estimand used by the network exposures. |
 
 ## Conventions
 
 - **Naming.** Lowercase, hyphenated, no caps. Hypothesis-prefix or domain-prefix + descriptive scope-suffix (e.g. `cognitive-screening`, `cardiometabolic-handoff`).
 - **Adding an experiment.** See ["Adding a new experiment" in the top-level README](../README.md#adding-a-new-experiment). Mandatory order: lock the DAG in [`reference/dag_library.md`](../reference/dag_library.md) first, then write the field-table `README.md` with the estimand wording, then any analytic code.
-- **Chart-explanation convention.** Every chart in any experiment's `report.md` includes (1) a 1-3 sentence descriptive caption immediately under the image, (2) a prose paragraph explaining why the chart matters, how to read it, and which method produced it, and (3) method names linked on first use within the report to [`../reference/methods.md`](../reference/methods.md) or [`../reference/glossary.md`](../reference/glossary.md).
+- **Chart-explanation convention.** Every chart has a **descriptive title baked into the figure itself** (set via `ax.set_title(...)` / `fig.suptitle(...)` in `figures.py`). In the experiment's `report.md`, every embedded chart additionally gets (1) a 1-3 sentence descriptive caption immediately under the image, (2) a prose paragraph explaining why the chart matters, how to read it, and which method produced it, and (3) method names linked on first use within the report to [`../reference/methods.md`](../reference/methods.md) or [`../reference/glossary.md`](../reference/glossary.md). Updated 2026-04-26: titles now belong on the chart (the prior "no baked-in titles" convention is reversed).
 - **Meta-analysis collapse.** Sensitivity audits and verification packs are not separate experiments — they live as artifacts inside the experiment they sensitize. For example, the EXP-11-SENS audits and EXP-13-VERIFY pack live as `cognitive-screening/figures/sensitivity/`, `cognitive-screening/tables/sensitivity/`, `cognitive-screening/figures/verification/`, and `cognitive-screening/tables/verification/`.

@@ -4,13 +4,15 @@
 
 This experiment runs the 24-exposure × `W4_COG_COMP` causal screen with the D1–D9 diagnostic battery (peer-network, isolation, ego-network, friendship-grid, belonging, loneliness, and qualitative-perception exposures), then layers sensitivity audits (collinearity, AHPVT shift, placebo permutation, saturated-school balance) and verification artifacts (BH-FDR, attrition IPW, negative-control sweeps, DEFF) on the IDGX2 anchor model.
 
-<!-- Chart-explanation convention: every chart embedded in this report must include
-     (1) a descriptive caption under the image (1-3 sentences),
-     (2) a prose paragraph explaining why the chart was generated, how to read it
-         (good/bad/null patterns), and what method produced it,
-     (3) method names linked to ../../reference/methods.md or ../../reference/glossary.md
-         on first use within this report.
-     Stripped baked-in PNG titles per TODO §E. -->
+<!-- Chart-explanation convention (updated 2026-04-26): every chart has a
+     descriptive title baked into the figure itself, set in figures.py. In
+     this report, every embedded chart additionally includes
+     (1) a 1-3 sentence descriptive caption under the image,
+     (2) a prose paragraph explaining why the chart was generated, how to
+         read it (good/bad/null patterns), and what method produced it,
+     (3) method names linked to ../../reference/methods.md or
+         ../../reference/glossary.md on first use within this report.
+     The prior "no baked-in titles" convention is reversed. -->
 
 ## Primary results
 

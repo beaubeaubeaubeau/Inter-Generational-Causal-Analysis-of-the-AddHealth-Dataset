@@ -48,12 +48,12 @@ A baseline indicator with no theoretical link to cognitive outcomes — should b
 
 ## 7. Attrition IPW re-fit of anchor model (S01C)
 
-Stage-1 logit pseudo-R² = 0.0274, N = 3222.
+Stage-1 logit pseudo-R² = 0.0297, N = 3222.
 
 | spec                    |   beta_idgx2 |         p |    n |
 |:------------------------|-------------:|----------:|-----:|
 | Primary (GSWGT4_2 only) |   0.00926382 | 0.0153668 | 3268 |
-| With attrition IPW      |   0.010012   | 0.0114789 | 3210 |
+| With attrition IPW      |   0.0100122  | 0.0114799 | 3210 |
 
 ## 8. BH-FDR multiple-testing adjustment (primary family)
 

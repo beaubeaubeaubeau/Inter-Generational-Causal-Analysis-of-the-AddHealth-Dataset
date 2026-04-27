@@ -507,26 +507,63 @@ def _d3_sibling(df, col, sibling_col):
 
 
 def _d4_adj_stability(df, col):
+    """D4 split into D4a (sensitivity) and D4b (estimand presentation).
+
+    Per the 2026-04-26 reframing (TODO §A18): the L0+L1 → L0+L1+AHPVT step
+    is not a sensitivity check but a deliberate change of estimand (level →
+    trajectory). Lumping both shifts into one rel_shift conflates two
+    different concerns. We now compute:
+
+      * **D4a (sensitivity, pass/fail):** rel-shift across L0 → L0+L1 only.
+        Detects hidden confounding via W1 health/affect covariates.
+        Threshold: rel_shift < 0.30 AND sign stable.
+      * **D4b (estimand presentation, informational, no pass/fail):** records
+        β_L0+L1 ("levels estimand") and β_L0+L1+AHPVT ("trajectory estimand")
+        side by side, plus the absolute and percentage attenuation between
+        them. Big attenuation here is *expected* for cognitive outcomes
+        (AHPVT is the trajectory baseline) and is informative, not a
+        confounding signal.
+    """
     betas = {}
     for name, builder in ADJ_BUILDERS.items():
         res = _fit_screen(df, col, "W4_COG_COMP", builder)
         betas[name] = float(res["beta"]["exposure"]) if res else np.nan
+
+    # D4a: sensitivity check on L0 → L0+L1 (no AHPVT).
     b0 = betas["L0"]
+    b1 = betas["L0+L1"]
+    if not (np.isnan(b0) or np.isnan(b1)):
+        ref_a = abs(b1) if abs(b1) > 1e-10 else abs(b0)
+        d4a_rel_shift = abs(b0 - b1) / ref_a if ref_a > 0 else np.nan
+        d4a_sign_stable = (np.sign(b0) == np.sign(b1)) and (b0 != 0) and (b1 != 0)
+    else:
+        d4a_rel_shift = np.nan
+        d4a_sign_stable = False
+    d4a_pass = (not np.isnan(d4a_rel_shift)) and (d4a_rel_shift < 0.30) and d4a_sign_stable
+
+    # D4b: estimand-change presentation. β_levels vs β_trajectory.
     bf = betas["L0+L1+AHPVT"]
-    ref = abs(bf) if not np.isnan(bf) and abs(bf) > 1e-10 else (
-        abs(b0) if not np.isnan(b0) else np.nan
-    )
-    vals = [v for v in betas.values() if not np.isnan(v)]
-    max_shift = (max(vals) - min(vals)) if len(vals) >= 2 else np.nan
-    rel_shift = abs(max_shift) / ref if ref and ref > 0 else np.nan
-    sign_stable = (
-        len(vals) >= 2 and (all(v > 0 for v in vals) or all(v < 0 for v in vals))
-    )
-    passes = (not np.isnan(rel_shift)) and (rel_shift < 0.30) and sign_stable
-    return {"beta_L0": betas["L0"], "beta_L0_L1": betas["L0+L1"],
-            "beta_L0_L1_AHPVT": betas["L0+L1+AHPVT"],
-            "rel_shift": rel_shift, "sign_stable": sign_stable,
-            "pass": bool(passes)}
+    if not (np.isnan(b1) or np.isnan(bf)):
+        d4b_abs_shift = abs(b1 - bf)
+        d4b_pct_attenuation = (1 - abs(bf) / abs(b1)) if abs(b1) > 1e-10 else np.nan
+    else:
+        d4b_abs_shift = np.nan
+        d4b_pct_attenuation = np.nan
+
+    return {
+        "beta_L0": betas["L0"],
+        "beta_L0_L1": betas["L0+L1"],
+        "beta_L0_L1_AHPVT": betas["L0+L1+AHPVT"],
+        # D4a: sensitivity, drives pass/fail. Loop adds d4_ prefix.
+        "a_rel_shift": d4a_rel_shift,
+        "a_sign_stable": bool(d4a_sign_stable),
+        "a_pass": bool(d4a_pass),
+        # D4b: estimand presentation, informational only.
+        "b_beta_levels": b1,
+        "b_beta_trajectory": bf,
+        "b_abs_shift": d4b_abs_shift,
+        "b_pct_attenuation": d4b_pct_attenuation,
+    }
 
 
 def _d5_component_consistency(df, col):
@@ -651,8 +688,14 @@ def _screen_all(w4_screen: pd.DataFrame, w1_screen: pd.DataFrame) -> pd.DataFram
         d7 = _d7_overlap(df, col, kind)
         d8 = _d8_saturation(req_sat)
         d9 = _d9_red_flag(name)
+        # D3 sibling-dissociation skipped for network exposures (req_sat=True):
+        # the within-network-file siblings (ODGX2 ↔ IDGX2 etc.) are too
+        # construct-correlated to dissociate (decision 2026-04-26 / TODO §A16).
+        # No structurally-independent placebo is available within the network
+        # data; D2 (negative-control outcome) and D7 (overlap) carry the
+        # confounding-detection load for these exposures instead.
         sibling = SIBLINGS.get(name)
-        if sibling:
+        if sibling and not req_sat:
             sib_col = EXPOSURES[sibling][1] if sibling in EXPOSURES else sibling
             d3 = _d3_sibling(df, col, sib_col)
         else:
@@ -678,7 +721,7 @@ def _classify_screening(df: pd.DataFrame) -> pd.DataFrame:
         d1 = r["d1_pass"]
         d2 = r["d2_pass"]
         d3 = r["d3_pass"]
-        d4 = r["d4_pass"]
+        d4 = r["d4_a_pass"]  # D4a sensitivity (L0 → L0+L1 only) drives pass/fail
         d5 = r["d5_pass"]
         d6 = r["d6_pass"]
         d7 = r["d7_pass"]
@@ -783,7 +826,7 @@ def _write_screening_markdown(results: pd.DataFrame, path: Path) -> None:
     for _, r in results.iterrows():
         L.append(
             f"| {r.exposure} | {r.group} | {int(r.d1_n)} | {_p(r.d1_pass)} | "
-            f"{_p(r.d2_pass)} | {_p(r.d3_pass)} | {_p(r.d4_pass)} | "
+            f"{_p(r.d2_pass)} | {_p(r.d3_pass)} | {_p(r.d4_a_pass)} | "
             f"{_p(r.d5_pass)} | {_p(r.d6_pass)} | {_p(r.d7_pass)} | "
             f"{'YES' if r.d9_red_flag else 'no'} | "
             f"{r.category} | {r.score} |"
@@ -800,8 +843,19 @@ def _write_screening_markdown(results: pd.DataFrame, path: Path) -> None:
         if r.d3_sibling is not None and not (isinstance(r.d3_sibling, float) and pd.isna(r.d3_sibling)):
             L.append(f"- D3 sibling {r.d3_sibling}: beta_sib = {r.d3_beta_sibling:.4g}, "
                      f"delta |beta| = {r.d3_delta_abs_beta:.4g}; {'PASS' if r.d3_pass else 'FAIL'}.")
-        L.append(f"- D4 rel-shift across adj sets = {r.d4_rel_shift if not pd.isna(r.d4_rel_shift) else float('nan'):.3g}; "
-                 f"sign stable = {bool(r.d4_sign_stable)}; {'PASS' if r.d4_pass else 'FAIL'}.")
+        L.append(
+            f"- **D4a (sensitivity, L0 → L0+L1):** rel-shift = "
+            f"{r.d4_a_rel_shift if not pd.isna(r.d4_a_rel_shift) else float('nan'):.3g}; "
+            f"sign stable = {bool(r.d4_a_sign_stable)}; "
+            f"{'PASS' if r.d4_a_pass else 'FAIL'}."
+        )
+        L.append(
+            f"- **D4b (estimand presentation, L0+L1 vs L0+L1+AHPVT, no pass/fail):** "
+            f"β_levels = {r.d4_b_beta_levels:.4g}; "
+            f"β_trajectory = {r.d4_b_beta_trajectory:.4g}; "
+            f"AHPVT-driven attenuation = "
+            f"{r.d4_b_pct_attenuation if not pd.isna(r.d4_b_pct_attenuation) else float('nan'):.1%}."
+        )
         L.append(f"- D5 {r.d5_n_sig_p10}/3 components significant at p<0.10; sign consistent = {bool(r.d5_sign_consistent)}; "
                  f"{'PASS' if r.d5_pass else 'FAIL'}.")
         if r.kind != "binary":
@@ -854,8 +908,8 @@ def _write_screening_markdown(results: pd.DataFrame, path: Path) -> None:
         L.append("")
         for _, r in shortlist.iterrows():
             L.append(f"- `{r.exposure}` ({r.category}): D1 beta = {r.d1_beta:.3g} (p={r.d1_p:.3g}); "
-                     f"D2 HEIGHT_IN p = {r.d2_p:.3g}; D4 rel-shift = "
-                     f"{r.d4_rel_shift if not pd.isna(r.d4_rel_shift) else float('nan'):.3g}.")
+                     f"D2 HEIGHT_IN p = {r.d2_p:.3g}; D4a rel-shift = "
+                     f"{r.d4_a_rel_shift if not pd.isna(r.d4_a_rel_shift) else float('nan'):.3g}.")
     L.append("")
 
     path.write_text("\n".join(L))

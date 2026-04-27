@@ -123,7 +123,7 @@ def derive_race_ethnicity(df: pd.DataFrame) -> pd.Series:
 
 
 def derive_parent_ed(df: pd.DataFrame) -> pd.Series:
-    """Teen-reported max(mother, father) education on a 0-6 ordinal.
+    """Teen-reported max(mother, father) education on a 0-8 ordinal.
 
     H1RM1/H1RF1 W1 codebook codes:
       1 = 8th grade or less
@@ -138,30 +138,27 @@ def derive_parent_ed(df: pd.DataFrame) -> pd.Series:
 
     Codes 10/11/12 ("other / don't know / NA") are stripped to NaN at the
     ``clean_var`` stage via ``VALID_RANGES["H1RM1"] = (1, 9)`` and so do
-    NOT enter the recode below. Previously (pre-2026-04-26) those codes
-    were silently mapped to ordinal 6, biasing parent_ed upward for
-    respondents with missing data.
+    NOT enter the recode below.
 
-    Resulting ordinal:
+    Resulting ordinal preserves every codebook distinction (decision
+    2026-04-26: don't compress; Add Health distinguishes "8th or less" from
+    ">8th, no HS" and we should use it):
       0 = never went to school (code 9)
-      1 = less than HS (codes 1, 2, 3)
-      2 = HS grad (code 4)
-      3 = post-HS vocational (code 5)
-      4 = some college (code 6)
-      5 = college grad (code 7)
-      6 = post-grad / professional training (code 8)
+      1 = 8th grade or less (code 1)
+      2 = >8th, did not graduate HS (code 2)
+      3 = trade/voc *instead of* HS (code 3)
+      4 = HS grad (code 4)
+      5 = trade/voc *after* HS (code 5)
+      6 = some college, did not graduate (code 6)
+      7 = college grad (code 7)
+      8 = post-grad / professional training (code 8)
     """
+    # Codebook code -> ordinal. Code 9 ("never went") → 0 (lowest);
+    # codes 1-8 → 1-8 in raw order.
+    ordinal_map = {9: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8}
     def recode(x, name):
         x = clean_var(x, name)
-        out = pd.Series(np.nan, index=x.index, dtype=float)
-        out[x == 9] = 0
-        out[x.isin([1, 2, 3])] = 1
-        out[x == 4] = 2
-        out[x == 5] = 3
-        out[x == 6] = 4
-        out[x == 7] = 5
-        out[x == 8] = 6  # post-grad ONLY (codes 10/11 are NaN, not 6)
-        return out
+        return x.map(ordinal_map).astype(float)
     m = recode(df["H1RM1"], "H1RM1")
     f = recode(df["H1RF1"], "H1RF1")
     return pd.concat([m, f], axis=1).max(axis=1, skipna=True)

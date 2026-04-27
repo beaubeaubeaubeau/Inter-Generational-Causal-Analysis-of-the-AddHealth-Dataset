@@ -217,29 +217,50 @@ def d1_outcome(df: pd.DataFrame, exposure_col: str, outcome_col: str) -> dict:
 
 
 def d4_outcome(df: pd.DataFrame, exposure_col: str, outcome_col: str) -> dict:
+    """D4 split into D4a (sensitivity L0 → L0+L1) and D4b (estimand presentation
+    L0+L1 vs L0+L1+AHPVT). Mirrors the cognitive-screening split — see TODO §A18.
+    Different outcomes interpret D4b differently:
+      - cognitive (W4_COG_COMP): D4b is "level vs trajectory" attenuation
+      - SES (H5EC1, H5LM5): D4b's β_levels (= L0+L1) is the methodologically
+        correct estimate per DAG-SES; β_trajectory still records what the
+        AHPVT-adjusted spec returns
+      - cardiometabolic / mental / functional: D4b is informational; AHPVT's
+        causal role here is debatable per per-outcome DAG (TBD).
+    """
     betas = {}
     for name, builder in ADJ_BUILDERS.items():
         res = _fit(df, exposure_col, outcome_col, builder)
         betas[name] = float(res["beta"]["exposure"]) if res else np.nan
-    bf = betas["L0+L1+AHPVT"]
     b0 = betas["L0"]
-    ref = abs(bf) if not np.isnan(bf) and abs(bf) > 1e-10 else (
-        abs(b0) if not np.isnan(b0) else np.nan
-    )
-    vals = [v for v in betas.values() if not np.isnan(v)]
-    max_shift = (max(vals) - min(vals)) if len(vals) >= 2 else np.nan
-    rel_shift = abs(max_shift) / ref if ref and ref > 0 else np.nan
-    sign_stable = (
-        len(vals) >= 2 and (all(v > 0 for v in vals) or all(v < 0 for v in vals))
-    )
-    passes = (not np.isnan(rel_shift)) and (rel_shift < 0.30) and sign_stable
+    b1 = betas["L0+L1"]
+    bf = betas["L0+L1+AHPVT"]
+    # D4a: sensitivity L0 → L0+L1.
+    if not (np.isnan(b0) or np.isnan(b1)):
+        ref_a = abs(b1) if abs(b1) > 1e-10 else abs(b0)
+        d4a_rel_shift = abs(b0 - b1) / ref_a if ref_a > 0 else np.nan
+        d4a_sign_stable = (np.sign(b0) == np.sign(b1)) and (b0 != 0) and (b1 != 0)
+    else:
+        d4a_rel_shift = np.nan
+        d4a_sign_stable = False
+    d4a_pass = (not np.isnan(d4a_rel_shift)) and (d4a_rel_shift < 0.30) and d4a_sign_stable
+    # D4b: estimand-change presentation.
+    if not (np.isnan(b1) or np.isnan(bf)):
+        d4b_abs_shift = abs(b1 - bf)
+        d4b_pct_attenuation = (1 - abs(bf) / abs(b1)) if abs(b1) > 1e-10 else np.nan
+    else:
+        d4b_abs_shift = np.nan
+        d4b_pct_attenuation = np.nan
     return {
-        "beta_L0": betas["L0"],
-        "beta_L0_L1": betas["L0+L1"],
-        "beta_L0_L1_AHPVT": betas["L0+L1+AHPVT"],
-        "rel_shift": rel_shift,
-        "sign_stable": sign_stable,
-        "pass": bool(passes),
+        "beta_L0": b0,
+        "beta_L0_L1": b1,
+        "beta_L0_L1_AHPVT": bf,
+        "d4a_rel_shift": d4a_rel_shift,
+        "d4a_sign_stable": bool(d4a_sign_stable),
+        "d4a_pass": bool(d4a_pass),
+        "d4b_beta_levels": b1,
+        "d4b_beta_trajectory": bf,
+        "d4b_abs_shift": d4b_abs_shift,
+        "d4b_pct_attenuation": d4b_pct_attenuation,
     }
 
 
@@ -313,9 +334,13 @@ def run_matrix(W4: pd.DataFrame, W1_FULL: pd.DataFrame) -> pd.DataFrame:
                 "beta_L0": d4["beta_L0"],
                 "beta_L0_L1": d4["beta_L0_L1"],
                 "beta_full": d4["beta_L0_L1_AHPVT"],
-                "d4_rel_shift": d4["rel_shift"],
-                "d4_sign_stable": d4["sign_stable"],
-                "d4_pass": d4["pass"],
+                "d4a_rel_shift": d4["d4a_rel_shift"],
+                "d4a_sign_stable": d4["d4a_sign_stable"],
+                "d4a_pass": d4["d4a_pass"],
+                "d4b_beta_levels": d4["d4b_beta_levels"],
+                "d4b_beta_trajectory": d4["d4b_beta_trajectory"],
+                "d4b_abs_shift": d4["d4b_abs_shift"],
+                "d4b_pct_attenuation": d4["d4b_pct_attenuation"],
                 "beta_no_ahpvt": beta_no_a,
                 "se_no_ahpvt": se_no_a,
                 "p_no_ahpvt": p_no_a,
@@ -381,11 +406,11 @@ def write_markdown(mat: pd.DataFrame) -> None:
         )
         top = sub.head(6)
         tbl = top[["exposure", "n", "beta", "se", "p", "d1_pass",
-                   "d4_rel_shift", "d4_pass"]].copy()
+                   "d4a_rel_shift", "d4a_pass"]].copy()
         tbl["beta"] = tbl["beta"].map(lambda v: f"{v:.4g}")
         tbl["se"] = tbl["se"].map(lambda v: f"{v:.4g}")
         tbl["p"] = tbl["p"].map(lambda v: f"{v:.3g}")
-        tbl["d4_rel_shift"] = tbl["d4_rel_shift"].map(
+        tbl["d4a_rel_shift"] = tbl["d4a_rel_shift"].map(
             lambda v: f"{v:.2f}" if pd.notna(v) else "NA"
         )
         lines.append(tbl.to_markdown(index=False))
@@ -426,7 +451,7 @@ def write_markdown(mat: pd.DataFrame) -> None:
     lines.append("## Task16 handoff\n")
     # Pick the top-2 (exposure, outcome) pairs by lowest p among cells that
     # pass BOTH d1 and d4, across all outcomes.
-    qualifying = mat[(mat.d1_pass) & (mat.d4_pass)].copy()
+    qualifying = mat[(mat.d1_pass) & (mat.d4a_pass)].copy()
     qualifying = qualifying.sort_values("p").head(4)
     if len(qualifying) == 0:
         lines.append(

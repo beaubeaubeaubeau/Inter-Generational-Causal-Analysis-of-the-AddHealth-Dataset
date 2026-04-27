@@ -1,138 +1,103 @@
-# DAG library
+# DAG library — index
 
-A versioned catalogue of the causal directed-acyclic graphs (DAGs) used in this project. Each DAG specifies (i) the variables, (ii) the assumed arrows among them, and (iii) the explicitly-unmeasured set whose absence is the load-bearing assumption. The [experiments index](../experiments/README.md) maps every analytical experiment in the project to one of these DAGs by ID.
+This file is an **index** of every causal DAG used in the project. The ground-truth DAG lives in each experiment's own folder as `dag.md`; this index gives a one-paragraph summary and a link, so a reader navigating from `reference/` can find the per-experiment causal model in one hop.
 
-**Conventions:**
-
-- DAGs are named `DAG-<short-name>`, version-tagged in their header (`v0.1`, `v1.0`, etc.). Bump the version when arrows change.
-- Solid arrows = assumed-causal directed edges among **measured** variables. Dashed arrows = arrows from **unmeasured** confounders. A bidirected arrow is short-hand for "shared unmeasured cause exists; we do not name it."
-- Each DAG is rendered as a Mermaid `flowchart LR` block so it lives in version-controlled markdown rather than as a binary asset. Anyone editing the DAG edits the source.
-- "Adjustment set" = the variables you must condition on under back-door criterion to identify the X → Y total effect (or, for cognitive outcomes, the trajectory-adjusted effect). Listed beneath each DAG.
-- "Estimand wording" = the exact one-sentence interpretation that should appear in any report or plot caption that uses this DAG. Cuts down on framing drift between a chart and its prose.
-
-For plain-language definitions of *back-door path*, *positivity*, *negative control*, and *confounder vs. mediator*, see [glossary.md](glossary.md).
+**Convention (locked 2026-04-27):**
+- Each experiment that makes a causal claim ships a `dag.md` next to its `README.md` / `run.py`. The `dag.md` is the canonical specification of the causal model — Mermaid graph + adjustment set + estimand wording + weak points.
+- This index is the navigation layer. Updates to a DAG happen in the experiment folder; this index gets a one-line update when a new DAG is added or an existing one is renamed/version-bumped.
+- For plain-language definitions of *back-door path*, *positivity*, *negative control*, and *confounder vs. mediator*, see [glossary.md](glossary.md).
+- For the experiment ↔ DAG ↔ method ↔ output map, see [experiments/README.md](../experiments/README.md).
+- For the identifying assumptions and target estimands the DAGs encode, see [methods.md §1](methods.md#1-identification-assumptions-and-target-estimand).
 
 ---
 
-## DAG-Cog (v1.0) — W1 social integration → W4 cognitive outcome
+## Hypothesis: cognitive trajectory
 
-**Used by:** [cognitive-screening](../experiments/cognitive-screening/README.md) (24 exposures × `W4_COG_COMP`); the cognitive-outcome column of [multi-outcome-screening](../experiments/multi-outcome-screening/README.md). **Date locked:** 2026-04-25 (DAG drafted with the user; iterations in conversation log).
+| DAG | Used by | Adjustment | Status | Link |
+|---|---|---|---|---|
+| **DAG-Cog v1.0** | cognitive-screening; cognitive-outcome column of multi-outcome-screening | L0+L1+AHPVT (= `{BIO_SEX, RACE, PARENT_ED, CESD_SUM, H1GH1, AH_PVT}`); plus `L_partner = {BIO_SEX, H1GI1M}` placeholder for partner-comparable analysis | locked 2026-04-25 | [`experiments/cognitive-screening/dag.md`](../experiments/cognitive-screening/dag.md) |
+| **DAG-Cog-FrontDoor** | cognitive-frontdoor | Same as `DAG-Cog v1.0` for back-door arm; treats `AH_PVT` as mediator for the front-door arm | planned (sensitivity check, not load-bearing) | [`experiments/cognitive-frontdoor/dag.md`](../experiments/cognitive-frontdoor/dag.md) |
 
-```mermaid
-flowchart LR
-    %% W1 measured covariates (L0 + L1 + AHPVT baseline)
-    SEX[BIO_SEX]
-    RACE[RACE]
-    PED[PARENT_ED]
-    CESD[CESD_SUM]
-    SRH[H1GH1<br/>self-rated health]
-    AHPVT[AH_PVT / AH_RAW<br/>W1 baseline cognition]
-
-    %% W1 exposure
-    SOC[W1 social integration<br/>e.g. IDGX2, ODGX2, SCHOOL_BELONG]
-
-    %% Outcome
-    Y[W4_COG_COMP]
-
-    %% Unmeasured
-    SCHOOL((school climate /<br/>peer composition))
-    PRENATAL((prenatal &<br/>perinatal factors))
-    DIET((adolescent diet &<br/>physical fitness))
-
-    %% Measured-covariate -> exposure
-    SEX --> SOC
-    RACE --> SOC
-    PED --> SOC
-    CESD --> SOC
-    SRH --> SOC
-    AHPVT --> SOC
-
-    %% Measured-covariate -> outcome
-    SEX --> Y
-    RACE --> Y
-    PED --> AHPVT
-    PED --> Y
-    CESD --> Y
-    SRH --> Y
-    AHPVT --> Y
-
-    %% Target
-    SOC --> Y
-
-    %% Unmeasured
-    SCHOOL -.-> SOC
-    SCHOOL -.-> Y
-    PRENATAL -.-> AHPVT
-    PRENATAL -.-> Y
-    DIET -.-> SOC
-    DIET -.-> Y
-```
-
-**Adjustment set (sufficient under back-door criterion):** `{BIO_SEX, RACE, PARENT_ED, CESD_SUM, H1GH1, AH_PVT}` = L0 + L1 + AHPVT. Conditioning on this set closes every back-door path from `SOC` to `Y` *that runs through measured variables*; the dashed arrows from `SCHOOL`, `PRENATAL`, `DIET` are the explicit unmeasured-confounder set whose absence is assumed.
-
-**Why each measured covariate is in the set:**
-
-| Variable | Closes which back-door |
-|---|---|
-| `BIO_SEX`, `RACE` | Demographic → both adolescent peer position AND adult cognition (well-established literatures) |
-| `PARENT_ED` | Family SES → both adolescent social integration AND adult cognition; also feeds AHPVT (parental education raises childhood verbal exposure) |
-| `CESD_SUM`, `H1GH1` | W1 affective and somatic state confounds peer position AND cognitive trajectory |
-| `AH_PVT` | **Baseline cognition.** Conditioning on it converts the regression into an approximate change-from-baseline estimand. See the [trajectory caveats in methods.md §1](methods.md#1-identification-assumptions-and-target-estimand). |
-
-**Estimand wording (use verbatim in reports):**
-
-> Among Add Health respondents in saturated schools (for network-derived exposures) or the full W1 in-home cohort (for non-network exposures), conditional on baseline W1 verbal IQ, demographics, and W1 affective/somatic state, a one-unit increase in *X* is associated with a β-unit change in W4 cognition relative to its baseline-predicted level.
-
-**Known weak points (load-bearing assumptions):**
-
-- Construct mismatch: AHPVT is *vocabulary*, `W4_COG_COMP` is fluid memory + working memory. Trajectory-β is "trajectory under a vocabulary-anchored baseline."
-- Unmeasured `SCHOOL`: school climate / peer composition could confound network position AND cognitive outcomes. Sensitivity tested via Task-16 saturation-balance table.
-- Unmeasured `PRENATAL` and `DIET`: feed both the AHPVT baseline and adult cognition; partly absorbed by AHPVT itself. Cannot be cleanly separated in public-use data.
-- The cleaner Task-16 NC battery (blood type, age at menarche, hand-dominance, residential stability pre-W1) is the planned test of the unmeasured-confounder assumption. The current `HEIGHT_IN` D2 is contaminated and not load-bearing.
-
-**Variants planned (Task 16):**
-
-- `DAG-Cog-FrontDoor` — adds the strict-mediator-of-AHPVT alternative (`SOC → AHPVT → Y` direct), used to *quantify the trajectory caveat* via a front-door decomposition. **Sensitivity check, not primary.**
-- `DAG-Cog-Saturated` — same DAG, restricted population to within-saturated-schools; used to make the within-saturated estimand explicit in plots.
+**Trajectory framing.** `DAG-Cog v1.0` adjusts for `AH_PVT` (W1 verbal IQ) as the W1 baseline cognitive measure → reports a **trajectory-adjusted** β ("where you ended up cognitively, given where you started"). The strict-mediator interpretation is downgraded to the front-door sensitivity check in `DAG-Cog-FrontDoor`. See [methods.md §1 AHPVT callout](methods.md#1-identification-assumptions-and-target-estimand) for the full caveats.
 
 ---
 
-## Planned DAGs (Task 16)
+## Hypothesis: cardiometabolic
 
-The following entries are stubs; arrows + adjustment sets get drawn during Task 16 with the same structure as `DAG-Cog`. Each will be locked in a working session before any formal estimation runs against it.
+| DAG | Used by | Adjustment | Status | Link |
+|---|---|---|---|---|
+| **DAG-CardioMet** | cardiometabolic-handoff (`IDGX2 → H4WAIST/H4BMI/H4BMICLS`); cardiometabolic outcomes column of multi-outcome-screening | L0 + L1 (extended with `H1GH28` W1 self-reported weight) + AHPVT (here a general-ability confounder, not a baseline) | planned; locking session pending | [`experiments/cardiometabolic-handoff/dag.md`](../experiments/cardiometabolic-handoff/dag.md) |
 
-### DAG-CardioMet (planned)
+`H4BMICLS` ordinal → ordered logit. `H4SBP`/`H4DBP` need anti-hypertensive medication flags brought in (`H4TO*`, see [TODO §A9](../TODO.md)).
 
-**Used by:** [multi-outcome-screening](../experiments/multi-outcome-screening/README.md) cardiometabolic outcomes (`H4BMI`, `H4SBP`, `H4DBP`, `H4WAIST`, `H4BMICLS`); [cardiometabolic-handoff](../experiments/cardiometabolic-handoff/README.md) pairs (`IDGX2 → H4WAIST`, `IDGX2 → H4BMI`, `IDGX2 → H4BMICLS`).
+---
 
-**Distinguishing arrows from `DAG-Cog`:** must add W1 self-reported weight (`H1GH28` — codebook label not yet verified, see [variable_dictionary.md](variable_dictionary.md)) into L1; AHPVT becomes a general-ability confounder (no longer "baseline") since the outcome is not cognitive; possible `SCHOOL` arrow to BMI (school food environment) added as unmeasured.
+## Hypothesis: SES
 
-### DAG-SES (planned)
+| DAG | Used by | Adjustment | Status | Link |
+|---|---|---|---|---|
+| **DAG-SES** | ses-handoff (`ODGX2 → H5EC1`); SES outcomes column of multi-outcome-screening | L0 + L1; **AHPVT dropped** (mediator on the educational-credentialism path); IPAW layered on `GSW5` for W4→W5 attrition | planned; locking session pending | [`experiments/ses-handoff/dag.md`](../experiments/ses-handoff/dag.md) |
 
-**Used by:** `H5EC1` (earnings), `H5LM5` (employment).
+`H5EC1` (bracketed earnings) → interval regression on bracket midpoints. `H5LM5` (3-level employment) → ordered logit.
 
-**Distinguishing arrows:** **drops AHPVT from the adjustment set** — verbal IQ is on the causal path from social integration to attainment via the educational-credentialism mechanism, so adjusting for it would block the target effect. Adds parental cognitive achievement (proxied by `PARENT_ED`) as the SES-specific confounder.
+---
 
-### DAG-Mental (planned)
+## Hypothesis: mental health & functional (multi-outcome screening cells)
 
-**Used by:** `H5MN1`, `H5MN2` (Perceived Stress Scale items at W5).
+| DAG | Used by | Adjustment | Status | Link |
+|---|---|---|---|---|
+| **DAG-Mental** *(stub)* | `H5MN1`, `H5MN2` (PSS-4 components at W5) in multi-outcome-screening | L0 + L1 + AHPVT (decision pending: condition on `CESD_SUM` or drop it — over-adjustment vs. confounding tradeoff) | planned stub | [`experiments/multi-outcome-screening/dag.md`](../experiments/multi-outcome-screening/dag.md) |
+| **DAG-Functional** *(stub)* | `H5ID1`, `H5ID4`, `H5ID16` (functional / sleep at W5) in multi-outcome-screening | L0 + L1 + AHPVT; `H1GH1` doubles as confounder + outcome-construct precursor; do not condition on `H4BMI` (mediator) | planned stub | [`experiments/multi-outcome-screening/dag.md`](../experiments/multi-outcome-screening/dag.md) |
 
-**Distinguishing arrows:** `CESD_SUM` becomes an outcome-side construct, not a confounder, since W1 depressive symptoms predict W5 perceived-stress through the construct itself. Decision pending: condition on it (closes confounding from W1 affective state), or drop it (avoids over-adjusting for an outcome-similar W1 variable). Worked in Task 16.
+---
 
-### DAG-Functional (planned)
+## Cross-cutting
 
-**Used by:** `H5ID1` (self-rated physical health), `H5ID4` (stair-climbing limitation), `H5ID16` (sleep trouble).
+| DAG | Used by | Purpose | Status | Link |
+|---|---|---|---|---|
+| **Saturation balance** *(descriptive)* | saturation-balance | Quantifies the external-validity gap between saturated vs. non-saturated school respondents on L0+L1+AHPVT. No causal estimand. | planned | [`experiments/saturation-balance/dag.md`](../experiments/saturation-balance/dag.md) |
+| **Negative-control battery** | negative-control-battery | Tests the unmeasured-confounder assumption via (Direction 1) exposure-side NCs (blood type, age at menarche, hand-dominance, residential stability) AND (Direction 2) outcome-side NCs (sensory: `H5EL6D`, `H5EL6F`, `H5DA9`; allergy/asthma: `H5EL6A`, `H5EL6B`). | planned, broadened 2026-04-27 | [`experiments/negative-control-battery/dag.md`](../experiments/negative-control-battery/dag.md) |
 
-**Distinguishing arrows:** add W1 self-rated health (`H1GH1`) as both confounder and possible outcome-construct precursor; consider adding adolescent-fitness proxy if any public-use measure is identifiable.
+---
 
-### DAG-Cog-FrontDoor (planned, Task 16 sensitivity)
+## Hypothesis: type-of-tie (Phase 6 mechanism experiments)
 
-**Used by:** Task-16 front-door decomposition for the AHPVT-cognition path.
+| DAG | Used by | Adjustment | Status | Link |
+|---|---|---|---|---|
+| **DAG-Pop-vs-Soc** | popularity-vs-sociability | L0+L1+AHPVT per outcome; parallel exposures `IDGX2` vs `ODGX2`; estimand is paired-difference | planned | [`experiments/popularity-vs-sociability/dag.md`](../experiments/popularity-vs-sociability/dag.md) |
+| **DAG-EgoNet** | ego-network-density | L0+L1+AHPVT + size-conditioning on `REACH3`; estimand is "density at constant network size" | planned | [`experiments/ego-network-density/dag.md`](../experiments/ego-network-density/dag.md) |
+| **DAG-QvQ** | friendship-quality-vs-quantity | L0+L1+AHPVT per outcome; sample-wide (no saturation gate); 3 exposures in same regression | planned | [`experiments/friendship-quality-vs-quantity/dag.md`](../experiments/friendship-quality-vs-quantity/dag.md) |
 
-**Distinguishing arrows:** explicitly draws `SOC → AHPVT → Y` as a candidate causal mechanism (the strict mediator reading); estimates the indirect effect via the mediator formula. Output is a **sensitivity bound** — how much the `DAG-Cog` trajectory-β would shift if you accepted the mediator interpretation. If the bound is small, the trajectory framing wins; if large, both estimates should be reported.
+---
+
+## Hypothesis: effect modification
+
+| DAG | Used by | Adjustment | Status | Link |
+|---|---|---|---|---|
+| **DAG-EM-SES** | em-compensatory-by-ses | L0+L1+AHPVT + `IDGX2 × PARENT_ED` interaction; estimand is the interaction coefficient | planned | [`experiments/em-compensatory-by-ses/dag.md`](../experiments/em-compensatory-by-ses/dag.md) |
+| **DAG-EM-Sex** | em-sex-differential | L0+L1+AHPVT + `IDGX2 × BIO_SEX` interaction | planned | [`experiments/em-sex-differential/dag.md`](../experiments/em-sex-differential/dag.md) |
+| **DAG-EM-Dep** | em-depression-buffering | L0+L1+AHPVT + `IDGX2 × CESD_SUM` interaction; D9 collider check (CESD as both confounder feed and moderator) | planned | [`experiments/em-depression-buffering/dag.md`](../experiments/em-depression-buffering/dag.md) |
+
+---
+
+## Hypothesis: dark side of popularity
+
+| DAG | Used by | Adjustment | Status | Link |
+|---|---|---|---|---|
+| **DAG-DarkSide-Subst** | popularity-and-substance-use | L0+L1+AHPVT; new substance-use outcomes (`H4TO5`, `H4TO39`, `H4TO70`, `H5TO2`, `H5TO12`); predicted *positive* β = outcome-specificity inversion | planned | [`experiments/popularity-and-substance-use/dag.md`](../experiments/popularity-and-substance-use/dag.md) |
+| **DAG-Lonely-Top** | lonely-at-the-top | L0+L1+AHPVT + continuous interaction `IDGX2 × H1FS13` (2×2 design abandoned per pre-flight: min cell N=73, < 150 threshold) | planned | [`experiments/lonely-at-the-top/dag.md`](../experiments/lonely-at-the-top/dag.md) |
+
+---
+
+## Hypothesis: cross-sex friendship
+
+| DAG | Used by | Adjustment | Status | Link |
+|---|---|---|---|---|
+| **DAG-CrossSex** | cross-sex-friendship | Per outcome (inherits cog/cardiometabolic/SES/mental/functional); 4-cell stratification on `BIO_SEX × {HAVEBMF, HAVEBFF}` | planned | [`experiments/cross-sex-friendship/dag.md`](../experiments/cross-sex-friendship/dag.md) |
 
 ---
 
 ## Changelog
 
-- **2026-04-25** — File created. `DAG-Cog v1.0` locked with the user; planned-DAG stubs drafted for `DAG-CardioMet`, `DAG-SES`, `DAG-Mental`, `DAG-Functional`, `DAG-Cog-FrontDoor`.
+- **2026-04-27** — File converted from canonical-DAG-spec to **index** per the per-experiment-DAG convention. All ground-truth DAG content moved to `experiments/<name>/dag.md`. Added 9 new mechanism-experiment DAG entries (Phase 6 plan). Added `L_partner` placeholder note to `DAG-Cog v1.0` row.
+- **2026-04-25** — File created. `DAG-Cog v1.0` locked with the user; planned-DAG stubs drafted for `DAG-CardioMet`, `DAG-SES`, `DAG-Mental`, `DAG-Functional`, `DAG-Cog-FrontDoor`. (Content subsequently migrated to per-experiment files on 2026-04-27.)

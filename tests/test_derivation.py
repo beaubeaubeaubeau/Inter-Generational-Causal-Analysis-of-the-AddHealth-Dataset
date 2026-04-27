@@ -273,14 +273,15 @@ def test_derive_race_ethnicity_black_subsumed_when_white_and_black():
 # ---------------------------------------------------------------------------
 
 def test_derive_parent_ed_max_recodes(synthetic_w1_df):
-    """Row 7: mom 7 -> 5, dad 4 -> 2 -> max = 5.
+    """Updated 2026-04-26 for the no-collapse 0-8 mapping:
+    Row 7: mom 7 -> 7, dad 4 -> 4 -> max = 7.
     Row 8: both 9 -> 0 -> 0.
-    Row 9: mom 99 (NaN), dad 4 -> 2 -> max ignores NaN -> 2.
+    Row 9: mom 99 (NaN-after-stripping), dad 4 -> 4 -> max ignores NaN -> 4.
     """
     out = derive_parent_ed(synthetic_w1_df)
-    assert out.iloc[7] == 5.0
+    assert out.iloc[7] == 7.0
     assert out.iloc[8] == 0.0
-    assert out.iloc[9] == 2.0
+    assert out.iloc[9] == 4.0
 
 
 def test_derive_parent_ed_both_missing_yields_nan():
@@ -290,21 +291,27 @@ def test_derive_parent_ed_both_missing_yields_nan():
 
 
 def test_derive_parent_ed_recoded_ordinal_mapping():
-    """Verify each input code maps to the documented ordinal:
-        9 -> 0; 1,2,3 -> 1; 4 -> 2; 5 -> 3; 6 -> 4; 7 -> 5; 8 -> 6.
-    Codes 10/11/12 are stripped to NaN at the clean_var stage (per the
-    2026-04-26 fix to VALID_RANGES); when both parents have a NaN code,
-    the row's parent_ed is NaN — NOT silently mapped to ordinal 6.
+    """Verify each input code maps to the documented 0-8 ordinal (no collapse,
+    per the 2026-04-26 decision to preserve every codebook distinction):
+        9 -> 0; 1 -> 1; 2 -> 2; 3 -> 3; 4 -> 4; 5 -> 5; 6 -> 6; 7 -> 7; 8 -> 8.
+    Codes 10/11/12 are stripped to NaN at the clean_var stage (VALID_RANGES =
+    (1, 9)); when both parents have a NaN code, the row's parent_ed is NaN
+    — NOT silently mapped to anything.
     """
     inputs = pd.DataFrame({
         "H1RM1": [9.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 11.0],
-        "H1RF1": [9.0] * 10,  # always lower (or NaN-after-NaN for the last row)
+        "H1RF1": [9.0] * 10,  # always lower (or NaN-after-stripping for the last row)
     })
     out = derive_parent_ed(inputs)
     # First 9 rows: mom code maps as documented; dad=9 -> 0; max picks mom.
     # 10th row: mom=11 strips to NaN; dad=9 -> 0; max picks 0 (the dad).
-    expected = [0, 1, 1, 1, 2, 3, 4, 5, 6, 0]
+    expected = [0, 1, 2, 3, 4, 5, 6, 7, 8, 0]
     assert out.tolist() == [float(x) for x in expected]
+
+    # Both parents with NaN-after-stripping -> NaN.
+    only_unknown = pd.DataFrame({"H1RM1": [11.0], "H1RF1": [10.0]})
+    out2 = derive_parent_ed(only_unknown)
+    assert pd.isna(out2.iloc[0])
 
     # Both parents with NaN-after-stripping -> NaN.
     only_unknown = pd.DataFrame({"H1RM1": [11.0], "H1RF1": [10.0]})

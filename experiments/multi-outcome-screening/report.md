@@ -14,12 +14,15 @@ stability) run per (exposure, outcome) cell. Outcome-independent diagnostics
 (D2, D6–D9) are inherited from cognitive-screening; sibling D3 and
 component-consistency D5 are cognition-specific and skipped.
 
-<!-- Chart-explanation convention: every chart embedded in this report must include
-     (1) a descriptive caption under the image (1-3 sentences),
-     (2) a prose paragraph explaining why the chart was generated, how to read it,
-         and what method produced it,
-     (3) method names linked to ../../reference/methods.md or ../../reference/glossary.md.
-     Stripped baked-in PNG titles per TODO §E. -->
+<!-- Chart-explanation convention (updated 2026-04-26): every chart has a
+     descriptive title baked into the figure itself, set in figures.py. In
+     this report, every embedded chart additionally includes
+     (1) a 1-3 sentence descriptive caption under the image,
+     (2) a prose paragraph explaining why the chart was generated, how to
+         read it, and what method produced it,
+     (3) method names linked to ../../reference/methods.md or
+         ../../reference/glossary.md.
+     The prior "no baked-in titles" convention is reversed. -->
 
 ## Primary results
 

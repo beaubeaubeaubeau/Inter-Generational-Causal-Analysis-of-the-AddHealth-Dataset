@@ -85,6 +85,11 @@ def per_outcome_pcount() -> None:
     ax.axvline(24, linestyle=":", color="#888", linewidth=0.8)
     ax.set_xlim(0, 26)
     ax.set_xlabel("# of 24 exposures with p < 0.05")
+    ax.set_title(
+        "Per-outcome breadth: # of W1 social exposures with screen p < 0.05\n"
+        "(D1 baseline WLS, L0+L1+AHPVT spec; W4_COG_COMP shown for comparison)",
+        fontsize=11,
+    )
 
     # Legend for group colors.
     from matplotlib.patches import Patch
@@ -122,7 +127,7 @@ def handoff_forest() -> None:
             "se_std": r["se"] / sd_y,
             "beta_raw": r["beta"],
             "se_raw": r["se"],
-            "n": int(r["n"]), "rs": r["d4_rel_shift"],
+            "n": int(r["n"]), "rs": r["d4a_rel_shift"],
             "outcome_group": r["outcome_group"],
         })
     df = pd.DataFrame(rows)
@@ -150,6 +155,11 @@ def handoff_forest() -> None:
     ax.set_yticks(range(len(df)))
     ax.set_yticklabels(df["label"], fontsize=10)
     ax.set_xlabel("Standardized beta  (per 1-unit exposure, in SDs of outcome)")
+    ax.set_title(
+        "Handoff candidates from the multi-outcome screen\n"
+        "(4 (exposure, outcome) pairs passing both D1 and D4)",
+        fontsize=11,
+    )
     # Extra right-side room for annotations.
     ax.set_xlim(min(df["lo"].min(), 0) * 1.2 - 0.01, max(df["hi"].max(), 0) * 1.2 + 0.01)
     plt.subplots_adjust(right=0.55)
@@ -160,6 +170,69 @@ def handoff_forest() -> None:
     print(f"Wrote {out}")
 
 
+def beta_heatmap() -> None:
+    """24 exposures × 12 outcomes; cells = β z-standardized within each outcome."""
+    mo = pd.read_csv(TABLES / "15_multi_outcome_matrix.csv")
+    pivot_beta = mo.pivot(index="exposure", columns="outcome", values="beta")
+    pivot_p = mo.pivot(index="exposure", columns="outcome", values="p")
+    # Z-standardize β within each outcome column.
+    z = (pivot_beta - pivot_beta.mean(axis=0)) / pivot_beta.std(axis=0)
+
+    fig, ax = plt.subplots(figsize=(10, 9))
+    im = ax.imshow(z.values, cmap="RdBu_r", aspect="auto", vmin=-2.5, vmax=2.5)
+    ax.set_xticks(range(z.shape[1]))
+    ax.set_xticklabels(z.columns, rotation=45, ha="right", fontsize=8)
+    ax.set_yticks(range(z.shape[0]))
+    ax.set_yticklabels(z.index, fontsize=8)
+    # Mark p < 0.05 cells with an asterisk.
+    for i in range(z.shape[0]):
+        for j in range(z.shape[1]):
+            p = pivot_p.iloc[i, j]
+            if pd.notna(p) and p < 0.05:
+                ax.text(j, i, "*", ha="center", va="center", color="black", fontsize=10)
+    cbar = fig.colorbar(im, ax=ax, fraction=0.04, pad=0.02)
+    cbar.set_label("β z-score (within outcome)", fontsize=9)
+    ax.set_title(
+        "Multi-outcome β heatmap\n"
+        "(24 W1 social exposures × 12 non-cognitive outcomes; * = screen p < 0.05)",
+        fontsize=11,
+    )
+    fig.tight_layout()
+    out = FIG_PRIMARY / "multi_outcome_beta_heatmap.png"
+    _save(fig, out)
+    print(f"Wrote {out}")
+
+
+def sig_heatmap() -> None:
+    """24 exposures × 12 outcomes; cells = −log10(p) so larger = more significant."""
+    mo = pd.read_csv(TABLES / "15_multi_outcome_matrix.csv")
+    pivot_p = mo.pivot(index="exposure", columns="outcome", values="p")
+    neg_log_p = -np.log10(pivot_p.where(pivot_p > 0, 1e-300))
+
+    fig, ax = plt.subplots(figsize=(10, 9))
+    im = ax.imshow(neg_log_p.values, cmap="viridis", aspect="auto", vmin=0, vmax=neg_log_p.max().max())
+    ax.set_xticks(range(neg_log_p.shape[1]))
+    ax.set_xticklabels(neg_log_p.columns, rotation=45, ha="right", fontsize=8)
+    ax.set_yticks(range(neg_log_p.shape[0]))
+    ax.set_yticklabels(neg_log_p.index, fontsize=8)
+    cbar = fig.colorbar(im, ax=ax, fraction=0.04, pad=0.02)
+    cbar.set_label("−log10(p)", fontsize=9)
+    # Reference line at p = 0.05 (-log10 = 1.30).
+    cbar.ax.axhline(y=-np.log10(0.05), color="red", linewidth=1)
+    ax.set_title(
+        "Multi-outcome significance heatmap\n"
+        "(−log10(p), 24 W1 social exposures × 12 non-cognitive outcomes; "
+        "red mark on colourbar = p = 0.05)",
+        fontsize=11,
+    )
+    fig.tight_layout()
+    out = FIG_PRIMARY / "multi_outcome_sig_heatmap.png"
+    _save(fig, out)
+    print(f"Wrote {out}")
+
+
 if __name__ == "__main__":
     per_outcome_pcount()
     handoff_forest()
+    beta_heatmap()
+    sig_heatmap()

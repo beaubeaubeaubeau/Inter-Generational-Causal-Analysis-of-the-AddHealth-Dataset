@@ -40,6 +40,9 @@ VanderWeele's metric for the minimum strength of unmeasured-confounder associati
 ### Front-door criterion
 A causal identification strategy that bounds the X → Y effect through a mediator M when back-door adjustment fails (because unmeasured confounders exist). Requires X → M → Y with no direct X → Y, M fully mediating, and no unmeasured M–Y confounders. **Why it matters**: Task 16's plan for distinguishing whether AHPVT is a confounder or mediator of the social-integration → cognition path.
 
+### HTE (Heterogeneous Treatment Effects)
+The proposition that the causal effect of X on Y differs across subgroups defined by covariates V — i.e. the treatment effect is a *function* of V, not a single number. ATE collapses across V; HTE preserves it. **Why it matters**: HTE is what the project's effect-modification experiments (`em-compensatory-by-ses`, `em-sex-differential`, `em-depression-buffering`) test. "Effect modification" in epi, "moderation" in psych, "HTE" in econometrics — same construct, different vocabularies.
+
 ### Handoff (in this project)
 The transition from the **screening phase** (24 exposures × 12 outcomes, fast WLS sweep, ranking-purpose only — biased point estimates but consistent ranking) to **formal estimation** (per-outcome DAG, IPAW where attrition demands it, ordered logit / interval regression for ordinal outcomes, E-value sensitivity bounds). A "handoff pair" is an (exposure, outcome) cell the screen flagged as worth formal estimation. The four current handoff pairs (IDGX2→H4WAIST, IDGX2→H4BMI, IDGX2→H4BMICLS, ODGX2→H5EC1) each have a planned experiment folder (`cardiometabolic-handoff/`, `ses-handoff/`).
 
@@ -61,6 +64,9 @@ A variable Z that affects the exposure X but not the outcome Y except through X,
 ### Mediator
 A variable on the causal path X → M → Y. **Why it matters**: adjusting for M blocks part of the total effect, *shrinking β toward zero*. This is the opposite of what adjusting for a confounder does (which should reveal the true β by removing bias). The two operations look identical in a regression table — only a DAG (or a front-door / IV decomposition) can tell them apart. See [AHPVT callout, methods.md §1](methods.md#1-identification-assumptions-and-target-estimand).
 
+### Mediator leakage
+A regression bug: you accidentally include a variable that lies on the causal pathway X → M → Y in your adjustment set. Conditioning on M *blocks* part of the true X → Y effect, shrinking β toward zero. Diagnostically the symptom is the same as confounding-detection (β moves when you add the covariate), but the *interpretation* is opposite. **Why it matters**: D9 in the diagnostic battery flags known cases (e.g. using `H1FS13` as exposure while adjusting for `CESD_SUM` which contains `H1FS13`). `SCHOOL_BELONG` failing D4 on mental-health outcomes is suspected mediator leakage — popularity → belonging → mental health, with belonging mistakenly conditioned on. See [methods.md §2 D9 row](methods.md#2-causal-screening-diagnostic-battery-d1d9).
+
 ### Mode (W5 survey mode)
 The channel through which the W5 interview was administered: W = Web, I = In-person, M = Mail, T = Telephone, S = Spanish CAPI. **Why it matters**: cognitive items were administered only in I + T, restricting the W5 cognitive analytic cell to ~620 of 4,196. See [dataset_manual.md §4.5](dataset_manual.md#wave-v-cognitive-battery).
 
@@ -72,6 +78,9 @@ Regression for ordinal outcomes (categories with meaningful order but no metric 
 
 ### Positivity (overlap)
 The assumption that every level of the exposure has non-zero probability of occurring at every level of the covariates. Formally: P(X = x | C = c) > 0 for all (x, c). **Why it matters**: without positivity, causal estimates in the violated region are extrapolations beyond the data, not causal effects. D7 in the diagnostic battery tests positivity empirically. Structural positivity violations (saturated-school gating, W5 mode restriction) are documented in [methods.md §1](methods.md#1-identification-assumptions-and-target-estimand).
+
+### Polysocial score
+By analogy with polygenic scores in genetics: a single composite index built from many social-integration variables (24 in this project) by either an unsupervised PCA (PC1 of the standardized exposure matrix), a theory-driven weighted sum (e.g. equal weights on popularity-coded vs sociability-coded variables), or a supervised LASSO with cross-fit weights. **Why it matters**: collapsing redundant exposures into one index reduces multiple-testing burden and asks whether the per-variable signal is driven by one underlying social-integration latent factor. In this project, the polysocial-PCA-PC1 sensitivity column appears in every Phase 6 mechanism experiment.
 
 ### Post-stratification weight
 A weight that re-scales the sample so that known marginal distributions (e.g. age × sex × race) match the population. **Why it matters**: `GSWGT4_2` is a post-stratified weight. Post-stratification corrects for differential sampling and non-response, not for unmeasured confounding.

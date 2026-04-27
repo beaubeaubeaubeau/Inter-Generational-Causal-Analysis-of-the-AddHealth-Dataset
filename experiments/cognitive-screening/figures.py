@@ -467,6 +467,11 @@ def plot_ahpvt_with_without() -> None:
     ax.set_yticks(y)
     ax.set_yticklabels([f"{r.term} → {r.outcome}" for _, r in d.iterrows()])
     ax.set_xlabel("β (W4 cognition)")
+    ax.set_title(
+        "AHPVT shift audit: β with vs. without AH_PVT in the adjustment set\n"
+        "(rows sorted by absolute shrinkage; trajectory framing context in methods.md §1)",
+        fontsize=11,
+    )
     ax.legend()
     fig.tight_layout()
     _save(fig, FIG_SENS / "ahpvt_with_without.png")
@@ -584,7 +589,7 @@ def plot_screening_heatmap() -> None:
         ("D1 baseline", "d1_pass"),
         ("D2 neg-ctrl", "d2_pass"),
         ("D3 sibling", "d3_pass"),
-        ("D4 adj-stable", "d4_pass"),
+        ("D4a adj-stable (L0→L0+L1)", "d4_a_pass"),
         ("D5 components", "d5_pass"),
         ("D6 dose-resp", "d6_pass"),
         ("D7 overlap", "d7_pass"),
@@ -616,6 +621,11 @@ def plot_screening_heatmap() -> None:
                 f"{r.category} ({r.score})",
                 va="center", ha="left", fontsize=8)
     ax.set_xlim(-0.5, len(labels) + 2.0)
+    ax.set_title(
+        "D1–D9 screening heatmap on W4_COG_COMP\n"
+        "(green = pass; red = fail; grey = N/A; right margin: composite category and score)",
+        fontsize=11,
+    )
     _save(fig, FIG_PRIMARY / "screening_heatmap.png")
 
 
@@ -668,7 +678,10 @@ def plot_sibling_dissociation() -> None:
 def plot_adjustment_stability() -> None:
     results = _load_screening_results()
     fig, ax = plt.subplots(figsize=(7, max(4, 0.28 * len(results))))
-    order = results.sort_values("d4_rel_shift", ascending=False, na_position="last")
+    # Sort by D4b absolute attenuation (informative for the trajectory framing)
+    # rather than D4a (the L0→L0+L1 sensitivity check), since this figure
+    # visualises the trajectory shift across all three adjustment sets.
+    order = results.sort_values("d4_b_pct_attenuation", ascending=False, na_position="last")
     for i, (_, r) in enumerate(order.iterrows()):
         vals = [r["d4_beta_L0"], r["d4_beta_L0_L1"], r["d4_beta_L0_L1_AHPVT"]]
         if all(np.isnan(v) for v in vals):
@@ -683,6 +696,11 @@ def plot_adjustment_stability() -> None:
     ax.set_yticks(range(len(order)))
     ax.set_yticklabels(order["exposure"].values)
     ax.set_xlabel("beta on W4_COG_COMP across adjustment sets")
+    ax.set_title(
+        "D4 adjustment-set stability\n"
+        "(rows sorted by relative shift; horizontal spread per row = AHPVT-driven attenuation)",
+        fontsize=11,
+    )
     ax.legend(loc="lower right", frameon=True)
     _save(fig, FIG_PRIMARY / "adjustment_stability.png")
 

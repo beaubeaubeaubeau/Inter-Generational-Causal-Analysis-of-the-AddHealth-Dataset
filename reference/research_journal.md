@@ -153,6 +153,53 @@ All four pass D1 and D4 on the non-cognitive outcome, and none are covered by AH
 
 ---
 
+## Phase 6 — Mechanism experiments scaffolded (2026-04-27)
+
+**Scope.** Brainstorm with the user (under `/Users/jb/.claude/plans/users-jb-desktop-causal-inference-midte-refactored-sutton.md`) produced four hypothesis families beyond the existing screening + handoff pipeline:
+
+1. **Type-of-tie** — popularity vs sociability, ego-network density (size-conditioned), friendship quality vs quantity. Tests whether "social integration" decomposes into mechanistically distinct dimensions with different outcome signatures.
+2. **Effect modification** — compensatory hypothesis (low-SES kids benefit more), sex-differential (peer status policing of body weight stronger for girls), depression buffering (popularity buffers pre-existing CES-D).
+3. **Dark side of popularity** — substance use (predicted *positive* β = outcome-specificity inversion), lonely-at-the-top (paradox subgroup; pre-flight ruled out 2x2, fell back to continuous interaction at min-cell-N=73 < 150 floor).
+4. **Cross-sex friendship** — instrumental vs emotional channel test via 4-cell `BIO_SEX × HAVEBMF` and `BIO_SEX × HAVEBFF` stratification across all 13 outcomes.
+
+Plus a broadened `negative-control-battery` covering both exposure-side and outcome-side null controls (sensory: H5EL6D/F, H5DA9; allergy/asthma: H5EL6A/B; outcome-side confirmed via 2026-04-27 pre-flight inventory).
+
+**DAG library reorganization.** Per the user's 2026-04-27 decision, ground-truth DAGs now live in each experiment's `dag.md`; `reference/dag_library.md` was rewritten as an index with one-paragraph summaries + per-experiment links. `DAG-Cog v1.0` migrated to `experiments/cognitive-screening/dag.md` and existing planned-DAG stubs (`DAG-CardioMet`, `DAG-SES`, `DAG-Cog-FrontDoor`, `DAG-Mental`, `DAG-Functional`) migrated to their respective handoff folders.
+
+**`L_partner` placeholder.** Cognitive experiments get a fourth adjustment-set tier `L_partner = {BIO_SEX, H1GI1M}` mirroring the user's project partner's `dataset_eda.ipynb` Cell 21 as of 2026-04-27 — non-cognitive experiments unchanged. Tracked in [TODO §A23](../TODO.md) for replacement when partner pushes refined covariate list.
+
+**Methods utilities (TDD-first).** Three new modules added to `scripts/analysis/`:
+- `sensitivity.py` — `evalue` (VanderWeele-Ding), `cornfield_bound` (bias-factor B from Ch. 6 §2 of MA 592 textbook), `eta_tilt` (general-ATE bound from Ch. 6 §3). 10 tests pass.
+- `matching.py` — `mahalanobis_distance`, `match_ate` (M-NN), `match_ate_bias_corrected` (Abadie-Imbens 2006 Prop. 5.1 / Ch. 5 of MA 592 textbook), `analytic_variance` (Abadie-Imbens, since fixed-M bootstrap is invalid per Ch. 5 §9). 11 tests pass.
+- `dr_aipw.py` — `dr_aipw` (Robins-Rotnitzky-Zhao influence-function AIPW with KFold cross-fitting). 6 tests pass.
+
+`scikit-learn` dependency added because matching and DR-AIPW use it.
+
+**Pre-flight findings (worth recording for future sessions):**
+- Substance-use: W4 outcomes H4TO5, H4TO39, H4TO70, H4TO65B, H4TO65C all have N≥3,000 in the saturated frame; W5 outcomes H5TO2, H5TO12, H5TO15 have N≈3,500. All usable.
+- Lonely-at-the-top 2x2 cell counts: top-IDGX2-quartile × high-loneliness (H1FS13≥2) = N=73, below the project's 150 stability floor. Decision: drop 2x2 design, use continuous interaction `z(IDGX2) × z(H1FS13)`.
+- Outcome-side NCs: prefer the sensory-trio (H5EL6D vision, H5EL6F hearing, H5DA9 hearing-quality) and asthma/allergy (H5EL6A, H5EL6B). Avoid H5ID1 (self-rated health is too socially-confounded to serve as a clean null).
+
+**Skeptical 3-agent review (2026-04-27).** Three review agents (scientific, general, technical) all hit org usage limits before completing. The user reported the limit was reset; rather than re-dispatch, ran a focused manual review covering the highest-priority items.
+
+**Phase 7 fixes applied (2026-04-27):**
+
+1. **Pytest bulk-collection collision** — every new experiment ships `tests/test_smoke.py` (matching the existing per-folder convention), causing pytest to fail on bulk runs with "import file mismatch" *and* every test importing the WRONG sibling `run.py` because of `sys.modules['run']` caching + `sys.path` ordering. **Fix**: added `pyproject.toml` with `--import-mode=importlib`, `experiments/conftest.py` with an autouse fixture that pops cached `run` / `figures` and prepends the current test's `EXP_DIR` to `sys.path` for the duration of the test. After fix: `pytest` collects all 229 tests + 1 xfail across the full repo, no collisions.
+
+2. **`scikit-learn` missing from `requirements.txt`** — both `scripts/analysis/matching.py` (LinearRegression for the AIPW outcome-helper, internal numpy fallback) and `scripts/analysis/dr_aipw.py` (LogisticRegression + LinearRegression nuisances) import sklearn. Fixed by adding `scikit-learn>=1.4` to `requirements.txt`.
+
+3. **`dr_aipw` test (c) was mathematically broken on its pinned seed** — at `_make_dgp(seed=13)`, propensity-and-outcome confounding signs cancelled, leaving naive bias of only 0.015, below the 0.2 threshold. Fixed by replacing the test's DGP block with a custom strong-confounding setup (single covariate drives both A and Y in same direction with steep coefficients).
+
+4. **`matching` bias-correction-reduces-bias test pinned a single noisy seed** — implementer verified the formula is correct in expectation across 100 seeds (mean-abs-bias 0.09 vs 0.18 plain) but seed=42 happened to be unfavourable. Fixed by replacing the strict single-seed inequality with averages across 30 seeds (both mean-abs-bias and RMSE).
+
+**Items deferred to subsequent sessions** (would have come from the auto-reviewers; flagged here for manual follow-up):
+- Per-experiment `report.md` files are TBD-templates — every embedded chart placeholder needs caption + prose + linked methods on first use, per the chart-explanation convention. Will populate after `run.py` scripts produce actual tables/figures (Phase 5 actual-execution, not just scaffolding).
+- `popularity-and-substance-use/run.py:run_evalues` uses a Chinn-2000 standardized-β → RR approximation as a placeholder; replace with proper outcome-kind-specific conversion.
+- Direction-1 negative-control exposures (blood type, age at menarche, hand-dominance, residential stability) need a separate pre-flight to confirm public-use availability and column names; the current `negative-control-battery/run.py` has skip-with-warning guards but the upstream pre-flight ([TODO §A2](../TODO.md)) is still open.
+- W4→W5 attrition not modelled in the new W5-outcome experiments (`em-depression-buffering`, `lonely-at-the-top`, parts of others) — uses `GSWGT4_2` uniformly. IPAW layering tracked at [TODO §A3](../TODO.md), planned for handoff experiments.
+
+---
+
 ## Files produced in this session
 
 **New:**
