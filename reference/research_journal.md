@@ -202,6 +202,37 @@ Plus a broadened `negative-control-battery` covering both exposure-side and outc
 
 ---
 
+## Phase 7 — Stage D handoff estimation + cache contamination fix (2026-04-27 late)
+
+**Phase D-0 utilities (TDD-first):** Four new estimators added to `scripts/analysis/`:
+- `ipw.py` — `fit_ipaw(...)` with Cole-Hernán stabilisation + 95th-percentile trim (5 tests).
+- `ordered_logit.py` — wraps statsmodels `OrderedModel` with cluster-robust SE via score-sandwich (4 tests).
+- `interval_regression.py` — direct `scipy.optimize.minimize` on Tobit-style censored Gaussian log-likelihood with cluster-robust SE (4 tests).
+- `frontdoor.py` — Pearl 3-step linear-Gaussian decomposition (3 tests).
+
+All 16 utility tests pass; project total 245 → 274 with the 4 handoff smoke tests added.
+
+**Phase D-1 handoff experiments (2 parallel agents):**
+- **`cardiometabolic-handoff/`** (Agent A): IDGX2 → H4WAIST/H4BMI/H4BMICLS. WLS for waist/BMI; ordered-logit for BMICLS. DR-AIPW Q5-vs-Q1 doubly-robust check. **All 3 outcomes**: sign-stable, CIs exclude 0; E-values 1.35-1.49 (primary) and 2.03 (DR-AIPW). **Strongly supports C1.**
+- **`saturation-balance/`** (Agent A): descriptive transparency artifact. Top SMD-flagged covariates: AHPVT 0.20, Hispanic 0.20, AH_RAW 0.15, CESD_SUM 0.11. Joint-stratum positivity holds (smallest cell N=15 ≥ 10). The reported within-saturated-school estimands have a real but quantifiable transportability gap.
+- **`cognitive-frontdoor/`** (Agent B): Pearl 3-equation decomposition. **Strict-mediator reading reduces trajectory β by ~70% across all 3 exposures** (IDGX2 −74%, ODGX2 −69%, BCENT10X −73%). Reported as a sensitivity bound, not a competing primary estimate. **C3 strong with sensitivity bound.**
+- **`ses-handoff/`** (Agent B): Three estimators side-by-side per cell. WLS β = +0.080 bracket-units (E 1.35); interval+IPAW β = +1.09 k$/unit (E 1.28); DR-AIPW Q5-vs-Q1 ATE = +6.65 k$ (E **2.03**). All sign-coherent. **Supports C4.**
+
+**Phase D-1 cache contamination bug** (introduced by my proactive merge in Phase 6, caught by Agent A's first cardiometabolic run): The proactive merge of W4/W5 outcome columns into `analytic_w4.parquet` did not apply `clean_var`, leaving reserve codes (999, 99) in the H4 cardiometabolic columns. The mechanism experiments dodged this via `load_outcome` (which re-cleans on read), but a fresh handoff `run.py` reading the analytic frame directly produced a **wrong-signed β = +0.74 cm** for IDGX2 → H4WAIST until re-cleaning was applied inline. **Fix**: rebuilt `analytic_w{4,5}.parquet` with `clean_var` applied to every outcome column at materialisation time. All 13 experiments re-ran and re-figures'd cleanly with the corrected cache. **Lesson saved to `feedback_proactive_cross_cutting_fixes`** (already covers the related "fix infra before dispatch" lesson; extended to "if you proactively rebuild a cache, apply the project's standard cleaning convention").
+
+**Phase D-1 utility bugs flagged by Agent B** (NOT silently fixed in shared code):
+1. `interval_regression.fit_interval` is numerically fragile on wide-magnitude latent scales (σ² ~ 10¹⁰ with raw dollars → BFGS non-convergence). Worked around in `ses-handoff` by storing brackets in thousands of dollars. Future callers should pre-rescale (lo, hi] bounds to keep β·σ on a ~unit scale. To-do: add a docstring caveat + maybe an internal pre-conditioning step.
+2. `interval_regression._score_obs` emits a benign `RuntimeWarning: invalid value encountered in multiply` on open brackets (`inf * 0` evaluated before `np.where` masks it). Cosmetic; output is correct.
+
+**Phase D-2 cross-cutting updates (this entry's edits):**
+- Top-level [`report.md`](../report.md): C1 upgraded provisional → **supported**; C4 upgraded → **supported (with caveats)**; C3 reframed as **strong with sensitivity bound** + the ~70% shift number from cognitive-frontdoor; C8 footnoted as cross-confirmed by C1 handoff. Added "Stage D — Handoff estimation summary" section.
+- [`experiments/README.md`](../experiments/README.md): all 4 handoff rows flipped from "planned" to "**complete (2026-04-27)**" with headline numbers.
+- This journal entry.
+
+**Status going into Phase D-3 (3 fresh-eyes review agents):** 274 passing tests + 1 xfailed; 13 experiments fully built (9 mechanism + 4 handoff) + saturation-balance + negative-control-battery; all 13 top-level claims either supported, supported-with-caveats, strong, or null-result. Stage D's main remaining risks: (a) the interval-regression numerical fragility hasn't been hardened in the shared utility, (b) the cardiometabolic-handoff doesn't sex-stratify (so C8's sex modifier remains backed only by the screening estimate), (c) the IPAW model in ses-handoff uses a fairly small covariate set — could be richer.
+
+---
+
 ## Files produced in this session
 
 **New:**

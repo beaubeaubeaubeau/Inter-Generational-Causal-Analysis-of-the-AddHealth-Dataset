@@ -38,6 +38,11 @@ VALID_RANGES: Dict[str, Tuple[float, float]] = {
     "H1GI6A": (0, 1), "H1GI6B": (0, 1), "H1GI6C": (0, 1),
     "H1GI6D": (0, 1), "H1GI6E": (0, 1),
     "H1GH1": (1, 5),
+    # H1GH28 — "S3Q28 WEIGHT IMAGE-W1": ordinal 1=very underweight … 5=very
+    # overweight; 6=refused, 8=DK become NaN through this gate. Used as a W1
+    # weight-precursor confounder by `experiments/cardiometabolic-handoff/`
+    # per `DAG-CardioMet`.
+    "H1GH28": (1, 5),
     # Parent ed: only codes 1-9 are substantive (1=8th-or-less, 2=>8 not HS,
     # 3=trade-instead-of-HS, 4=HS grad, 5=trade-after-HS, 6=some college,
     # 7=college grad, 8=professional-training-beyond-college, 9=never-went-to-
@@ -98,6 +103,13 @@ VALID_RANGES: Dict[str, Tuple[float, float]] = {
     "H5TO2": (0, 30),
     "H5TO12": (0, 6),
     "H5TO15": (0, 6),
+    # W5 outcome-side negative-control items (negative-control-battery experiment).
+    # H5EL6A/B/D/F: "TOLD OF [asthma/allergy/sight/hearing] PROBLEM BEFORE AGE 16"
+    # — binary 0/1; reserve codes 6/7/8/9.
+    # H5DA9: "HEARING QUALITY WITHOUT AIDS" — likert 1=excellent..5=poor; reserve 6/7/8/9.
+    "H5EL6A": (0, 1), "H5EL6B": (0, 1),
+    "H5EL6D": (0, 1), "H5EL6F": (0, 1),
+    "H5DA9": (1, 5),
 }
 for L in range(3, 10):
     for suf in ("A", "B"):

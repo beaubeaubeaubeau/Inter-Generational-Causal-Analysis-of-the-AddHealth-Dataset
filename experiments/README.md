@@ -7,7 +7,7 @@ One folder per experiment under this directory. Each folder is self-contained: a
 | Experiment | Status | Exposure | Outcome | Method | Notes |
 |---|---|---|---|---|---|
 | [cognitive-screening](cognitive-screening/) | complete | 24 W1 social exposures (16 network + 8 survey) | `W4_COG_COMP` (z-mean of `C4WD90_1`, `C4WD60_1`, `C4NUMSCR`) | WLS + cluster-SE on `CLUSTER2`; full D1-D9 diagnostic battery; sensitivity audits; verification (BH-FDR, attrition IPW, NC, DEFF) | Subsumes prior EXP-14-COG, EXP-11-SENS, EXP-13-VERIFY (collapsed per restructure) |
-| [cognitive-frontdoor](cognitive-frontdoor/) | planned | `IDGX2` | `W4_COG_COMP` | Three-equation front-door decomposition (sensitivity check on the AHPVT trajectory framing of EXP-14-COG) | Stub only; planned `DAG-Cog-FrontDoor` |
+| [cognitive-frontdoor](cognitive-frontdoor/) | **complete (2026-04-27)** | `IDGX2`, `ODGX2`, `BCENT10X` | `W4_COG_COMP` | Three-equation Pearl front-door (`analysis.frontdoor`) treating `AH_PVT` as mediator; sensitivity bound on the trajectory β | All 3 exposures show ~70% trajectory β reduction under the strict-mediator reading (IDGX2 −74%, ODGX2 −69%, BCENT10X −73%). Reported as a sensitivity bound, not a competing primary estimate. Supports top-level claim **C3**. |
 
 ## Hypothesis: multi-outcome (cardiometabolic / functional / mental / SES)
 
@@ -19,13 +19,13 @@ One folder per experiment under this directory. Each folder is self-contained: a
 
 | Experiment | Status | Exposure → Outcome | Method | Notes |
 |---|---|---|---|---|
-| [cardiometabolic-handoff](cardiometabolic-handoff/) | planned | `IDGX2` → `H4WAIST`; `IDGX2` → `H4BMI`; `IDGX2` → `H4BMICLS` | WLS + cluster-SE on `CLUSTER2` for `H4WAIST` and `H4BMI`; ordered logit for `H4BMICLS` | Per-outcome DAG `DAG-CardioMet` (planned); E-value sensitivity bound per [TODO.md §A7](../TODO.md) |
+| [cardiometabolic-handoff](cardiometabolic-handoff/) | **complete (2026-04-27)** | `IDGX2` → `H4WAIST`; `IDGX2` → `H4BMI`; `IDGX2` → `H4BMICLS` | WLS + cluster-SE for waist/BMI; **ordered logit** (via `analysis.ordered_logit`) for BMICLS; **DR-AIPW Q5-vs-Q1** binarised contrast as doubly-robust check; E-value (Chinn-2000) + **explained-away contour curve** (handoff convention) + η-tilt sweep | All 3 outcomes sign-stable, CI excludes 0 in DR-AIPW. E-values 1.35–1.49 (waist/BMI) and 2.03 on the DR-AIPW row. Supports top-level claim **C1**. |
 
 ## Hypothesis: SES (formal estimation)
 
 | Experiment | Status | Exposure → Outcome | Method | Notes |
 |---|---|---|---|---|
-| [ses-handoff](ses-handoff/) | planned | `ODGX2` → `H5EC1` (W4-W5 personal earnings, bracketed 1-13) | Interval regression on bracket midpoints + IPAW (W4 → W5 attrition, via the IPAW utility, [TODO §A3](TODO.md#a-research-pipeline--task-16-and-beyond)), with `GSW5` × IPAW substituted for the screening's `GSWGT4_2` | Per-outcome DAG `DAG-SES` (planned); E-value sensitivity bound per [TODO.md §A7](../TODO.md) |
+| [ses-handoff](ses-handoff/) | **complete (2026-04-27)** | `ODGX2` → `H5EC1` (W4-W5 personal earnings, bracketed 1-13) | THREE estimators side-by-side per cell: WLS (linear-on-bracket baseline), **interval regression** on bracket midpoints (`analysis.interval_regression`) layered on `GSW5` × **IPAW** (`analysis.ipw`), and **DR-AIPW Q5-vs-Q1** doubly-robust check | All 3 estimators sign-coherent. WLS β = +0.080 bracket-units (E 1.35); interval+IPAW β = +1.09 k$/unit (E 1.28); DR-AIPW Q5-vs-Q1 ATE = +6.65 k$ (E **2.03**). Supports top-level claim **C4**. |
 
 ## Hypothesis: type-of-tie (Phase 6 mechanism experiments)
 
@@ -60,8 +60,8 @@ One folder per experiment under this directory. Each folder is self-contained: a
 
 | Experiment | Status | Purpose |
 |---|---|---|
-| [negative-control-battery](negative-control-battery/) | planned (broadened 2026-04-27) | **Two null directions in one experiment.** Direction 1 — exposure-side: blood type, age at menarche or W1 pubertal-development index, hand-dominance, residential stability pre-W1 (pre-flight required). Direction 2 — outcome-side: sensory (`H5EL6D`, `H5EL6F`, `H5DA9`), allergy/asthma (`H5EL6A`, `H5EL6B`). Tests the unmeasured-confounder assumption underlying every other DAG. |
-| [saturation-balance](saturation-balance/) | planned | Survey-weighted (`GSWGT1`) covariate balance table for L0 + L1 + AHPVT inside vs. outside saturated schools, with a standardized-mean-difference column. Quantifies the external-validity gap of the within-saturated-schools estimand used by the network exposures. |
+| [negative-control-battery](negative-control-battery/) | **complete (2026-04-27)** | **Two null directions in one experiment.** Direction 1 — exposure-side: blood type, age at menarche or W1 pubertal-development index, hand-dominance, residential stability pre-W1 (pre-flight skip-with-warning guards used; some still missing in public-use). Direction 2 — outcome-side: sensory (`H5EL6D`, `H5EL6F`, `H5DA9`), allergy/asthma (`H5EL6A`, `H5EL6B`). Tests the unmeasured-confounder assumption underlying every other DAG. 125-row matrix produced; outcome-side cells the load-bearing portion. |
+| [saturation-balance](saturation-balance/) | **complete (2026-04-27)** | Survey-weighted (`GSWGT1`) covariate balance table for L0 + L1 + AHPVT inside (N=3,511) vs. outside saturated schools (N=1,603). Quantifies the external-validity gap of the within-saturated-schools estimand. **Top SMD-flagged covariates: AHPVT 0.20, Hispanic 0.20, AH_RAW 0.15, CESD 0.11.** Joint-stratum positivity holds (smallest cell N=15, no cell <10). Cited as transportability footnote by every network-exposure claim. |
 
 ## Conventions
 

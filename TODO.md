@@ -89,6 +89,7 @@ Cross-checked across [reference/dataset_manual.md](reference/dataset_manual.md),
 - ~~**C16.** **[P2] [JUDGMENT REQUIRED] `[TODO.md A7]` style links are informal — TODO.md unnumbered.**~~ **Resolved 2026-04-26:** TODO.md is now numbered (this rewrite). Bullet IDs are stable across additions; resolved items keep their ID.
 - ~~**C17.** **[P2] Variable dictionary quick-ref omits `C5WD60_1`.**~~ **Resolved 2026-04-26:** Phase 4 Agent E added the row.
 - ~~**C18.** **[P2] dataset_manual.md Changelog references stale path `scripts/task05_weighted_descriptives.py`.**~~ **Resolved 2026-04-26:** Phase 4 Agent E trimmed the parenthetical.
+- **C19.** **[P2] Unify the sensitivity-visualization framework across the project.** As of 2026-04-27, the 9 mechanism experiments use a 4×4 Cornfield bias-factor *grid* panel (`sensitivity_panel.png`); the 4 Stage-D handoff experiments use the explained-away-*contour curve* convention (Cornfield grid stays as the underlying CSV but isn't visualized; the contour traces (RR_AU, RR_UY) pairs that just explain the observed result away — closer to modern epi practice per VanderWeele & Ding 2017 + the contour-extension literature). Both conventions currently coexist. Pick one going forward and either backfill the 9 mechanism experiments to the contour convention OR document why both coexist. Tracked owner: jb (cosmetic; schedule alongside next major refactor).
 
 ---
 
