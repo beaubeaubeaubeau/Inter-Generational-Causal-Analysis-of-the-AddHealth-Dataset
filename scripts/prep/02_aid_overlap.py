@@ -14,12 +14,19 @@ from pathlib import Path
 import pandas as pd
 import pyreadstat
 
+<<<<<<< HEAD:scripts/task02_aid_overlap.py
+ROOT = Path(__file__).resolve().parents[1]
+DATA = ROOT / "data"
+OUT = ROOT / "outputs"
+CACHE = OUT / "cache" / "aids"
+=======
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from analysis import ROOT, DATA, CACHE as CACHE_ROOT  # noqa: E402
 
 OUT = Path(__file__).resolve().parent / "outputs"
 CACHE = CACHE_ROOT / "aids"
 OUT.mkdir(parents=True, exist_ok=True)
+>>>>>>> 9ed93fa62a452cb047f78f544077837c3574945d:scripts/prep/02_aid_overlap.py
 CACHE.mkdir(parents=True, exist_ok=True)
 
 INVENTORY = OUT / "01_file_inventory.csv"

@@ -17,12 +17,21 @@ from pathlib import Path
 import pandas as pd
 import pyreadstat
 
+<<<<<<< HEAD:scripts/task01_file_inventory.py
+ROOT = Path(__file__).resolve().parents[1]
+DATA = ROOT / "data"
+OUT = ROOT / "outputs"
+CACHE = OUT / "cache"
+OUT.mkdir(exist_ok=True)
+CACHE.mkdir(exist_ok=True)
+=======
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from analysis import ROOT, DATA, CACHE  # noqa: E402
 
 OUT = Path(__file__).resolve().parent / "outputs"
 OUT.mkdir(parents=True, exist_ok=True)
 CACHE.mkdir(parents=True, exist_ok=True)
+>>>>>>> 9ed93fa62a452cb047f78f544077837c3574945d:scripts/prep/01_file_inventory.py
 
 
 def infer_wave(path: Path) -> str:
