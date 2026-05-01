@@ -1,6 +1,6 @@
 # Inter-Generational Causal Analysis of the Add Health Dataset
 
-Single-author research project estimating the effect of W1 (adolescent) social-integration exposures on W4 mid-life cognition and on a multi-outcome battery of W4 cardiometabolic, W5 mental-health, W5 functional-health, and W5 socio-economic outcomes. Estimation is survey-weighted regression with cluster-robust standard errors on the National Longitudinal Study of Adolescent to Adult Health (Add Health) public-use microdata, with a nine-diagnostic D1-D9 screening battery and per-pair sensitivity audits.
+Introduction to Causal Inference final project estimating the effect of W1 (adolescent) social-integration exposures on W4 mid-life cognition and on a multi-outcome battery of W4 cardiometabolic, W5 mental-health, W5 functional-health, and W5 socio-economic outcomes. Estimation is survey-weighted regression with cluster-robust standard errors on the National Longitudinal Study of Adolescent to Adult Health (Add Health) public-use microdata, with a nine-diagnostic D1-D9 screening battery and per-pair sensitivity audits.
 
 ## Where to get the data
 
